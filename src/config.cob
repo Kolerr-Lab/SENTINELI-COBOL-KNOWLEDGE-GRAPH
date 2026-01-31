@@ -14,6 +14,5 @@ IDENTIFICATION DIVISION.
            IF WS-DB-URL = SPACES OR WS-JWT-SECRET = SPACES OR WS-PORT = SPACES
                DISPLAY 'Critical environment variables are missing!'.
                STOP RUN.
-           END-IF.
-           DISPLAY 'Configuration loaded successfully!'.
+           DISPLAY "Env Vars Loaded.". successfully!'.
            STOP RUN.

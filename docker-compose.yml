@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  # --- 1. Knowledge Graph-AI/ML Cobol Modernize Engine ---
+  kg-ai-cobol-modernize:
+    build: .
+    image: kg-ai-cobol-modernize
+    container_name: kg_ai_cobol_modernizer
+    ports:
+      - "3050:3050"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=development
+      - PORT=3050
+      # DATABASE_URL and REDIS_URL are still set here to use internal docker aliases
+      - DATABASE_URL=postgres://admin:secure_pass@db:5432/kg_cobol_db
+      - REDIS_URL=redis://cache:6379
+    depends_on:
+      - db
+      - cache
+    command: npm run dev
+    networks:
+      - modernist-net
+
+  # --- 2. Persistence Layer (PostgreSQL) ---
+  db:
+    image: postgres:15-alpine
+    container_name: kg_cobol_db
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secure_pass
+      POSTGRES_DB: kg_cobol_db
+    ports:
+      - "5435:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - modernist-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d kg_cobol_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # --- 3. Caching Layer (Redis) ---
+  cache:
+    image: redis:alpine
+    container_name: kg_cobol_redis
+    restart: always
+    ports:
+      - "6385:6379"
+    volumes:
+      - redisdata:/data
+    networks:
+      - modernist-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+# --- Networks & Volumes ---
+networks:
+  modernist-net:
+    driver: bridge
+
+volumes:
+  pgdata:
+  redisdata:
