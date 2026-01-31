@@ -6,8 +6,8 @@
     "scripts": {
         "start": "node src/bridge/server.js",
         "dev": "nodemon src/bridge/server.js",
-        "prestart": "sh build.sh",
-        "predev": "sh build.sh",
+        "prestart": "mkdir -p bin && cobc -x -free -o bin/main src/main.cob",
+        "predev": "mkdir -p bin && cobc -x -free -o bin/main src/main.cob",
         "compile": "cobc -x -free -o bin/main src/main.cob"
     },
     "dependencies": {
@@ -16,7 +16,8 @@
         "express": "^4.18.2",
         "openai": "^4.20.1",
         "pg": "^8.11.3",
-        "redis": "^4.6.10"
+        "redis": "^4.6.10",
+        "z3-solver": "^4.12.4"
     },
     "devDependencies": {
         "nodemon": "^3.0.1"
