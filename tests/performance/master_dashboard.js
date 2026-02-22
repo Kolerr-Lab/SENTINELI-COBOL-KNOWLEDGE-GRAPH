@@ -34,7 +34,7 @@ console.log(`   ${MAGENTA}DECISION DEPTH${RESET}         : ${GREEN}4 LAYERS (Age
 console.log(`   ${MAGENTA}REVERSE ENGINEERING${RESET}    : ${GREEN}100% ACCURACY${RESET}`);
 console.log("");
 
-console.log(`${BOLD}${WHITE}3. "GOD'S EYE" TELEMETRY (Last Run)${RESET}`);
+console.log(`${BOLD}${WHITE}3. DECISION TOPOLOGY TELEMETRY (Last Run)${RESET}`);
 // Simulated bar chart based on previous run data
 const total = 50;
 const bar = (count, color) => {

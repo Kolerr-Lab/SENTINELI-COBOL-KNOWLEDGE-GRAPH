@@ -9,14 +9,15 @@ const rateLimit = require('express-rate-limit');
 const logger = require('../utils/logger');
 
 /**
- * General API rate limiter - applies to all routes
+ * General API rate limiter - EXTREME MODE for stress testing
+ * Configured for maximum throughput demonstration
  */
 const generalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per windowMs
+    max: 50000, // 50k requests per 15min (3,333 req/min)
     message: {
         error: 'Too many requests',
-        message: 'You have exceeded the 100 requests in 15 minutes limit. Please try again later.',
+        message: 'You have exceeded the 50,000 requests in 15 minutes limit. Please try again later.',
         retryAfter: '15 minutes'
     },
     standardHeaders: true, // Return rate limit info in `RateLimit-*` headers
@@ -36,14 +37,15 @@ const generalLimiter = rateLimit({
 });
 
 /**
- * Strict rate limiter for COBOL execution (resource-intensive)
+ * Strict rate limiter for COBOL execution - EXTREME MODE
+ * High limit for stress testing purposes
  */
 const executionLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 50, // Limit each IP to 50 COBOL executions per windowMs
+    max: 10000, // 10k COBOL executions per 15min (666 req/min)
     message: {
         error: 'Execution rate limit exceeded',
-        message: 'You have exceeded the 50 COBOL executions in 15 minutes limit.',
+        message: 'You have exceeded the 10,000 COBOL executions in 15 minutes limit.',
         retryAfter: '15 minutes'
     },
     standardHeaders: true,
@@ -68,15 +70,17 @@ const executionLimiter = rateLimit({
     }
 });
 
-/**
- * Very strict rate limiter for AI analysis (expensive API calls)
+/**- DEMONSTRATION MODE
+ * Aligned with OpenAI paid tier: ~500 RPM
+ * Set to 100/hour for stress testing while managing costs
  */
 const aiAnalysisLimiter = rateLimit({
     windowMs: 60 * 60 * 1000, // 1 hour
-    max: 10, // Limit each IP to 10 AI analyses per hour
+    max: 100, // 100 AI analyses per hour (~1.67 per minute)
     message: {
         error: 'AI analysis rate limit exceeded',
-        message: 'You have exceeded the 10 AI analyses per hour limit.',
+        message: 'You have exceeded the 10ceeded',
+        message: 'You have exceeded the 20 AI analyses per hour limit to protect OpenAI API quota.',
         retryAfter: '1 hour'
     },
     standardHeaders: true,

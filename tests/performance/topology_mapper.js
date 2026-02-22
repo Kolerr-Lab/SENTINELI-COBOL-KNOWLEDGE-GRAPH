@@ -38,7 +38,7 @@ function delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 async function runTopologyTest() {
     console.clear();
     console.log(`${BOLD}${MAGENTA}
-    🌐 THE "GOD'S EYE" TOPOLOGY MAPPPER (HARD MODE) 🌐
+    🔍 DECISION TOPOLOGY ANALYSIS (PRODUCTION MODE) 🔍
     ==================================================${RESET}`);
     console.log(`${CYAN}Phase 1: Neural Structural Analysis (Complex Lending)...${RESET}`);
 

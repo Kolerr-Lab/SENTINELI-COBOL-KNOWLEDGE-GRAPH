@@ -26,7 +26,7 @@ services:
     networks:
       - modernist-net
 
-  # --- 2. Persistence Layer (PostgreSQL) ---
+  # --- 3. Persistence Layer (PostgreSQL) ---
   db:
     image: postgres:15-alpine
     container_name: kg_cobol_db
@@ -35,8 +35,8 @@ services:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: secure_pass
       POSTGRES_DB: kg_cobol_db
-    ports:
-      - "5435:5432"
+    expose:
+      - "5432" # Only accessible internally
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
@@ -47,7 +47,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # --- 3. Caching Layer (Redis) ---
+  # --- 4. Caching Layer (Redis) ---
   cache:
     image: redis:alpine
     container_name: kg_cobol_redis

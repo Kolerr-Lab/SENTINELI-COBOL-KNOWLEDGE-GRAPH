@@ -40,7 +40,7 @@ console.log(`${BOLD}3. KEY ADDITIONS${RESET}`);
 console.log(`   ${GREEN}+ src/bridge/server.js${RESET}      (Neural Bridge)`);
 console.log(`   ${GREEN}+ src/bridge/ai_agent.js${RESET}    (Cortex Logic)`);
 console.log(`   ${GREEN}+ tests/hft_flood.js${RESET}        (HFT Stress Test)`);
-console.log(`   ${GREEN}+ tests/master_dashboard.js${RESET} (God's Eye View)`);
+console.log(`   ${GREEN}+ tests/master_dashboard.js${RESET} (Decision Topology Dashboard)`);
 console.log("");
 
 console.log(`${BOLD}${GREEN}✔ CONCLUSION: SYSTEM INTELLIGENCE INCREASED BY ${growth}%${RESET}\n`);
