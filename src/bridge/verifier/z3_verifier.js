@@ -157,7 +157,40 @@ async function verifyLoanDecision(cobolResult, aiAnalysis, inputData) {
             .and(creditScore.lt(750));
         
         // ═══════════════════════════════════════════════════════════════
-        // CONSTRAINT 9: Decision Logic (Core Proof)
+        // CONSTRAINT 9: Manual Review Triggers (Soft Approvals)
+        // ═══════════════════════════════════════════════════════════════
+        const bankruptcyManualReview = bankruptcies.gt(0)
+            .and(creditScore.ge(700));
+        
+        const employmentRisk = employmentYears.lt(2)
+            .and(creditScore.lt(750));
+        
+        const highLTVReview = hasCollateral
+            .and(ltvRatio.gt(Z3.Real.val('80')))
+            .and(creditScore.ge(700));  // Would be denied if <700
+        
+        const highValueLoan = loanAmount.gt(1000000);
+        
+        // Risk score triggers manual review if > 400
+        // Risk = (800 - credit) + (DTI * 2) + (LTV / 2) + (bankruptcies * 100)
+        const creditComponent = Z3.Int.val(800).sub(creditScore);
+        const dtiComponent = Z3.ToInt(dtiRatio.mul(Z3.Real.val('2')));
+        const ltvComponent = Z3.ToInt(ltvRatio.div(Z3.Real.val('2')));
+        const bankruptcyComponent = bankruptcies.mul(100);
+        const calculatedRisk = creditComponent.add(dtiComponent)
+            .add(ltvComponent).add(bankruptcyComponent);
+        const highRiskScore = calculatedRisk.gt(400);
+        
+        const shouldRequireManualReview = Z3.Or(
+            bankruptcyManualReview,
+            employmentRisk,
+            highLTVReview,
+            highValueLoan,
+            highRiskScore
+        );
+        
+        // ═══════════════════════════════════════════════════════════════
+        // CONSTRAINT 10: Denial Reasons (Hard Rejections)
         // ═══════════════════════════════════════════════════════════════
         const shouldBeDenied = Z3.Or(
             belowMinIncome,
@@ -168,20 +201,32 @@ async function verifyLoanDecision(cobolResult, aiAnalysis, inputData) {
             unsecuredHighRisk
         );
         
-        // Map COBOL decision to boolean
-        const cobolApproved = ['APPROVED', 'MANUAL'].includes(
-            cobolResult.DECISION
-        );
+        // ═══════════════════════════════════════════════════════════════
+        // MAIN ASSERTION: Three-way decision logic
+        // ═══════════════════════════════════════════════════════════════
+        // COBOL logic:
+        // - If any denial reason → DENIED
+        // - Else if any manual review trigger → MANUAL
+        // - Else → APPROVED
         
-        // ═══════════════════════════════════════════════════════════════
-        // MAIN ASSERTION: COBOL decision must equal logical rules
-        // ═══════════════════════════════════════════════════════════════
-        if (cobolApproved) {
-            solver.add(decision.eq(true));
-            solver.add(shouldBeDenied.not());
-        } else {
+        const cobolDecision = cobolResult.DECISION;
+        
+        if (cobolDecision === 'DENIED') {
+            // Must have at least one denial reason
             solver.add(decision.eq(false));
             solver.add(shouldBeDenied);
+        } else if (cobolDecision === 'MANUAL') {
+            // No hard denials, but has manual review triggers
+            solver.add(decision.eq(true));  // Soft approval
+            solver.add(shouldBeDenied.not());  // Passed hard rules
+            solver.add(shouldRequireManualReview);  // But flagged for review
+        } else if (cobolDecision === 'APPROVED') {
+            // No denials, no manual review triggers
+            solver.add(decision.eq(true));
+            solver.add(shouldBeDenied.not());
+            solver.add(shouldRequireManualReview.not());
+        } else {
+            throw new Error(`Unknown COBOL decision: ${cobolDecision}`);
         }
         
         // ═══════════════════════════════════════════════════════════════
@@ -206,9 +251,10 @@ async function verifyLoanDecision(cobolResult, aiAnalysis, inputData) {
                     decision: model.eval(decision).toString()
                 },
                 constraints: {
-                    total: solver.assertions().length(),  // Call method, not property
+                    total: solver.assertions().length,
                     input_constraints: 7,
                     business_rules: 6,  // DTI, loan limits, min income, bankruptcy, LTV, unsecured
+                    manual_review_rules: 5,  // Bankruptcy, employment, high LTV, high value, high risk
                     decision_logic: 1
                 }
             };

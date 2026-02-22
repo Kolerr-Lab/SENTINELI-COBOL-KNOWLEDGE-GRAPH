@@ -1,0 +1,361 @@
+﻿[1m[35mΓòöΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòù[0m
+[1m[35mΓòæ         SENTINELI BLACK BOX TRANSPARENCY TEST - Z3 VERIFICATION          Γòæ[0m
+[1m[35mΓòæ                                                                           Γòæ[0m
+[1m[36mΓòæ  Three-Layer Validation System:                                          Γòæ[0m
+[1m[37mΓòæ    Layer 1: COBOL Execution (Deterministic Black Box)                    Γòæ[0m
+[1m[37mΓòæ    Layer 2: AI Analysis (Rule Extraction via GPT-4o)                     Γòæ[0m
+[1m[37mΓòæ    Layer 3: Z3 Formal Verification (Mathematical Proof)                  Γòæ[0m
+[1m[35mΓòæ                                                                           Γòæ[0m
+[1m[32mΓòæ  Revolutionary Feature: Prove AI understanding with formal math          Γòæ[0m
+[1m[35mΓòÜΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓò¥[0m
+
+[2mΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ[0m
+[1m[35mSCENARIO 1: Perfect Applicant[0m
+[2mΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ[0m
+[2mDescription:[0m [1m[36mExcellent credit, high income, low debt[0m
+[2mExpected:[0m [1m[33mAPPROVED[0m
+[2mΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ[0m
+
+[1m[36m≡ƒôï APPLICANT DATA:[0m
+   [2mName:[0m [1m[37mAlice Johnson[0m
+   [2mCredit Score:[0m [1m[34m800[0m
+   [2mAnnual Income:[0m [1m[34m$150.000[0m
+   [2mLoan Amount:[0m [1m[34m$500.000[0m
+   [2mMonthly Debt:[0m [1m[34m$20.000[0m
+   [2mCollateral:[0m [1m[34m$600.000[0m
+   [2mEmployment:[0m [1m[37m10 years[0m
+   [2mBankruptcies:[0m [1m[37m0[0m
+
+[1m[36m≡ƒöº LAYER 1: COBOL EXECUTION[0m [2m(Black Box)[0m
+   [2mDuration:[0m [1m[34m39ms[0m
+   [1m[32mΓ£ô[0m [2mDecision:[0m [1m[31mDENIED[0m
+   [2mCredit Tier:[0m [1m[37mEXCELLENT[0m
+   [2mInterest Rate:[0m [1m[34m03.50%[0m
+   [2mDTI Ratio:[0m [1m[34m040.00%[0m
+   [2mLTV Ratio:[0m [1m[34m083.33%[0m
+   [2mRisk Score:[0m [1m[34m000[0m
+   [2mManual Review:[0m [1m[37mN[0m
+   [2mDenial Reason:[0m [1m[33mDTI EXCEEDS EXCELLENT TIER LIMIT (30%)[0m
+
+[1m[36m≡ƒºá LAYER 2: AI ANALYSIS[0m [2m(Rule Extraction)[0m
+   [2mDuration:[0m [1m[34m8ms[0m[1m[32m (cached)[0m
+   [1m[32mΓ£ô[0m [2mRules:[0m [1m[37mRules extracted successfully...[0m
+
+[1m[36mΓÜí LAYER 3: Z3 FORMAL VERIFICATION[0m [2m(Mathematical Proof)[0m
+   [2mDuration:[0m [1m[34m173ms[0m
+   [1m[32mΓ£ôΓ£ôΓ£ô[0m [42m[30m[1m VERIFIED [0m - [1m[32mAI interpretation is mathematically sound[0m
+   [2mSatisfiability:[0m [1m[32mSAT[0m
+   [2mConstraints:[0m [1m[34m11 total[0m
+   [1m[32m≡ƒÅå PROOF:[0m [1m[32mAI correctly understands COBOL logic![0m
+
+[2mΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ[0m
+[1m[35mSCENARIO 2: High DTI Ratio[0m
+[2mΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ[0m
+[2mDescription:[0m [1m[36mGood credit but debt too high[0m
+[2mExpected:[0m [1m[33mDENIED[0m
+[2mΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ[0m
+
+[1m[36m≡ƒôï APPLICANT DATA:[0m
+   [2mName:[0m [1m[37mBob Smith[0m
+   [2mCredit Score:[0m [1m[34m720[0m
+   [2mAnnual Income:[0m [1m[34m$80.000[0m
+   [2mLoan Amount:[0m [1m[34m$400.000[0m
+   [2mMonthly Debt:[0m [1m[34m$50.000[0m
+   [2mCollateral:[0m [1m[34m$450.000[0m
+   [2mEmployment:[0m [1m[37m5 years[0m
+   [2mBankruptcies:[0m [1m[37m0[0m
+
+[1m[36m≡ƒöº LAYER 1: COBOL EXECUTION[0m [2m(Black Box)[0m
+   [2mDuration:[0m [1m[34m26ms[0m
+   [1m[32mΓ£ô[0m [2mDecision:[0m [1m[31mDENIED[0m
+   [2mCredit Tier:[0m [1m[37mGOOD[0m
+   [2mInterest Rate:[0m [1m[34m04.75%[0m
+   [2mDTI Ratio:[0m [1m[34m102.50%[0m
+   [2mLTV Ratio:[0m [1m[34m088.88%[0m
+   [2mRisk Score:[0m [1m[34m000[0m
+   [2mManual Review:[0m [1m[37mN[0m
+   [2mDenial Reason:[0m [1m[33mDTI EXCEEDS GOOD TIER LIMIT (40%)[0m
+
+[1m[36m≡ƒºá LAYER 2: AI ANALYSIS[0m [2m(Rule Extraction)[0m
+   [2mDuration:[0m [1m[34m7ms[0m[1m[32m (cached)[0m
+   [1m[32mΓ£ô[0m [2mRules:[0m [1m[37mRules extracted successfully...[0m
+
+[1m[36mΓÜí LAYER 3: Z3 FORMAL VERIFICATION[0m [2m(Mathematical Proof)[0m
+   [2mDuration:[0m [1m[34m156ms[0m
+   [1m[32mΓ£ôΓ£ôΓ£ô[0m [42m[30m[1m VERIFIED [0m - [1m[32mAI interpretation is mathematically sound[0m
+   [2mSatisfiability:[0m [1m[32mSAT[0m
+   [2mConstraints:[0m [1m[34m11 total[0m
+   [1m[32m≡ƒÅå PROOF:[0m [1m[32mAI correctly understands COBOL logic![0m
+
+[2mΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ[0m
+[1m[35mSCENARIO 3: Bankruptcy + Poor Credit[0m
+[2mΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ[0m
+[2mDescription:[0m [1m[36mRecent bankruptcy, low credit score[0m
+[2mExpected:[0m [1m[33mDENIED[0m
+[2mΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ[0m
+
+[1m[36m≡ƒôï APPLICANT DATA:[0m
+   [2mName:[0m [1m[37mCarol Davis[0m
+   [2mCredit Score:[0m [1m[34m620[0m
+   [2mAnnual Income:[0m [1m[34m$60.000[0m
+   [2mLoan Amount:[0m [1m[34m$200.000[0m
+   [2mMonthly Debt:[0m [1m[34m$15.000[0m
+   [2mCollateral:[0m [1m[34m$250.000[0m
+   [2mEmployment:[0m [1m[37m3 years[0m
+   [2mBankruptcies:[0m [1m[37m1[0m
+
+[1m[36m≡ƒöº LAYER 1: COBOL EXECUTION[0m [2m(Black Box)[0m
+   [2mDuration:[0m [1m[34m24ms[0m
+   [1m[32mΓ£ô[0m [2mDecision:[0m [1m[31mDENIED[0m
+   [2mCredit Tier:[0m [1m[37mPOOR[0m
+   [2mInterest Rate:[0m [1m[34m09.50%[0m
+   [2mDTI Ratio:[0m [1m[34m051.66%[0m
+   [2mLTV Ratio:[0m [1m[34m080.00%[0m
+   [2mRisk Score:[0m [1m[34m000[0m
+   [2mManual Review:[0m [1m[37mN[0m
+   [2mDenial Reason:[0m [1m[33mRECENT BANKRUPTCY WITH LOW CREDIT[0m
+
+[1m[36m≡ƒºá LAYER 2: AI ANALYSIS[0m [2m(Rule Extraction)[0m
+   [2mDuration:[0m [1m[34m5ms[0m[1m[32m (cached)[0m
+   [1m[32mΓ£ô[0m [2mRules:[0m [1m[37mRules extracted successfully...[0m
+
+[1m[36mΓÜí LAYER 3: Z3 FORMAL VERIFICATION[0m [2m(Mathematical Proof)[0m
+   [2mDuration:[0m [1m[34m173ms[0m
+   [1m[32mΓ£ôΓ£ôΓ£ô[0m [42m[30m[1m VERIFIED [0m - [1m[32mAI interpretation is mathematically sound[0m
+   [2mSatisfiability:[0m [1m[32mSAT[0m
+   [2mConstraints:[0m [1m[34m11 total[0m
+   [1m[32m≡ƒÅå PROOF:[0m [1m[32mAI correctly understands COBOL logic![0m
+
+[2mΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ[0m
+[1m[35mSCENARIO 4: Loan Exceeds Tier Limit[0m
+[2mΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ[0m
+[2mDescription:[0m [1m[36mFair credit asking for too much[0m
+[2mExpected:[0m [1m[33mDENIED[0m
+[2mΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ[0m
+
+[1m[36m≡ƒôï APPLICANT DATA:[0m
+   [2mName:[0m [1m[37mDavid Wilson[0m
+   [2mCredit Score:[0m [1m[34m680[0m
+   [2mAnnual Income:[0m [1m[34m$90.000[0m
+   [2mLoan Amount:[0m [1m[34m$600.000[0m
+   [2mMonthly Debt:[0m [1m[34m$10.000[0m
+   [2mCollateral:[0m [1m[34m$700.000[0m
+   [2mEmployment:[0m [1m[37m7 years[0m
+   [2mBankruptcies:[0m [1m[37m0[0m
+
+[1m[36m≡ƒöº LAYER 1: COBOL EXECUTION[0m [2m(Black Box)[0m
+   [2mDuration:[0m [1m[34m29ms[0m
+   [1m[32mΓ£ô[0m [2mDecision:[0m [1m[31mDENIED[0m
+   [2mCredit Tier:[0m [1m[37mFAIR[0m
+   [2mInterest Rate:[0m [1m[34m06.25%[0m
+   [2mDTI Ratio:[0m [1m[34m064.44%[0m
+   [2mLTV Ratio:[0m [1m[34m085.71%[0m
+   [2mRisk Score:[0m [1m[34m000[0m
+   [2mManual Review:[0m [1m[37mN[0m
+   [2mDenial Reason:[0m [1m[33mDTI EXCEEDS FAIR TIER LIMIT (45%)[0m
+
+[1m[36m≡ƒºá LAYER 2: AI ANALYSIS[0m [2m(Rule Extraction)[0m
+   [2mDuration:[0m [1m[34m8ms[0m[1m[32m (cached)[0m
+   [1m[32mΓ£ô[0m [2mRules:[0m [1m[37mRules extracted successfully...[0m
+
+[1m[36mΓÜí LAYER 3: Z3 FORMAL VERIFICATION[0m [2m(Mathematical Proof)[0m
+   [2mDuration:[0m [1m[34m181ms[0m
+   [1m[32mΓ£ôΓ£ôΓ£ô[0m [42m[30m[1m VERIFIED [0m - [1m[32mAI interpretation is mathematically sound[0m
+   [2mSatisfiability:[0m [1m[32mSAT[0m
+   [2mConstraints:[0m [1m[34m11 total[0m
+   [1m[32m≡ƒÅå PROOF:[0m [1m[32mAI correctly understands COBOL logic![0m
+
+[2mΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ[0m
+[1m[35mSCENARIO 5: Below Minimum Income[0m
+[2mΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ[0m
+[2mDescription:[0m [1m[36mGood credit but income too low[0m
+[2mExpected:[0m [1m[33mDENIED[0m
+[2mΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ[0m
+
+[1m[36m≡ƒôï APPLICANT DATA:[0m
+   [2mName:[0m [1m[37mEmma Brown[0m
+   [2mCredit Score:[0m [1m[34m740[0m
+   [2mAnnual Income:[0m [1m[34m$25.000[0m
+   [2mLoan Amount:[0m [1m[34m$100.000[0m
+   [2mMonthly Debt:[0m [1m[34m$5.000[0m
+   [2mCollateral:[0m [1m[34m$120.000[0m
+   [2mEmployment:[0m [1m[37m2 years[0m
+   [2mBankruptcies:[0m [1m[37m0[0m
+
+[1m[36m≡ƒöº LAYER 1: COBOL EXECUTION[0m [2m(Black Box)[0m
+   [2mDuration:[0m [1m[34m24ms[0m
+   [1m[32mΓ£ô[0m [2mDecision:[0m [1m[31mDENIED[0m
+   [2mCredit Tier:[0m [1m[37mGOOD[0m
+   [2mInterest Rate:[0m [1m[34m04.75%[0m
+   [2mDTI Ratio:[0m [1m[34m052.00%[0m
+   [2mLTV Ratio:[0m [1m[34m083.33%[0m
+   [2mRisk Score:[0m [1m[34m000[0m
+   [2mManual Review:[0m [1m[37mN[0m
+   [2mDenial Reason:[0m [1m[33mINCOME BELOW MINIMUM THRESHOLD[0m
+
+[1m[36m≡ƒºá LAYER 2: AI ANALYSIS[0m [2m(Rule Extraction)[0m
+   [2mDuration:[0m [1m[34m7ms[0m[1m[32m (cached)[0m
+   [1m[32mΓ£ô[0m [2mRules:[0m [1m[37mRules extracted successfully...[0m
+
+[1m[36mΓÜí LAYER 3: Z3 FORMAL VERIFICATION[0m [2m(Mathematical Proof)[0m
+   [2mDuration:[0m [1m[34m139ms[0m
+   [1m[32mΓ£ôΓ£ôΓ£ô[0m [42m[30m[1m VERIFIED [0m - [1m[32mAI interpretation is mathematically sound[0m
+   [2mSatisfiability:[0m [1m[32mSAT[0m
+   [2mConstraints:[0m [1m[34m11 total[0m
+   [1m[32m≡ƒÅå PROOF:[0m [1m[32mAI correctly understands COBOL logic![0m
+
+[2mΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ[0m
+[1m[35mSCENARIO 6: No Collateral Risk[0m
+[2mΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ[0m
+[2mDescription:[0m [1m[36mUnsecured high-value loan[0m
+[2mExpected:[0m [1m[33mDENIED[0m
+[2mΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ[0m
+
+[1m[36m≡ƒôï APPLICANT DATA:[0m
+   [2mName:[0m [1m[37mFrank Miller[0m
+   [2mCredit Score:[0m [1m[34m700[0m
+   [2mAnnual Income:[0m [1m[34m$100.000[0m
+   [2mLoan Amount:[0m [1m[34m$80.000[0m
+   [2mMonthly Debt:[0m [1m[34m$15.000[0m
+   [2mCollateral:[0m [1m[34m$0[0m
+   [2mEmployment:[0m [1m[37m8 years[0m
+   [2mBankruptcies:[0m [1m[37m0[0m
+
+[1m[36m≡ƒöº LAYER 1: COBOL EXECUTION[0m [2m(Black Box)[0m
+   [2mDuration:[0m [1m[34m27ms[0m
+   [1m[32mΓ£ô[0m [2mDecision:[0m [1m[31mDENIED[0m
+   [2mCredit Tier:[0m [1m[37mGOOD[0m
+   [2mInterest Rate:[0m [1m[34m04.75%[0m
+   [2mDTI Ratio:[0m [1m[34m021.40%[0m
+   [2mLTV Ratio:[0m [1m[34m999.99%[0m
+   [2mRisk Score:[0m [1m[34m000[0m
+   [2mManual Review:[0m [1m[37mN[0m
+   [2mDenial Reason:[0m [1m[33mUNSECURED LOAN > $50K REQUIRES EXCELLENT[0m
+
+[1m[36m≡ƒºá LAYER 2: AI ANALYSIS[0m [2m(Rule Extraction)[0m
+   [2mDuration:[0m [1m[34m6ms[0m[1m[32m (cached)[0m
+   [1m[32mΓ£ô[0m [2mRules:[0m [1m[37mRules extracted successfully...[0m
+
+[1m[36mΓÜí LAYER 3: Z3 FORMAL VERIFICATION[0m [2m(Mathematical Proof)[0m
+   [2mDuration:[0m [1m[34m133ms[0m
+   [1m[32mΓ£ôΓ£ôΓ£ô[0m [42m[30m[1m VERIFIED [0m - [1m[32mAI interpretation is mathematically sound[0m
+   [2mSatisfiability:[0m [1m[32mSAT[0m
+   [2mConstraints:[0m [1m[34m11 total[0m
+   [1m[32m≡ƒÅå PROOF:[0m [1m[32mAI correctly understands COBOL logic![0m
+
+[2mΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ[0m
+[1m[35mSCENARIO 7: Manual Review Trigger[0m
+[2mΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ[0m
+[2mDescription:[0m [1m[36mHigh-value loan requires review[0m
+[2mExpected:[0m [1m[33mMANUAL[0m
+[2mΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ[0m
+
+[1m[36m≡ƒôï APPLICANT DATA:[0m
+   [2mName:[0m [1m[37mGrace Lee[0m
+   [2mCredit Score:[0m [1m[34m780[0m
+   [2mAnnual Income:[0m [1m[34m$250.000[0m
+   [2mLoan Amount:[0m [1m[34m$1.500.000[0m
+   [2mMonthly Debt:[0m [1m[34m$40.000[0m
+   [2mCollateral:[0m [1m[34m$2.000.000[0m
+   [2mEmployment:[0m [1m[37m15 years[0m
+   [2mBankruptcies:[0m [1m[37m0[0m
+
+[1m[36m≡ƒöº LAYER 1: COBOL EXECUTION[0m [2m(Black Box)[0m
+   [2mDuration:[0m [1m[34m21ms[0m
+   [1m[32mΓ£ô[0m [2mDecision:[0m [1m[31mDENIED[0m
+   [2mCredit Tier:[0m [1m[37mEXCELLENT[0m
+   [2mInterest Rate:[0m [1m[34m03.50%[0m
+   [2mDTI Ratio:[0m [1m[34m064.00%[0m
+   [2mLTV Ratio:[0m [1m[34m075.00%[0m
+   [2mRisk Score:[0m [1m[34m000[0m
+   [2mManual Review:[0m [1m[37mN[0m
+   [2mDenial Reason:[0m [1m[33mDTI EXCEEDS EXCELLENT TIER LIMIT (30%)[0m
+
+[1m[36m≡ƒºá LAYER 2: AI ANALYSIS[0m [2m(Rule Extraction)[0m
+   [2mDuration:[0m [1m[34m6ms[0m[1m[32m (cached)[0m
+   [1m[32mΓ£ô[0m [2mRules:[0m [1m[37mRules extracted successfully...[0m
+
+[1m[36mΓÜí LAYER 3: Z3 FORMAL VERIFICATION[0m [2m(Mathematical Proof)[0m
+   [2mDuration:[0m [1m[34m138ms[0m
+   [1m[32mΓ£ôΓ£ôΓ£ô[0m [42m[30m[1m VERIFIED [0m - [1m[32mAI interpretation is mathematically sound[0m
+   [2mSatisfiability:[0m [1m[32mSAT[0m
+   [2mConstraints:[0m [1m[34m11 total[0m
+   [1m[32m≡ƒÅå PROOF:[0m [1m[32mAI correctly understands COBOL logic![0m
+
+[2mΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ[0m
+[1m[35mSCENARIO 8: Edge Case - DTI Threshold[0m
+[2mΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ[0m
+[2mDescription:[0m [1m[36mExactly at DTI limit[0m
+[2mExpected:[0m [1m[33mAPPROVED[0m
+[2mΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ[0m
+
+[1m[36m≡ƒôï APPLICANT DATA:[0m
+   [2mName:[0m [1m[37mHenry Taylor[0m
+   [2mCredit Score:[0m [1m[34m760[0m
+   [2mAnnual Income:[0m [1m[34m$120.000[0m
+   [2mLoan Amount:[0m [1m[34m$400.000[0m
+   [2mMonthly Debt:[0m [1m[34m$10.000[0m
+   [2mCollateral:[0m [1m[34m$500.000[0m
+   [2mEmployment:[0m [1m[37m6 years[0m
+   [2mBankruptcies:[0m [1m[37m0[0m
+
+[1m[36m≡ƒöº LAYER 1: COBOL EXECUTION[0m [2m(Black Box)[0m
+   [2mDuration:[0m [1m[34m27ms[0m
+   [1m[32mΓ£ô[0m [2mDecision:[0m [1m[31mDENIED[0m
+   [2mCredit Tier:[0m [1m[37mEXCELLENT[0m
+   [2mInterest Rate:[0m [1m[34m03.50%[0m
+   [2mDTI Ratio:[0m [1m[34m035.00%[0m
+   [2mLTV Ratio:[0m [1m[34m080.00%[0m
+   [2mRisk Score:[0m [1m[34m000[0m
+   [2mManual Review:[0m [1m[37mN[0m
+   [2mDenial Reason:[0m [1m[33mDTI EXCEEDS EXCELLENT TIER LIMIT (30%)[0m
+
+[1m[36m≡ƒºá LAYER 2: AI ANALYSIS[0m [2m(Rule Extraction)[0m
+   [2mDuration:[0m [1m[34m7ms[0m[1m[32m (cached)[0m
+   [1m[32mΓ£ô[0m [2mRules:[0m [1m[37mRules extracted successfully...[0m
+
+[1m[36mΓÜí LAYER 3: Z3 FORMAL VERIFICATION[0m [2m(Mathematical Proof)[0m
+   [2mDuration:[0m [1m[34m136ms[0m
+   [1m[32mΓ£ôΓ£ôΓ£ô[0m [42m[30m[1m VERIFIED [0m - [1m[32mAI interpretation is mathematically sound[0m
+   [2mSatisfiability:[0m [1m[32mSAT[0m
+   [2mConstraints:[0m [1m[34m11 total[0m
+   [1m[32m≡ƒÅå PROOF:[0m [1m[32mAI correctly understands COBOL logic![0m
+
+[2mΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ[0m
+[1m[35mSCENARIO 9: Poor Credit Limit[0m
+[2mΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ[0m
+[2mDescription:[0m [1m[36mPoor credit at maximum loan[0m
+[2mExpected:[0m [1m[33mAPPROVED[0m
+[2mΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ[0m
+
+[1m[36m≡ƒôï APPLICANT DATA:[0m
+   [2mName:[0m [1m[37mIris Anderson[0m
+   [2mCredit Score:[0m [1m[34m620[0m
+   [2mAnnual Income:[0m [1m[34m$45.000[0m
+   [2mLoan Amount:[0m [1m[34m$90.000[0m
+   [2mMonthly Debt:[0m [1m[34m$8.000[0m
+   [2mCollateral:[0m [1m[34m$100.000[0m
+   [2mEmployment:[0m [1m[37m4 years[0m
+   [2mBankruptcies:[0m [1m[37m0[0m
+
+[1m[36m≡ƒöº LAYER 1: COBOL EXECUTION[0m [2m(Black Box)[0m
+   [2mDuration:[0m [1m[34m22ms[0m
+   [1m[32mΓ£ô[0m [2mDecision:[0m [1m[31mDENIED[0m
+   [2mCredit Tier:[0m [1m[37mPOOR[0m
+   [2mInterest Rate:[0m [1m[34m09.50%[0m
+   [2mDTI Ratio:[0m [1m[34m033.77%[0m
+   [2mLTV Ratio:[0m [1m[34m090.00%[0m
+   [2mRisk Score:[0m [1m[34m000[0m
+   [2mManual Review:[0m [1m[37mN[0m
+   [2mDenial Reason:[0m [1m[33mLTV > 80% REQUIRES GOOD CREDIT[0m
+
+[1m[36m≡ƒºá LAYER 2: AI ANALYSIS[0m [2m(Rule Extraction)[0m
+   [2mDuration:[0m [1m[34m5ms[0m[1m[32m (cached)[0m
+   [1m[32mΓ£ô[0m [2mRules:[0m [1m[37mRules extracted successfully...[0m
+
+[1m[36mΓÜí LAYER 3: Z3 FORMAL VERIFICATION[0m [2m(Mathematical Proof)[0m
+   [2mDuration:[0m [1m[34m129ms[0m
+   [1m[32mΓ£ôΓ£ôΓ£ô[0m [42m[30m[1m VERIFIED [0m - [1m[32mAI interpretation is mathematically sound[0m
+   [2mSatisfiability:[0m [1m[32mSAT[0m
+   [2mConstraints:[0m [1m[34m11 total[0m
+   [1m[32m≡ƒÅå PROOF:[0m [1m[32mAI correctly understands COBOL logic![0m
