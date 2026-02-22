@@ -31,7 +31,7 @@ describe('Sentineli API Server', () => {
 
     beforeAll(() => {
         // Import app after mocks are set up
-        app = require('../../src/bridge/server-new');
+        app = require('../../src/bridge/server');
         
         // Generate valid JWT token for tests
         validToken = generateToken({
