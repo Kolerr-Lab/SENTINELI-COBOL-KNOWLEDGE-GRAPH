@@ -2,10 +2,13 @@
 ### Neuro-Symbolic COBOL Modernization Engine
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![CI/CD](https://github.com/Kolerr-Lab/sentineli/workflows/CI%2FCD%20Pipeline/badge.svg)](https://github.com/Kolerr-Lab/sentineli/actions)
+[![CI/CD](https://github.com/Kolerr-Lab/SENTINELI-COBOL-KNOWLEDGE-GRAPH/workflows/CI%2FCD%20Pipeline/badge.svg)](https://github.com/Kolerr-Lab/SENTINELI-COBOL-KNOWLEDGE-GRAPH/actions)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
 [![GnuCOBOL](https://img.shields.io/badge/GnuCOBOL-3.1+-blue)](https://gnucobol.sourceforge.io/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue?logo=postgresql)](https://www.postgresql.org/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker)](https://www.docker.com/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Code Coverage](https://img.shields.io/badge/coverage-80%25+-success)](jest.config.js)
 
 **By Ricky Anh Nguyen** | OrchesityAI & Kolerr Lab
 
