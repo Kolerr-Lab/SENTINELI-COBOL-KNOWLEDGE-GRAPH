@@ -3,17 +3,11 @@
 # 🛡️ Sentineli
 ### Enterprise Neuro-Symbolic COBOL Modernization Engine
 
-<!-- Core Status Badges -->
+<!-- Core Status -->
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Production Ready](https://img.shields.io/badge/Production-Ready-success?style=flat&logo=checkmarx)](https://github.com/Kolerr-Lab/SENTINELI-COBOL-KNOWLEDGE-GRAPH)
 [![Enterprise Grade](https://img.shields.io/badge/Enterprise-Grade-blue?style=flat&logo=enterprise)](https://github.com/Kolerr-Lab/SENTINELI-COBOL-KNOWLEDGE-GRAPH)
-[![Maintained](https://img.shields.io/badge/Maintained-Yes-brightgreen?style=flat)](https://github.com/Kolerr-Lab/SENTINELI-COBOL-KNOWLEDGE-GRAPH/pulse)
-
-<!-- Build & Security -->
-[![CI/CD Pipeline](https://github.com/Kolerr-Lab/SENTINELI-COBOL-KNOWLEDGE-GRAPH/workflows/CI%2FCD%20Pipeline/badge.svg)](https://github.com/Kolerr-Lab/SENTINELI-COBOL-KNOWLEDGE-GRAPH/actions)
-[![CodeQL](https://github.com/Kolerr-Lab/SENTINELI-COBOL-KNOWLEDGE-GRAPH/workflows/CodeQL/badge.svg)](https://github.com/Kolerr-Lab/SENTINELI-COBOL-KNOWLEDGE-GRAPH/security/code-scanning)
 [![Security Policy](https://img.shields.io/badge/Security-Policy-red?style=flat&logo=security)](SECURITY.md)
-[![Vulnerability Scan](https://img.shields.io/badge/Trivy-Scanned-purple?style=flat&logo=aqua)](https://github.com/Kolerr-Lab/SENTINELI-COBOL-KNOWLEDGE-GRAPH/actions)
 
 <!-- Tech Stack -->
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen?style=flat&logo=node.js)](https://nodejs.org/)
@@ -21,17 +15,12 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue?style=flat&logo=postgresql)](https://www.postgresql.org/)
 [![Redis](https://img.shields.io/badge/Redis-Cache-red?style=flat&logo=redis)](https://redis.io/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat&logo=docker)](https://www.docker.com/)
-
-<!-- AI & Quality -->
 [![Powered by OpenAI](https://img.shields.io/badge/Powered_by-OpenAI_GPT--4o-412991?style=flat&logo=openai)](https://openai.com/)
+
+<!-- Quality & Community -->
 [![Code Coverage](https://img.shields.io/badge/coverage-80%25+-success?style=flat&logo=jest)](jest.config.js)
 [![ESLint](https://img.shields.io/badge/ESLint-Airbnb-4B32C3?style=flat&logo=eslint)](https://eslint.org/)
-[![Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4?style=flat&logo=prettier)](https://prettier.io/)
-
-<!-- Community -->
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat)](CONTRIBUTING.md)
-[![Contributing Guide](https://img.shields.io/badge/Contributing-Guide-orange?style=flat)](CONTRIBUTING.md)
-[![Code of Conduct](https://img.shields.io/badge/Code_of-Conduct-blue?style=flat)](CODE_OF_CONDUCT.md)
 
 **By Ricky Anh Nguyen** | [OrchesityAI](https://github.com/OrchesityAI) & [Kolerr Lab](https://github.com/Kolerr-Lab)
 
