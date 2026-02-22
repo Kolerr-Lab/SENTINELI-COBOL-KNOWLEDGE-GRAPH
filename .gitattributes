@@ -1,0 +1,32 @@
+*          text=auto
+
+# Source code
+*.js       text eol=lf
+*.cob      text eol=lf
+*.json     text eol=lf
+*.md       text eol=lf
+*.yml      text eol=lf
+*.yaml     text eol=lf
+
+# Scripts
+*.sh       text eol=lf
+*.bash     text eol=lf
+
+# Docker
+Dockerfile text eol=lf
+*.dockerignore text eol=lf
+
+# Documentation
+*.txt      text eol=lf
+LICENSE    text eol=lf
+
+# Binary files
+*.png      binary
+*.jpg      binary
+*.jpeg     binary
+*.gif      binary
+*.ico      binary
+*.pdf      binary
+*.exe      binary
+*.so       binary
+*.dll      binary
