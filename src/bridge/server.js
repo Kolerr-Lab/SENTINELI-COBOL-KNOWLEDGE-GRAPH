@@ -70,7 +70,7 @@ logger.info(`Starting Sentineli in ${NODE_ENV} mode`);
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     max: 20,
-    idle TimeoutMillis: 30000,
+    idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 2000
 });
 

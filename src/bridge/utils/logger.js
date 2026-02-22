@@ -27,7 +27,7 @@ const logger = pino({
     base: {
         app: 'sentineli',
         env: process.env.NODE_ENV || 'development',
-        version: require('../../package.json').version
+        version: require('../../../package.json').version
     },
 
     // Serialize errors properly
