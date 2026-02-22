@@ -59,9 +59,10 @@ We pushed this system beyond enterprise limits. **The impossible is now possible
 *   **Load**: 10,000 Concurrent COBOL Decisions
 *   **Concurrency**: 500 simultaneous requests
 *   **Architecture**: Rust Gateway → Node.js → GnuCOBOL
-*   **Result**: 100% Success Rate
-*   **Throughput**: **2,283 Requests Per Second** (Sustained)
-*   **Latency**: Sub-10ms average at scale
+*   **Result**: 100% Success Rate (10,000/10,000)
+*   **Total Time**: 103 seconds
+*   **Throughput**: **97 Requests Per Second** (Sustained under extreme load)
+*   **Latency**: 4.4s average per decision (high concurrency scenario)
 
 ### 2. HFT Flood Test
 *   **Load**: 1,000 Concurrent Complex Credit Applications
@@ -102,11 +103,13 @@ We pushed this system beyond enterprise limits. **The impossible is now possible
     ```
 
 4.  **Access the API**:
-    - Rust Gateway: http://localhost:3000 (ultra-high performance)
-    - Direct Node.js: http://localhost:3050 (for development)
-    - Health check: http://localhost:3000/health
-    - Prometheus metrics: http://localhost:3000/metrics
-    - API endpoints require authentication (JWT or API Key via X-API-Key header
+    - Node.js API: http://localhost:8766 (main entry point)
+    - Health check: http://localhost:8766/health
+    - PostgreSQL: localhost:54320 (unpopular port to avoid conflicts)
+    - Redis: localhost:6385 (unpopular port to avoid conflicts)
+    - API endpoints require authentication (JWT or API Key via X-API-Key header)
+    
+    **Note**: Rust gateway temporarily disabled due to Rust edition2024 dependency issue. Direct Node.js access provides full functionality.
     docker-compose up --build
     ```
     *This compiles the COBOL source, starts the Node.js Bridge, PostgreSQL, and Redis.*

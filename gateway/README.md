@@ -70,7 +70,7 @@ services:
   sentineli-gateway:
     build: ./gateway
     ports:
-      - "3000:3000"
+      - "8765:3000"  # External:Internal (unpopular port to avoid conflicts)
     depends_on:
       - kg-ai-cobol-modernize
     environment:
@@ -102,9 +102,9 @@ cargo build --release
 docker build -t sentineli-gateway .
 
 # Run container
-docker run -p 3000:3000 \
+docker run -p 8765:3000 \
   -e RUST_LOG=info \
-  -e BACKEND_URL=http://localhost:3050 \
+  -e BACKEND_URL=http://localhost:8766 \
   sentineli-gateway
 ```
 
@@ -119,7 +119,7 @@ docker-compose up --build
 
 ### Health Check
 ```bash
-GET http://localhost:3000/health
+GET http://localhost:8765/health
 
 Response:
 {
@@ -131,7 +131,7 @@ Response:
 
 ### Prometheus Metrics
 ```bash
-GET http://localhost:3000/metrics
+GET http://localhost:8765/metrics
 
 Response: (Prometheus text format)
 # HELP http_requests_total Total HTTP requests
@@ -142,7 +142,7 @@ http_requests_total{method="GET",status="200"} 10000
 
 ### Gateway Info
 ```bash
-GET http://localhost:3000/
+GET http://localhost:8765/
 
 Response:
 {
@@ -159,7 +159,7 @@ All other requests are proxied to Node.js backend:
 
 ```bash
 # Example: COBOL execution via gateway
-POST http://localhost:3000/api/execute
+POST http://localhost:8765/api/execute
 
 Headers:
   Content-Type: application/json
@@ -215,7 +215,7 @@ Add this to your `prometheus.yml`:
 scrape_configs:
   - job_name: 'sentineli-gateway'
     static_configs:
-      - targets: ['localhost:3000']
+      - targets: ['localhost:8765']
     metrics_path: '/metrics'
     scrape_interval: 15s
 ```

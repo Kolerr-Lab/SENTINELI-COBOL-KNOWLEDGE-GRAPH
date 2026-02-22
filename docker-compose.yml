@@ -1,13 +1,33 @@
 version: '3.8'
 
 services:
-  # --- 1. Knowledge Graph-AI/ML Cobol Modernize Engine ---
+  # --- 1. Rust Gateway (Ultra-High Performance Entry Point) ---
+  # Temporarily disabled due to Rust edition2024 dependency issue
+  # sentineli-gateway:
+  #   build: ./gateway
+  #   container_name: sentineli_gateway
+  #  ports:
+  #     - "8765:3000"
+  #   environment:
+  #     - RUST_LOG=info
+  #     - GATEWAY_PORT=3000
+  #     - BACKEND_URL=http://kg-ai-cobol-modernize:3050
+  #   depends_on:
+  #     - kg-ai-cobol-modernize
+  #   networks:
+  #     - modernist-net
+  #   restart: unless-stopped
+
+  # --- 2. Knowledge Graph-AI/ML Cobol Modernize Engine ---
   kg-ai-cobol-modernize:
     build: .
     image: kg-ai-cobol-modernize
     container_name: kg_ai_cobol_modernizer
+    expose:
+      - "3050"  # Internal only, accessed through Rust gateway
+    # Development direct access (comment out in production)
     ports:
-      - "3050:3050"
+      - "8766:3050"
     volumes:
       - .:/app
       - /app/node_modules
@@ -35,8 +55,8 @@ services:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: secure_pass
       POSTGRES_DB: kg_cobol_db
-    expose:
-      - "5432" # Only accessible internally
+    ports:
+      - "54320:5432"  # External access on unpopular port
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:

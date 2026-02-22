@@ -30,7 +30,7 @@ const BG_MAGENTA = "\x1b[45m\x1b[37m";
 // EXTREME CONFIGURATION
 const USE_RUST_GATEWAY = process.env.USE_RUST || false;
 const BASE_URL = USE_RUST_GATEWAY ? 'localhost' : 'localhost';
-const PORT = USE_RUST_GATEWAY ? 3000 : 3050; // Rust gateway or direct Node
+const PORT = USE_RUST_GATEWAY ? 8765 : 8766; // Rust gateway or direct Node (unpopular ports)
 const TOTAL_REQUESTS = 10000; // 10K requests
 const CONCURRENCY = 500; // 500 concurrent
 const API_KEY = 'demo-api-key-sentineli-2026';
