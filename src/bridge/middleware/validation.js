@@ -10,30 +10,43 @@ const logger = require('../utils/logger');
 
 /**
  * Schema for executing COBOL programs
+ * Made flexible to support different COBOL programs with varying fields
  */
 const executeCobolSchema = Joi.object({
+    // Common fields
     NAME: Joi.string().max(100).optional(),
-    AGE: Joi.string().pattern(/^\d{1,3}$/).required()
-        .messages({
-            'string.pattern.base': 'AGE must be a valid number (1-3 digits)',
-            'any.required': 'AGE is required'
-        }),
-    INCOME: Joi.string().pattern(/^\d{1,10}$/).required()
-        .messages({
-            'string.pattern.base': 'INCOME must be a valid number (up to 10 digits)',
-            'any.required': 'INCOME is required'
-        }),
-    CREDIT_SCORE: Joi.string().pattern(/^\d{1,3}$/).required()
-        .messages({
-            'string.pattern.base': 'CREDIT_SCORE must be a valid number (1-3 digits)',
-            'any.required': 'CREDIT_SCORE is required'
-        }),
-    DEBT: Joi.string().pattern(/^\d{1,10}$/).required()
-        .messages({
-            'string.pattern.base': 'DEBT must be a valid number (up to 10 digits)',
-            'any.required': 'DEBT is required'
-        })
-});
+    AGE: Joi.string().pattern(/^\d{1,3}$/).optional(),
+    INCOME: Joi.alternatives().try(
+        Joi.string().pattern(/^\d{1,10}$/),
+        Joi.number()
+    ).optional(),
+    CREDIT_SCORE: Joi.alternatives().try(
+        Joi.string().pattern(/^\d{1,3}$/),
+        Joi.number()
+    ).optional(),
+    DEBT: Joi.alternatives().try(
+        Joi.string().pattern(/^\d{1,10}$/),
+        Joi.number()
+    ).optional(),
+    
+    // Loan approval specific fields
+    LOAN_AMOUNT: Joi.alternatives().try(
+        Joi.string().pattern(/^\d{1,10}$/),
+        Joi.number()
+    ).optional(),
+    COLLATERAL: Joi.alternatives().try(
+        Joi.string().pattern(/^\d{1,10}$/),
+        Joi.number()
+    ).optional(),
+    EMPLOYMENT_YEARS: Joi.alternatives().try(
+        Joi.string().pattern(/^\d{1,2}$/),
+        Joi.number()
+    ).optional(),
+    BANKRUPTCIES: Joi.alternatives().try(
+        Joi.string().pattern(/^\d{1}$/),
+        Joi.number()
+    ).optional()
+}).unknown(true); // Allow unknown fields for flexibility
 
 /**
  * Schema for analyzing COBOL source files
@@ -58,7 +71,8 @@ const ALLOWED_PROGRAMS = [
     'main',
     'calculator',
     'validator',
-    'processor'
+    'processor',
+    'loan_approval'
 ];
 
 /**
