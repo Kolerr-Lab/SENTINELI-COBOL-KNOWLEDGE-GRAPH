@@ -11,7 +11,7 @@
  */
 
 const OpenAI = require('openai');
-const logger = require('../lib/logger');
+const logger = require('./utils/logger');
 
 const apiKey = process.env.OPENAI_API_KEY;
 const model = process.env.OPENAI_MODEL || 'gpt-4o';

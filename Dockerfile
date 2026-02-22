@@ -1,6 +1,11 @@
 FROM debian:bookworm-slim
 
-# Install GnuCOBOL and Node.js
+# Metadata
+LABEL maintainer="Kolerr Lab"
+LABEL description="Orchesity Neural-Core - COBOL Knowledge Graph with AI"
+LABEL version="1.0.0"
+
+# Install dependencies
 RUN apt-get update && apt-get install -y \
     gnucobol \
     nodejs \
@@ -9,21 +14,37 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
+# Create app user (security: don't run as root)
+RUN useradd -m -u 1001 -s /bin/bash appuser
+
+# Set working directory
 WORKDIR /app
 
-# Copy package.json first for caching
-COPY package.json .
-RUN npm install
+# Copy package files first (for Docker layer caching)
+COPY --chown=appuser:appuser package*.json ./
 
-# Copy the rest of the application
-COPY . .
+# Install Node.js dependencies
+RUN npm ci --only=production && \
+    npm cache clean --force
 
-# Compile COBOL programs
-# We'll create a script to compile everything, but for now let's compile main
-# equivalent to: cobc -x -o main src/main.cob
-RUN mkdir -p bin
+# Copy application files
+COPY --chown=appuser:appuser . .
 
-EXPOSE 3000
+# Create bin directory and compile COBOL programs
+RUN mkdir -p bin && \
+    if [ -d src/cobol ] && [ "$(ls -A src/cobol/*.cob 2>/dev/null)" ]; then \
+        node scripts/compile-cobol.js || echo "COBOL compilation skipped"; \
+    fi
 
-# Start the Node.js bridge
+# Switch to non-root user
+USER appuser
+
+# Expose port
+EXPOSE 3050
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:3050/health || exit 1
+
+# Start application
 CMD ["node", "src/bridge/server.js"]
