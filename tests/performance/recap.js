@@ -1,7 +1,7 @@
 const RESET = "\x1b[0m";
 const BOLD = "\x1b[1m";
 const GREEN = "\x1b[32m";
-const RED = "\x1b[31m";
+const _RED = "\x1b[31m";
 const YELLOW = "\x1b[33m";
 const CYAN = "\x1b[36m";
 const BG_GREEN = "\x1b[42m\x1b[30m";
@@ -33,3 +33,4 @@ console.log(`Latency        : ${GREEN}14ms (via Cache)${RESET}`);
 console.log("");
 
 console.log(`${BOLD}${BG_GREEN}  SYSTEM READY FOR PUBLIC RELEASE  ${RESET}\n`);
+

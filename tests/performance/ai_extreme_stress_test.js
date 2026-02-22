@@ -200,7 +200,7 @@ function analyzeResults(results) {
             p99: times[Math.floor(times.length * 0.99)] || 0
         },
         
-        cached: cachedTimes.length ? {
+        cachedResults: cachedTimes.length ? {
             min: cachedTimes[0],
             max: cachedTimes[cachedTimes.length - 1],
             avg: Math.floor(cachedTimes.reduce((sum, t) => sum + t, 0) / cachedTimes.length),
@@ -325,12 +325,13 @@ function printResults(stats, totalTime) {
 
 (async function main() {
     printHeader();
-    3 seconds... (Ctrl+C to cancel)${RESET}`);
+    console.log(`${YELLOW}Warming up in 3 seconds... (Ctrl+C to cancel)${RESET}`);
     console.log(`${YELLOW}Expected: 1 OpenAI call, 199 Redis cache hits${RESET}`);
-    await new Promise(resolve => setTimeout(resolve, 3API calls (others cached)${RESET}`);
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    console.log(`${YELLOW}Expected: 3-5 API calls (others cached)${RESET}`);
     await new Promise(resolve => setTimeout(resolve, 5000));
     
-    console.log();2
+    console.log();
     console.log(`${MAGENTA}${BRIGHT}[EXECUTING] Sending 5,000 AI analysis requests...${RESET}`);
     console.log();
     
@@ -346,3 +347,4 @@ function printResults(stats, totalTime) {
     console.error(`${RED}${BRIGHT}✗ Test failed:${RESET}`, err.message);
     process.exit(1);
 });
+

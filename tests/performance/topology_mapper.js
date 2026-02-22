@@ -8,9 +8,9 @@ const RED = "\x1b[31m";
 const YELLOW = "\x1b[33m";
 const CYAN = "\x1b[36m";
 const MAGENTA = "\x1b[35m";
-const BLUE = "\x1b[34m";
+const _BLUE = "\x1b[34m";
 const WHITE = "\x1b[37m";
-const DIM = "\x1b[2m";
+const _DIM = "\x1b[2m";
 
 // CONFIG
 const REQUEST_COUNT = 50;
@@ -157,3 +157,5 @@ async function runTopologyTest() {
 }
 
 runTopologyTest();
+
+

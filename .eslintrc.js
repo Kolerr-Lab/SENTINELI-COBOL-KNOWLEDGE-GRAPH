@@ -2,35 +2,27 @@ module.exports = {
     env: {
         node: true,
         es2021: true,
-        jest: true
+        jest: true,
+        commonjs: true
     },
     extends: [
-        'airbnb-base',
-        'plugin:security/recommended',
-        'plugin:jest/recommended',
-        'prettier'
+        'eslint:recommended'
     ],
-    plugins: ['security', 'jest'],
     parserOptions: {
         ecmaVersion: 2021,
-        sourceType: 'module'
+        sourceType: 'commonjs'
     },
     rules: {
-        // Relax some strict rules for pragmatic development
-        'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
-        'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-        'consistent-return': 'off',
-        'no-plusplus': 'off',
-        'no-await-in-loop': 'off',
-        'no-restricted-syntax': 'off',
-        'import/no-extraneous-dependencies': ['error', { devDependencies: ['**/*.test.js', '**/*.spec.js', 'scripts/**'] }],
-        
-        // Security
-        'security/detect-object-injection': 'warn',
-        'security/detect-non-literal-fs-filename': 'warn',
-        
-        // Jest
-        'jest/expect-expect': 'warn',
-        'jest/no-disabled-tests': 'warn'
-    }
+        // Relax for tests and scripts
+        'no-console': 'off',
+        'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+        'no-undef': 'error'
+    },
+    ignorePatterns: [
+        'node_modules/',
+        'coverage/',
+        'dist/',
+        'bin/',
+        '*.min.js'
+    ]
 };

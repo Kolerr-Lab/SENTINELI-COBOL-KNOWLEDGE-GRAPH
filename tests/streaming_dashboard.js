@@ -201,7 +201,7 @@ class StreamingDashboard extends EventEmitter {
             : 0;
         
         const costSaved = (this.stats.tokensCached / 1000 * 0.03).toFixed(2); // $0.03 per 1K tokens
-        const costSpent = (this.stats.tokensUsed / 1000 * 0.03).toFixed(2);
+        // const costSpent = (this.stats.tokensUsed / 1000 * 0.03).toFixed(2); // Not currently displayed
         
         console.log('\n' + c.bright + c.cyan + '⚡ LAYER PERFORMANCE:' + c.reset);
         console.log(c.dimColor + '─'.repeat(80) + c.reset);

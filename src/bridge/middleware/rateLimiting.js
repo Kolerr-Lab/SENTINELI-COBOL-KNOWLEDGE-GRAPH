@@ -79,8 +79,7 @@ const aiAnalysisLimiter = rateLimit({
     max: 100, // 100 AI analyses per hour (~1.67 per minute)
     message: {
         error: 'AI analysis rate limit exceeded',
-        message: 'You have exceeded the 10ceeded',
-        message: 'You have exceeded the 20 AI analyses per hour limit to protect OpenAI API quota.',
+        details: 'You have exceeded the 100 AI analyses per hour limit to protect OpenAI API quota.',
         retryAfter: '1 hour'
     },
     standardHeaders: true,

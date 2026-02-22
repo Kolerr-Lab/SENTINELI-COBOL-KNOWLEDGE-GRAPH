@@ -22,7 +22,7 @@
  */
 
 const axios = require('axios');
-const { verifyLoanDecision, generateConstraintDescription } = require('../src/bridge/verifier/z3_verifier');
+const { verifyLoanDecision } = require('../src/bridge/verifier/z3_verifier');
 
 // ═══════════════════════════════════════════════════════════════════════════
 // ANSI COLOR CODES FOR BEAUTIFUL TERMINAL OUTPUT

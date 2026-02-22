@@ -29,7 +29,7 @@ const c = {
     info: (text) => `\x1b[1m\x1b[36m${text}\x1b[0m`,
     metric: (text) => `\x1b[1m\x1b[34m${text}\x1b[0m`,
     header: (text) => `\x1b[1m\x1b[35m${text}\x1b[0m`,
-    dim: (text) => `\x1b[2m${text}\x1b[0m`,
+    dimmed: (text) => `\x1b[2m${text}\x1b[0m`,
     highlight: (text) => `\x1b[1m\x1b[33m${text}\x1b[0m`
 };
 
@@ -43,8 +43,8 @@ async function testSingleModule() {
     const cobolSource = fs.readFileSync(cobolPath, 'utf-8');
     
     console.log(c.info('📄 Module: ') + c.highlight('loan_approval.cob'));
-    console.log(`   ${c.dim('LOC:')} ${c.metric(cobolSource.split('\n').length)}`);
-    console.log(`   ${c.dim('Size:')} ${c.metric((cobolSource.length / 1024).toFixed(2) + ' KB')}\n`);
+    console.log(`   ${c.dimmed('LOC:')} ${c.metric(cobolSource.split('\n').length)}`);
+    console.log(`   ${c.dimmed('Size:')} ${c.metric((cobolSource.length / 1024).toFixed(2) + ' KB')}\n`);
     
     console.log(c.info('⏳ Calling OpenAI GPT-4o...') + '\n');
     
@@ -70,11 +70,11 @@ async function testSingleModule() {
     
     console.log(c.success('✅ API Response Received') + '\n');
     console.log(c.info('📊 REAL METRICS:'));
-    console.log(`   ${c.dim('Duration:')} ${c.metric(duration + 'ms')}`);
-    console.log(`   ${c.dim('Model:')} ${c.highlight(response.model)}`);
-    console.log(`   ${c.dim('Prompt tokens:')} ${c.metric(response.usage.prompt_tokens.toLocaleString())}`);
-    console.log(`   ${c.dim('Completion tokens:')} ${c.metric(response.usage.completion_tokens.toLocaleString())}`);
-    console.log(`   ${c.dim('Total tokens:')} ${c.metric(response.usage.total_tokens.toLocaleString())}`);
+    console.log(`   ${c.dimmed('Duration:')} ${c.metric(duration + 'ms')}`);
+    console.log(`   ${c.dimmed('Model:')} ${c.highlight(response.model)}`);
+    console.log(`   ${c.dimmed('Prompt tokens:')} ${c.metric(response.usage.prompt_tokens.toLocaleString())}`);
+    console.log(`   ${c.dimmed('Completion tokens:')} ${c.metric(response.usage.completion_tokens.toLocaleString())}`);
+    console.log(`   ${c.dimmed('Total tokens:')} ${c.metric(response.usage.total_tokens.toLocaleString())}`);
     
     // Calculate REAL cost with actual GPT-4o pricing
     const inputCost = (response.usage.prompt_tokens / 1000000) * 2.50;
@@ -82,9 +82,9 @@ async function testSingleModule() {
     const totalCost = inputCost + outputCost;
     
     console.log(`\n${c.info('💰 REAL COST:')}`);
-    console.log(`   ${c.dim('Input cost:')} ${c.success('$' + inputCost.toFixed(6))} ${c.dim('(' + response.usage.prompt_tokens.toLocaleString() + ' tokens @ $2.50/1M)')}`);
-    console.log(`   ${c.dim('Output cost:')} ${c.success('$' + outputCost.toFixed(6))} ${c.dim('(' + response.usage.completion_tokens.toLocaleString() + ' tokens @ $10/1M)')}`);
-    console.log(`   ${c.dim('Total:')} ${c.highlight('$' + totalCost.toFixed(6))}`);
+    console.log(`   ${c.dimmed('Input cost:')} ${c.success('$' + inputCost.toFixed(6))} ${c.dimmed('(' + response.usage.prompt_tokens.toLocaleString() + ' tokens @ $2.50/1M)')}`);
+    console.log(`   ${c.dimmed('Output cost:')} ${c.success('$' + outputCost.toFixed(6))} ${c.dimmed('(' + response.usage.completion_tokens.toLocaleString() + ' tokens @ $10/1M)')}`);
+    console.log(`   ${c.dimmed('Total:')} ${c.highlight('$' + totalCost.toFixed(6))}`);
     
     console.log(`\n${c.header('🤖 AI ANALYSIS:')}`);
     console.log(c.cyan + '─'.repeat(70) + c.reset);
@@ -111,8 +111,8 @@ async function testSingleModule() {
     console.log(c.cyan + '─'.repeat(70) + c.reset);
     
     console.log(`\n${c.info('🎯 For 4-module batch with 50% cache hit:')}`);
-    console.log(`   ${c.dim('Fresh API calls:')} ${c.metric('2 modules')}`);
-    console.log(`   ${c.dim('Estimated total cost:')} ${c.success('~$' + (totalCost * 3).toFixed(4))} ${c.dim('(2 fresh + 1 full analysis)')}`);
+    console.log(`   ${c.dimmed('Fresh API calls:')} ${c.metric('2 modules')}`);
+    console.log(`   ${c.dimmed('Estimated total cost:')} ${c.success('~$' + (totalCost * 3).toFixed(4))} ${c.dimmed('(2 fresh + 1 full analysis)')}`);
     
     return {
         tokens: response.usage.total_tokens,

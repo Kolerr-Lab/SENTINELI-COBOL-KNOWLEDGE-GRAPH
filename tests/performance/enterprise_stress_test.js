@@ -17,7 +17,7 @@ const YELLOW = "\x1b[33m";
 const BLUE = "\x1b[34m";
 const MAGENTA = "\x1b[35m";
 const CYAN = "\x1b[36m";
-const WHITE = "\x1b[37m";
+const _WHITE = "\x1b[37m";
 const BG_RED = "\x1b[41m\x1b[37m";
 const BG_GREEN = "\x1b[42m\x1b[30m";
 const BG_BLUE = "\x1b[44m\x1b[37m";
@@ -276,3 +276,4 @@ async function runEnterpriseDemo() {
 
 // Run the demo
 runEnterpriseDemo();
+

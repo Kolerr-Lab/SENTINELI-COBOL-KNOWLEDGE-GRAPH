@@ -24,7 +24,6 @@ require('dotenv').config();
 
 const fs = require('fs');
 const path = require('path');
-const axios = require('axios');
 const OpenAI = require('openai');
 const { verifyLoanDecision } = require('../src/bridge/verifier/z3_verifier');
 const StreamingDashboard = require('./streaming_dashboard');
@@ -65,11 +64,8 @@ const c = {
 };
 
 // Configuration
-const API_BASE = 'http://localhost:8766/api';
-const API_KEY = 'demo-api-key-sentineli-2026';
 const BANK_COBOL_DIR = path.join(__dirname, '../src/cobol/bank');
-const BATCH_SIZE = 3; // Process 3 modules at a time
-const USE_CACHE = true;
+const _BATCH_SIZE = 3; // Process 3 modules at a time
 const USE_Z3 = true;
 
 // Module Registry
@@ -172,6 +168,8 @@ async function main() {
     dashboard.stop();
 }
 
+// Unused - preserved for future use
+/*
 function displaySystemOverview() {
     console.log(c.info('📊 SYSTEM OVERVIEW:'));
     console.log(c.dim + '   ─'.repeat(40) + c.reset);
@@ -183,7 +181,10 @@ function displaySystemOverview() {
     console.log(`   Redis Caching: ${c.success('ENABLED')}`);
     console.log('');
 }
+*/
 
+// Unused - preserved for future use
+/*
 async function processBatch(batch, batchNumber) {
     console.log(c.header(`\n═══════════════════════════════════════════════════════════════════════════`));
     console.log(c.header(`BATCH ${batchNumber}: Processing ${batch.length} modules`));
@@ -206,6 +207,7 @@ async function processBatch(batch, batchNumber) {
     
     displayBatchProgress();
 }
+*/
 
 async function processModule(module) {
     console.log(c.cyan + `\n🔍 MODULE: ${c.bright}${module.name}${c.reset}`);
@@ -280,7 +282,6 @@ async function processModule(module) {
     
     return result;
 }
-
 async function compileCOBOL(module) {
     const startTime = Date.now();
     
@@ -315,7 +316,7 @@ async function compileCOBOL(module) {
     }
 }
 
-async function analyzeWithAI(module, cobolResult) {
+async function analyzeWithAI(module, _cobolResult) {
     const startTime = Date.now();
     
     try {
@@ -481,7 +482,7 @@ function estimateTokensCost(loc) {
     return Math.round(loc * 1.5 * 0.01 / 1000 * 100) / 100;
 }
 
-function displayBatchProgress() {
+function _displayBatchProgress() {
     const progress = (stats.processedModules / stats.totalModules * 100).toFixed(1);
     const progressBar = generateProgressBar(stats.processedModules, stats.totalModules);
     
@@ -499,6 +500,7 @@ function generateProgressBar(current, total, width = 30) {
     return c.green + '█'.repeat(filled) + c.dim + '░'.repeat(empty) + c.reset;
 }
 
+/*
 function displayFinalSummary() {
     const successRate = (stats.z3Proofs / stats.processedModules * 100).toFixed(1);
     const cacheRate = (stats.cacheHits / (stats.cacheHits + stats.cacheMisses) * 100).toFixed(1);
@@ -541,9 +543,12 @@ function displayFinalSummary() {
     console.log(c.dim + '═'.repeat(80) + '\n' + c.reset);
 }
 
+*/
 // Execute
 main().catch(error => {
     console.error(c.error('\n❌ FATAL ERROR: ' + error.message));
     console.error(error.stack);
     process.exit(1);
 });
+
+

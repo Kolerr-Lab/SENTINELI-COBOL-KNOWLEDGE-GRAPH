@@ -20,7 +20,7 @@ const USER_PROFILE = {
     "INCOME": "50000"
 };
 
-const BASE_URL = 'http://localhost:3050';
+const _BASE_URL = 'http://localhost:3050';
 
 function makeRequest(path, method, data) {
     return new Promise((resolve) => {
@@ -87,7 +87,7 @@ async function runScenario() {
     // Visualize the specific rule that triggered based on input
     // (In a real app, the logic engine would match this precisely. Here we simulate the match display)
 
-    const nodes = analysis.propagator_network?.nodes || [];
+    const _nodes = analysis.propagator_network?.nodes || [];
     const edges = analysis.propagator_network?.edges || [];
 
     // Find the rule related to AGE since our input AGE is 17
@@ -114,3 +114,5 @@ async function runScenario() {
 }
 
 runScenario();
+
+

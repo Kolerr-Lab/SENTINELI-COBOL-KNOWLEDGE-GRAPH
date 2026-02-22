@@ -42,7 +42,7 @@ async function verifyLoanDecision(cobolResult, aiAnalysis, inputData) {
         // Create decision variables
         const dtiRatio = Z3.Real.const('dti_ratio');
         const ltvRatio = Z3.Real.const('ltv_ratio');
-        const riskScore = Z3.Int.const('risk_score');
+        // const riskScore = Z3.Int.const('risk_score'); // Not directly used in verification
         
         // Decision outcome
         const decision = Z3.Bool.const('approved');

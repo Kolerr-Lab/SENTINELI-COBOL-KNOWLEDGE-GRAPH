@@ -1,7 +1,7 @@
 const http = require('http');
 
 // CONFIG & COLORS
-const BASE_URL = 'http://localhost:3050';
+const _BASE_URL = 'http://localhost:3050';
 const RESET = "\x1b[0m";
 const BOLD = "\x1b[1m";
 const RED = "\x1b[31m";
@@ -64,7 +64,7 @@ async function runShockDemo() {
     console.log("Interrogating the Logic Circuit...");
 
     // We analyze the code structure itself
-    const analysis = await makeRequest('/analyze/main.cob', 'POST', {});
+    const _analysis = await makeRequest('/analyze/main.cob', 'POST', {});
 
     // 3. THE REVEAL (Dynamic Logic Map)
     printSection("3. LOGIC X-RAY REVEAL");
@@ -94,3 +94,5 @@ async function runShockDemo() {
 }
 
 runShockDemo();
+
+

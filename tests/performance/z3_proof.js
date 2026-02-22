@@ -2,7 +2,7 @@ const { init } = require('z3-solver');
 
 (async () => {
     const { Context } = await init();
-    const { Solver, Int, And, Or, Not } = new Context('main');
+    const { Solver, Int, And, Not } = new Context('main');
     const solver = new Solver();
 
     console.clear();
@@ -109,3 +109,5 @@ const { init } = require('z3-solver');
     console.log("\n\x1b[1m\x1b[35m✨ FORMAL VERIFICATION COMPLETE: ALL THEOREMS PROVEN\x1b[0m\n");
 
 })();
+
+

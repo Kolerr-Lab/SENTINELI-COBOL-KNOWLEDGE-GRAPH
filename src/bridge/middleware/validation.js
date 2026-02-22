@@ -192,6 +192,7 @@ function sanitize(req, res, next) {
     const sanitizeString = (str) => {
         if (typeof str !== 'string') return str;
         // Remove control characters and potential injection attempts
+        // eslint-disable-next-line no-control-regex
         return str.replace(/[\x00-\x1F\x7F-\x9F]/g, '')
                   .replace(/[<>'"]/g, '')
                   .trim();

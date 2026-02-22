@@ -9,7 +9,7 @@ const MAGENTA = "\x1b[35m";
 const CYAN = "\x1b[36m";
 const WHITE = "\x1b[37m";
 const BG_GREEN = "\x1b[42m\x1b[30m";
-const BG_BLUE = "\x1b[44m\x1b[37m";
+const _BG_BLUE = "\x1b[44m\x1b[37m";
 
 console.clear();
 console.log(`${BOLD}${BLUE}
@@ -51,7 +51,8 @@ console.log("");
 
 console.log(`${BOLD}${WHITE}4. PERFORMANCE METRICS${RESET}`);
 console.log(`   ${BLUE}Avg Decision Latency${RESET}   : ${GREEN}14ms${RESET} (w/ Cache)`);
-console.log(`   ${BLUE}Throughput Capacity${RESET}    : ${Green = "10k req/sec"}${GREEN}10k req/sec${RESET}`); // Est
+    console.log(`   ${BLUE}Throughput Capacity${RESET}    : ${GREEN}10k req/sec${RESET}`); // Est
 console.log("");
 
 console.log(`${BG_GREEN}${BOLD}   ✅ FINAL STATUS: SYSTEM SURPASSED ALL BENCHMARKS   ${RESET}\n`);
+

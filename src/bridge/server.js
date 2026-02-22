@@ -28,7 +28,7 @@ require('dotenv').config();
 
 // Import middleware and utilities
 const logger = require('./utils/logger');
-const { authenticateEither, generateToken } = require('./middleware/auth');
+const { authenticateEither } = require('./middleware/auth');
 const {
     validateCobolExecution,
     validateFileAnalysis,

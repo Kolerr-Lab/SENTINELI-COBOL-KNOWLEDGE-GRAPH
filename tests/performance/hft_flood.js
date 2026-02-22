@@ -27,7 +27,7 @@ function makeRequest(data) {
             res.on('data', c => body += c);
             res.on('end', () => resolve({ status: res.statusCode, time: Date.now() - start }));
         });
-        req.on('error', (e) => resolve({ status: 500, time: 0 }));
+        req.on('error', (_e) => resolve({ status: 500, time: 0 }));
         req.write(JSON.stringify(data));
         req.end();
     });
@@ -47,7 +47,8 @@ async function runHFT() {
 
     let completed = 0;
     let success = 0;
-    let failed = 0;
+    // eslint-disable-next-line no-unused-vars
+    let failed = 0; // Used in runBatch (nested function)
     const startTime = Date.now();
     let batchTimes = [];
 
@@ -111,3 +112,6 @@ async function runHFT() {
 }
 
 runHFT();
+
+
+

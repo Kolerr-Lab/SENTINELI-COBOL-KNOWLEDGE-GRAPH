@@ -35,7 +35,7 @@ function notFoundHandler(req, res, next) {
 /**
  * Global error handler - must be last middleware
  */
-function errorHandler(err, req, res, next) {
+function errorHandler(err, req, res, _next) {
     const isDevelopment = process.env.NODE_ENV !== 'production';
     
     // Default to 500 if no status code
