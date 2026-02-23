@@ -58,6 +58,42 @@ Instead of a "Black Box" mainframe, Sentineli creates a **"Glass House"**:
 
 ---
 
+## 🖥️ Enterprise Dashboard - Mainframe Meets Modern
+
+**The Control Center You've Been Waiting For**
+
+Sentineli includes a **hybrid UI dashboard** that combines the familiar green-screen mainframe aesthetic with cutting-edge real-time streaming capabilities. Built for mainframe developers who want modern insights without losing the comfort of their heritage.
+
+### Dashboard Features
+
+- **🎨 Mainframe Aesthetic**: Classic CRT green-on-black with scanline effects and IBM Plex Mono
+- **📡 Live WebSocket Streaming**: Real-time system monitoring and analysis results
+- **🔍 COBOL Analysis Interface**: Interactive program submission and instant analysis
+- **⚡ Impact Analysis**: Trace dependencies and assess change risk in real-time
+- **🕸️ Knowledge Graph**: Visualize program relationships and data flows
+- **📊 Performance Metrics**: Live system health, memory usage, and connection statistics
+- **📜 System Logs**: Real-time log streaming with filtering (ERROR/WARN/INFO)
+- **🛡️ Safety First**: Enterprise-grade monitoring without the complexity
+
+### Quick Start
+
+```bash
+cd dashboard
+npm install
+npm run dev
+# Dashboard: http://localhost:3100
+```
+
+**What Makes It Special:**
+- Familiar to mainframe developers (green screen, terminal-style)
+- Modern for stakeholders (real-time metrics, graphs, interactivity)
+- Production-ready (WebSocket streaming, REST APIs, health checks)
+- Zero learning curve (intuitive navigation, clear visual feedback)
+
+📚 **Full Documentation**: [dashboard/README.md](dashboard/README.md)
+
+---
+
 ## 🏆 Revolutionary: Z3 Formal Verification
 
 **World's First: Mathematical Proof that AI Understands COBOL**
@@ -313,7 +349,7 @@ Found a security vulnerability? Please see our [Security Policy](SECURITY.md) fo
 
 - **Issues**: [GitHub Issues](https://github.com/Kolerr-Lab/sentineli/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/Kolerr-Lab/sentineli/discussions)
-- **Email**: ricky@orchesity.ai
+- **Email**: ricky@orchesity.com
 - **Documentation**: [Full Documentation](docs/)
 
 ---

@@ -2,7 +2,7 @@
 name = "sentineli-gateway"
 version = "1.0.0"
 edition = "2021"
-authors = ["Ricky Anh Nguyen <ricky@orchesity.ai>"]
+authors = ["Ricky Anh Nguyen <ricky@orchesity.com>"]
 description = "Ultra-high-performance Rust gateway for Sentineli COBOL modernization"
 license = "MIT"
 
