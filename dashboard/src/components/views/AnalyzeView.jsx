@@ -71,9 +71,31 @@ const AnalyzeView = ({ onAnalyze, messages }) => {
               ERROR: {result.error}
             </div>
           ) : (
-            <pre style={{ whiteSpace: 'pre-wrap', fontSize: '0.85rem' }}>
-              {JSON.stringify(result, null, 2)}
-            </pre>
+            <>
+              {result.metadata && (
+                <div style={{ 
+                  marginBottom: '1rem', 
+                  padding: '0.75rem', 
+                  border: '1px solid var(--primary-green)',
+                  backgroundColor: 'rgba(0, 255, 0, 0.05)'
+                }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--primary-green)' }}>
+                    ⚡ Performance Metrics:
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', fontSize: '0.85rem' }}>
+                    <div>⏱️ Processing Time: <strong>{result.metadata.duration_ms}ms</strong></div>
+                    <div>💰 Cost: <strong>${result.metadata.cost_usd ? result.metadata.cost_usd.toFixed(6) : '0.000000'}</strong></div>
+                    <div>📥 Input Tokens: <strong>{result.metadata.input_tokens || 0}</strong></div>
+                    <div>📤 Output Tokens: <strong>{result.metadata.output_tokens || 0}</strong></div>
+                    <div>📊 Total Tokens: <strong>{result.metadata.tokens_used || 0}</strong></div>
+                    <div>🤖 Model: <strong>{result.metadata.model || 'N/A'}</strong></div>
+                  </div>
+                </div>
+              )}
+              <pre style={{ whiteSpace: 'pre-wrap', fontSize: '0.85rem' }}>
+                {JSON.stringify(result, null, 2)}
+              </pre>
+            </>
           )}
         </div>
       )}

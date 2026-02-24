@@ -72,7 +72,10 @@ Sentineli includes a **hybrid UI dashboard** that combines the familiar green-sc
 - **⚡ Impact Analysis**: Trace dependencies and assess change risk in real-time
 - **🕸️ Knowledge Graph**: Visualize program relationships and data flows
 - **📊 Performance Metrics**: Live system health, memory usage, and connection statistics
-- **📜 System Logs**: Real-time log streaming with filtering (ERROR/WARN/INFO)
+- **� Real-Time Cost Tracking**: Exact OpenAI API costs displayed live in header
+- **⏱️ Processing Time Monitoring**: Millisecond-accurate timing for all LLM calls
+- **📈 Per-Request Metrics**: Token usage and cost breakdown in analysis results
+- **�📜 System Logs**: Real-time log streaming with filtering (ERROR/WARN/INFO)
 - **🛡️ Safety First**: Enterprise-grade monitoring without the complexity
 
 ### Quick Start
@@ -254,7 +257,9 @@ We pushed this system beyond enterprise limits. **The impossible is now possible
     - ⚡ **Impact Analysis**: Trace dependencies across programs  
     - 🕸️ **Knowledge Graph**: Visualize relationships
     - 📊 **Live Metrics**: Real-time system monitoring
-    - 📜 **System Logs**: Streaming logs with filtering
+    - � **Cost Tracking**: Exact OpenAI costs from API usage signals
+    - ⏱️ **Performance Monitoring**: Millisecond-accurate processing times
+    - �📜 **System Logs**: Streaming logs with filtering
 
 ---
 
@@ -268,10 +273,36 @@ We pushed this system beyond enterprise limits. **The impossible is now possible
 curl -X POST http://localhost:3000/api/analyze \
      -H "Content-Type: application/json" \
      -d '{"program":"interest_calculator","code":"IDENTIFICATION DIVISION..."} '
-# Returns: AI analysis, symbolic constraints, business logic extraction
+# Returns: AI analysis with metadata (tokens, cost, processing time)
 ```
 
-**2. Execute COBOL Program (requires auth)**
+**2. Get Real-Time Metrics - NEW! 📊**
+```bash
+# Get aggregate LLM usage metrics
+curl http://localhost:3000/api/metrics
+
+# Response:
+{
+  "success": true,
+  "metrics": {
+    "totalCalls": 42,
+    "totalProcessingTimeMs": 328450,
+    "averageProcessingTimeMs": 7820,
+    "totalInputTokens": 52847,
+    "totalOutputTokens": 18923,
+    "totalTokens": 71770,
+    "totalCostUSD": 0.321458,
+    "averageCostPerCall": "0.0077",
+    "sessionStartTime": "2026-02-24T02:54:25.180Z",
+    "uptimeMinutes": 45
+  }
+}
+
+# Reset metrics counters
+curl -X POST http://localhost:3000/api/metrics/reset
+```
+
+**3. Execute COBOL Program (requires auth)**
 ```bash
 curl -H "X-API-Key: YOUR_API_KEY" \
      -X POST http://localhost:3000/api/run/main \

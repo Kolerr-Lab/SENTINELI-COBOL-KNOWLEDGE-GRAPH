@@ -1,10 +1,38 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 const Header = ({ connected, bridgeStatus, gatewayStatus }) => {
+  const [metrics, setMetrics] = useState(null);
+
+  useEffect(() => {
+    const fetchMetrics = async () => {
+      try {
+        const response = await fetch('/api/metrics');
+        const data = await response.json();
+        if (data.success) {
+          setMetrics(data.metrics);
+        }
+      } catch (error) {
+        console.error('Failed to fetch metrics:', error);
+      }
+    };
+
+    // Fetch metrics immediately and then every 3 seconds
+    fetchMetrics();
+    const interval = setInterval(fetchMetrics, 3000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
   const getStatusClass = (status) => {
     if (status === 'UP') return 'active';
     if (status === 'DOWN') return 'error';
     return 'warning';
+  };
+
+  const formatTime = (ms) => {
+    if (ms < 1000) return `${ms}ms`;
+    if (ms < 60000) return `${(ms / 1000).toFixed(2)}s`;
+    return `${(ms / 60000).toFixed(2)}m`;
   };
 
   return (
@@ -32,6 +60,25 @@ const Header = ({ connected, bridgeStatus, gatewayStatus }) => {
           <span className={`status-dot ${getStatusClass(gatewayStatus)}`}></span>
           <span>GATEWAY: {gatewayStatus}</span>
         </div>
+
+        {metrics && (
+          <>
+            <div className="status-indicator" style={{ borderLeft: '1px solid var(--primary-green)', paddingLeft: '1rem' }}>
+              <span className="status-dot active"></span>
+              <span>LLM CALLS: {metrics.totalCalls}</span>
+            </div>
+            
+            <div className="status-indicator">
+              <span className="status-dot active"></span>
+              <span>PROC TIME: {formatTime(metrics.totalProcessingTimeMs)}</span>
+            </div>
+            
+            <div className="status-indicator">
+              <span className="status-dot active"></span>
+              <span>COST: ${metrics.totalCostUSD.toFixed(6)}</span>
+            </div>
+          </>
+        )}
       </div>
     </header>
   );

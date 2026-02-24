@@ -105,6 +105,33 @@ Client → [Rust Gateway] → [Node.js Bridge] → [COBOL Engine + PostgreSQL + 
 *   **Access**: `http://localhost:3102` (automatically connects WebSocket)
 *   **Use Case**: User-friendly web interface for COBOL code analysis without file system access
 
+### 8. Real-Time Metrics Tracking System 📊
+*   **Location**: `src/bridge/ai_agent.js` + Dashboard Header
+*   **Purpose**: Production-grade LLM cost and performance monitoring
+*   **Features**:
+    *   **Exact Cost Calculation**: Uses OpenAI API usage signals for precise dollar amounts
+    *   **Token Tracking**: Separate input/output token counters from API responses
+    *   **Processing Time**: Millisecond-accurate timing for every LLM call
+    *   **Live Dashboard Display**: Real-time metrics in header (updates every 3 seconds)
+    *   **Per-Request Breakdown**: Each analysis shows tokens, cost, and duration
+    *   **Session Tracking**: Cumulative metrics since server start with uptime
+*   **API Endpoints**:
+    *   `GET /api/metrics` - Retrieve aggregate metrics
+    *   `POST /api/metrics/reset` - Reset counters to zero
+*   **Metrics Tracked**:
+    *   Total LLM calls (count)
+    *   Total processing time (exact milliseconds)
+    *   Average processing time per call
+    *   Total input tokens
+    *   Total output tokens
+    *   Total cost in USD (exact from OpenAI pricing)
+    *   Average cost per call
+    *   Session start time and uptime
+*   **Pricing Models** (embedded in code):
+    *   GPT-4o: $2.50/1M input tokens, $10.00/1M output tokens
+    *   GPT-4o-mini: $0.15/1M input tokens, $0.60/1M output tokens
+*   **Use Case**: Enterprise cost control, performance optimization, billing transparency
+
 ### 9. Real API Test Suite 🧪 
 *   **Files**: `tests/real_api_test.js`, `tests/single_module_cost_test.js`, `tests/enterprise_batch_processor.js`
 *   **Purpose**: Production-ready OpenAI API integration with actual charges

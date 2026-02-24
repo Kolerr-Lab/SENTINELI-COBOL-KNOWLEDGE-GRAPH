@@ -17,6 +17,29 @@ const apiKey = process.env.OPENAI_API_KEY;
 const model = process.env.OPENAI_MODEL || 'gpt-4o';
 const maxRetries = 3;
 
+// GPT-4o Pricing (per million tokens)
+const PRICING = {
+    'gpt-4o': {
+        input: 2.50,   // $2.50 per 1M input tokens
+        output: 10.00  // $10.00 per 1M output tokens
+    },
+    'gpt-4o-mini': {
+        input: 0.15,   // $0.15 per 1M input tokens
+        output: 0.60   // $0.60 per 1M output tokens
+    }
+};
+
+// Global metrics tracking
+const metrics = {
+    totalCalls: 0,
+    totalProcessingTimeMs: 0,
+    totalInputTokens: 0,
+    totalOutputTokens: 0,
+    totalCostUSD: 0.0,
+    sessionStartTime: new Date().toISOString(),
+    lastResetTime: new Date().toISOString()
+};
+
 let openai;
 
 if (apiKey) {
@@ -28,6 +51,52 @@ if (apiKey) {
     logger.info({ model }, 'OpenAI client initialized');
 } else {
     logger.warn('OPENAI_API_KEY is missing. AI features will be disabled.');
+}
+
+/**
+ * Calculate cost from token usage
+ * @param {number} inputTokens - Number of input tokens
+ * @param {number} outputTokens - Number of output tokens
+ * @param {string} modelName - Model name (e.g., 'gpt-4o')
+ * @returns {number} Cost in USD
+ */
+function calculateCost(inputTokens, outputTokens, modelName) {
+    const pricing = PRICING[modelName] || PRICING['gpt-4o'];
+    const inputCost = (inputTokens / 1000000) * pricing.input;
+    const outputCost = (outputTokens / 1000000) * pricing.output;
+    return inputCost + outputCost;
+}
+
+/**
+ * Get current metrics
+ * @returns {object} Metrics object
+ */
+function getMetrics() {
+    const uptimeMs = Date.now() - new Date(metrics.sessionStartTime).getTime();
+    return {
+        ...metrics,
+        uptimeMs,
+        uptimeMinutes: Math.floor(uptimeMs / 60000),
+        averageProcessingTimeMs: metrics.totalCalls > 0 
+            ? Math.round(metrics.totalProcessingTimeMs / metrics.totalCalls) 
+            : 0,
+        averageCostPerCall: metrics.totalCalls > 0
+            ? (metrics.totalCostUSD / metrics.totalCalls).toFixed(4)
+            : '0.0000'
+    };
+}
+
+/**
+ * Reset metrics
+ */
+function resetMetrics() {
+    metrics.totalCalls = 0;
+    metrics.totalProcessingTimeMs = 0;
+    metrics.totalInputTokens = 0;
+    metrics.totalOutputTokens = 0;
+    metrics.totalCostUSD = 0.0;
+    metrics.lastResetTime = new Date().toISOString();
+    logger.info('Metrics reset');
 }
 
 /**
@@ -148,12 +217,37 @@ OUTPUT FORMAT (JSON only, no markdown):
         const result = completion.choices[0].message.content;
         const analysis = JSON.parse(result);
 
+        // Extract usage data from OpenAI response
+        const usage = completion.usage || {};
+        const inputTokens = usage.prompt_tokens || 0;
+        const outputTokens = usage.completion_tokens || 0;
+        const totalTokens = usage.total_tokens || 0;
+        const cost = calculateCost(inputTokens, outputTokens, model);
+
+        // Update global metrics
+        metrics.totalCalls += 1;
+        metrics.totalProcessingTimeMs += duration;
+        metrics.totalInputTokens += inputTokens;
+        metrics.totalOutputTokens += outputTokens;
+        metrics.totalCostUSD += cost;
+
+        logger.info({ 
+            inputTokens, 
+            outputTokens, 
+            totalTokens, 
+            cost: cost.toFixed(6),
+            totalCost: metrics.totalCostUSD.toFixed(6)
+        }, 'OpenAI API usage tracked');
+
         // Add metadata
         analysis.metadata = {
             model: model,
             analyzed_at: new Date().toISOString(),
             duration_ms: duration,
-            tokens_used: completion.usage?.total_tokens || 0
+            tokens_used: totalTokens,
+            input_tokens: inputTokens,
+            output_tokens: outputTokens,
+            cost_usd: parseFloat(cost.toFixed(6))
         };
 
         return analysis;
@@ -191,6 +285,8 @@ async function explainCode(codeSection) {
     }
 
     try {
+        const startTime = Date.now();
+        
         const completion = await openai.chat.completions.create({
             messages: [
                 {
@@ -206,6 +302,20 @@ async function explainCode(codeSection) {
             temperature: 0.3,
             max_tokens: 500
         });
+
+        const duration = Date.now() - startTime;
+        
+        // Track metrics
+        const usage = completion.usage || {};
+        const inputTokens = usage.prompt_tokens || 0;
+        const outputTokens = usage.completion_tokens || 0;
+        const cost = calculateCost(inputTokens, outputTokens, model);
+        
+        metrics.totalCalls += 1;
+        metrics.totalProcessingTimeMs += duration;
+        metrics.totalInputTokens += inputTokens;
+        metrics.totalOutputTokens += outputTokens;
+        metrics.totalCostUSD += cost;
 
         return completion.choices[0].message.content;
 
@@ -226,5 +336,7 @@ function isAIAvailable() {
 module.exports = {
     extractSymbolicConstraints,
     explainCode,
-    isAIAvailable
+    isAIAvailable,
+    getMetrics,
+    resetMetrics
 };

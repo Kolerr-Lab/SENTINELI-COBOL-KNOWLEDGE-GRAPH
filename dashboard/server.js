@@ -110,6 +110,15 @@ app.post('/api/analyze', async (req, res) => {
   }
 });
 
+app.get('/api/metrics', async (req, res) => {
+  try {
+    const response = await axios.get(`${BRIDGE_URL}/api/metrics`);
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.post('/api/impact', async (req, res) => {
   try {
     const response = await axios.post(`${BRIDGE_URL}/api/impact-analysis`, req.body);
@@ -143,7 +152,7 @@ async function handleImpactAnalysis(ws, payload) {
 
 async function handleMetrics(ws) {
   try {
-    const metrics = await axios.get(`${GATEWAY_URL}/metrics`);
+    const metrics = await axios.get(`${BRIDGE_URL}/api/metrics`);
     ws.send(JSON.stringify({ type: 'metrics', data: metrics.data }));
   } catch (error) {
     ws.send(JSON.stringify({ type: 'error', message: 'Metrics unavailable' }));

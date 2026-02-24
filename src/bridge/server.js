@@ -51,7 +51,7 @@ const {
     handleUnhandledRejection,
     setupGracefulShutdown
 } = require('./middleware/errorHandler');
-const { extractSymbolicConstraints } = require('./ai_agent');
+const { extractSymbolicConstraints, getMetrics, resetMetrics } = require('./ai_agent');
 
 // Initialize Express app
 const app = express();
@@ -208,6 +208,42 @@ app.get('/health', publicLimiter, asyncHandler(async (req, res) => {
 
     // Return 200 OK even if dependencies are unavailable (demo mode)
     res.status(200).json(health);
+}));
+
+/**
+ * Metrics endpoint - Real-time LLM cost and performance tracking
+ * GET /api/metrics
+ */
+app.get('/api/metrics', publicLimiter, asyncHandler(async (req, res) => {
+    const metrics = getMetrics();
+    res.json({
+        success: true,
+        metrics: {
+            totalCalls: metrics.totalCalls,
+            totalProcessingTimeMs: metrics.totalProcessingTimeMs,
+            averageProcessingTimeMs: metrics.averageProcessingTimeMs,
+            totalInputTokens: metrics.totalInputTokens,
+            totalOutputTokens: metrics.totalOutputTokens,
+            totalTokens: metrics.totalInputTokens + metrics.totalOutputTokens,
+            totalCostUSD: parseFloat(metrics.totalCostUSD.toFixed(6)),
+            averageCostPerCall: metrics.averageCostPerCall,
+            sessionStartTime: metrics.sessionStartTime,
+            lastResetTime: metrics.lastResetTime,
+            uptimeMinutes: metrics.uptimeMinutes
+        }
+    });
+}));
+
+/**
+ * Reset metrics endpoint
+ * POST /api/metrics/reset
+ */
+app.post('/api/metrics/reset', publicLimiter, asyncHandler(async (req, res) => {
+    resetMetrics();
+    res.json({
+        success: true,
+        message: 'Metrics reset successfully'
+    });
 }));
 
 /**
