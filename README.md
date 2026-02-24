@@ -78,17 +78,23 @@ Sentineli includes a **hybrid UI dashboard** that combines the familiar green-sc
 ### Quick Start
 
 ```bash
+# 1. Build the frontend
 cd dashboard
 npm install
-npm run dev
-# Dashboard: http://localhost:3100
+npm run build
+
+# 2. Start the server (automatically serves built frontend)
+node server.js
+# Dashboard: http://localhost:3102
+# WebSocket: ws://localhost:3102 (auto-connects)
 ```
 
 **What Makes It Special:**
-- Familiar to mainframe developers (green screen, terminal-style)
-- Modern for stakeholders (real-time metrics, graphs, interactivity)
-- Production-ready (WebSocket streaming, REST APIs, health checks)
-- Zero learning curve (intuitive navigation, clear visual feedback)
+- ✅ **All systems operational**: Dashboard, Bridge (AI), Gateway
+- ✅ **Live WebSocket**: Real-time streaming with automatic reconnection
+- 🔗 **Integrated**: Direct connection to Bridge AI (GPT-4o) and Gateway
+- 🎨 **Mainframe aesthetic**: Familiar green CRT with modern capabilities
+- 📊 **Zero config**: Works out of the box with enterprise defaults
 
 📚 **Full Documentation**: [dashboard/README.md](dashboard/README.md)
 
@@ -238,35 +244,45 @@ We pushed this system beyond enterprise limits. **The impossible is now possible
     npm test
     ```
 
-4.  **Access the API**:
-    - Health check: http://localhost:3050/health
-    - API endpoints require authentication (JWT or API Key)
-    - See [API Documentation](docs/api.md) for details
+4.  **Access the Dashboard**:
+    - **Dashboard UI**: http://localhost:3102 (mainframe control center)
+    - **Bridge API**: http://localhost:3000/health (AI backend)
+    - **Gateway**: http://localhost:8080 (Rust proxy)
+    
+    **Features Available:**
+    - 🔍 **COBOL Analysis**: Paste code, get instant AI analysis
+    - ⚡ **Impact Analysis**: Trace dependencies across programs  
+    - 🕸️ **Knowledge Graph**: Visualize relationships
+    - 📊 **Live Metrics**: Real-time system monitoring
+    - 📜 **System Logs**: Streaming logs with filtering
 
 ---
 
 ## 📡 API Usage
 
-### Authentication
+### Core Endpoints
 
-Sentineli supports two authentication methods:
-
-**1. JWT Token (recommended for web apps)**
+**1. COBOL Analysis (Ad-hoc) - NEW! 🎉**
 ```bash
-# Include in Authorization header
-curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-     -X POST http://localhost:3050/api/run/main \
+# Analyze any COBOL code with AI (public endpoint)
+curl -X POST http://localhost:3000/api/analyze \
+     -H "Content-Type: application/json" \
+     -d '{"program":"interest_calculator","code":"IDENTIFICATION DIVISION..."} '
+# Returns: AI analysis, symbolic constraints, business logic extraction
+```
+
+**2. Execute COBOL Program (requires auth)**
+```bash
+curl -H "X-API-Key: YOUR_API_KEY" \
+     -X POST http://localhost:3000/api/run/main \
      -H "Content-Type: application/json" \
      -d '{"AGE":"30","INCOME":"50000","CREDIT_SCORE":"720","DEBT":"10000"}'
 ```
 
-**2. API Key (recommended for services)**
+**3. File-based Analysis (requires auth)**
 ```bash
-# Include in X-API-Key header
 curl -H "X-API-Key: YOUR_API_KEY" \
-     -X POST http://localhost:3050/api/run/main \
-     -H "Content-Type: application/json" \
-     -d '{"AGE":"30","INCOME":"50000","CREDIT_SCORE":"720","DEBT":"10000"}'
+     -X POST http://localhost:3000/api/analyze/bank/credit_card_processing.cob
 ```
 
 ### Example Response

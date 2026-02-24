@@ -16,21 +16,18 @@ use actix_web::{
     web, App, HttpRequest, HttpResponse, HttpServer, middleware::Logger,
 };
 use actix_cors::Cors;
-use governor::{Quota, RateLimiter};
 use lazy_static::lazy_static;
 use log::{info, warn, error};
 use prometheus::{Encoder, TextEncoder, register_counter, register_histogram};
-use serde::{Deserialize, Serialize};
-use std::{num::NonZeroU32, sync::Arc, time::Duration};
+use serde::Serialize;
+use std::time::Duration;
 
 // ============================================================================
 // CONFIGURATION
 // ============================================================================
 
-const GATEWAY_PORT: u16 = 3000;
-const BACKEND_URL: &str = "http://kg-ai-cobol-modernize:3050";
-const RATE_LIMIT_REQUESTS: u32 = 10000; // 10k requests per minute
-const RATE_LIMIT_WINDOW: u64 = 60; // seconds
+const GATEWAY_PORT: u16 = 8080;
+const BACKEND_URL: &str = "http://localhost:3000";
 
 // ============================================================================
 // METRICS
@@ -42,11 +39,6 @@ lazy_static! {
     
     static ref HTTP_REQUESTS_DURATION: prometheus::Histogram =
         register_histogram!("sentineli_http_request_duration_seconds", "HTTP request duration").unwrap();
-    
-    static ref RATE_LIMITER: Arc<RateLimiter<String, governor::state::InMemoryState, governor::clock::DefaultClock>> = {
-        let quota = Quota::per_minute(NonZeroU32::new(RATE_LIMIT_REQUESTS).unwrap());
-        Arc::new(RateLimiter::keyed(quota))
-    };
 }
 
 // ============================================================================
@@ -91,7 +83,7 @@ async fn index() -> HttpResponse {
         by: "Ricky Anh Nguyen (OrchesityAI & Kolerr Lab)".to_string(),
         gateway: "Actix-web 4.5 (Rust)".to_string(),
         performance: PerformanceStats {
-            rate_limit: format!("{} req/min", RATE_LIMIT_REQUESTS),
+            rate_limit: "No limit (demo)".to_string(),
             architecture: "Zero-copy proxy".to_string(),
             language: "Rust (blazingly fast)".to_string(),
         },
@@ -141,14 +133,8 @@ async fn proxy_handler(
         .unwrap_or("unknown")
         .to_string();
     
-    if RATE_LIMITER.check_key(&client_ip).is_err() {
-        warn!("Rate limit exceeded for IP: {}", client_ip);
-        return HttpResponse::TooManyRequests().json(ErrorResponse {
-            error: "Rate limit exceeded".to_string(),
-            message: format!("Too many requests. Limit: {} req/min", RATE_LIMIT_REQUESTS),
-            code: 429,
-        });
-    }
+    // Rate limiting removed for demo - add back in production
+    info!("Request from IP: {}", client_ip);
     
     // Build backend URL
     let path = req.uri().path();
@@ -228,7 +214,7 @@ async fn main() -> std::io::Result<()> {
     info!("🦀 Sentineli Rust Gateway v1.0.0");
     info!("⚡ By Ricky Anh Nguyen | OrchesityAI & Kolerr Lab");
     info!("🔥 Ultra-high-performance mode: ENABLED");
-    info!("📊 Rate limit: {} req/min", RATE_LIMIT_REQUESTS);
+    info!("📊 Rate limit: DISABLED (demo mode)");
     info!("🎯 Backend: {}", BACKEND_URL);
     info!("🚀 Starting gateway on 0.0.0.0:{}", GATEWAY_PORT);
     

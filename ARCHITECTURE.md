@@ -88,7 +88,24 @@ Client → [Rust Gateway] → [Node.js Bridge] → [COBOL Engine + PostgreSQL + 
     *   Critical findings section with issue highlighting
 *   **Supported Modules**: 5,028 LOC banking system (13 modules)
 
-### 8. Real API Test Suite 🧪 
+### 7. The Enterprise Dashboard UI 💻
+*   **Location**: `dashboard/` directory
+*   **Technology**: React 18 + Vite + Express + WebSocket
+*   **Port**: 3102 (with WebSocket on same port)
+*   **Features**:
+    *   **Real-time WebSocket connection** with dynamic port detection
+    *   **Ad-hoc COBOL analysis** - paste any COBOL code for instant AI analysis
+    *   **Mainframe CRT aesthetic** - authentic green-on-black terminal styling
+    *   **Live system status** monitoring (Bridge AI, Gateway connectivity)
+    *   **Interactive analysis results** with formatted JSON output
+*   **Architecture**:
+    *   Frontend: React SPA with Vite bundler
+    *   Backend: Express server with WebSocket support
+    *   Proxy: API requests forwarded to Bridge (port 3000)
+*   **Access**: `http://localhost:3102` (automatically connects WebSocket)
+*   **Use Case**: User-friendly web interface for COBOL code analysis without file system access
+
+### 9. Real API Test Suite 🧪 
 *   **Files**: `tests/real_api_test.js`, `tests/single_module_cost_test.js`, `tests/enterprise_batch_processor.js`
 *   **Purpose**: Production-ready OpenAI API integration with actual charges
 *   **Features**:
@@ -104,7 +121,7 @@ Client → [Rust Gateway] → [Node.js Bridge] → [COBOL Engine + PostgreSQL + 
     *   Z3 mathematical verification of AI understanding
 *   **Economic Impact**: 4,000x cost reduction vs manual analysis
 
-### 9. The 5K LOC Banking COBOL System 🏦 
+### 10. The 5K LOC Banking COBOL System 🏦 
 *   **Location**: `src/cobol/bank/`
 *   **Total Lines**: 5,028 LOC across 13 modules
 *   **Modules**:
@@ -137,7 +154,7 @@ Because the backend was compiled by OrchesityAI with specific hooks (using the N
 This transforms the "Black Box" into a "Glass House".
 ---
 
-## 🔀 Two Execution Paths: Speed vs Intelligence
+## 🔀 Three Execution Paths: Speed, Intelligence & Flexibility
 
 ### Path 1: Fast Lane (COBOL Execution Only)
 **Route**: `POST /api/run/:program`
@@ -148,7 +165,7 @@ Client → Node.js → COBOL → PostgreSQL → Response
 **Use Case**: High-frequency decision making where you trust the COBOL logic  
 **Cost**: FREE
 
-### Path 2: Deep Intelligence (Full AI Analysis)
+### Path 2: Deep Intelligence (File-Based AI Analysis)
 **Route**: `POST /api/analyze/:file`
 ```
 Client → Node.js → COBOL → OpenAI GPT-4o → Redis Cache → Response
@@ -158,7 +175,20 @@ Client → Node.js → COBOL → OpenAI GPT-4o → Redis Cache → Response
 - Cached: ~73ms (Redis, 107x faster)  
 **Use Case**: Forensic analysis, debugging, regulatory audits, understanding legacy logic  
 **Cost**: ~$0.01-0.03 per fresh analysis, FREE when cached  
-**Intelligence**: AI explains WHY each decision was made (which rules triggered, line numbers, logic flow)
+**Intelligence**: AI explains WHY each decision was made (which rules triggered, line numbers, logic flow)  
+**Requirements**: File must exist in project directory, requires authentication
+
+### Path 3: Ad-Hoc Analysis (Code-In-Body)
+**Route**: `POST /api/analyze`
+```
+Client → Node.js → OpenAI GPT-4o → Response
+```
+**Body**: `{"program": "program_name", "code": "COBOL code string"}`  
+**Performance**: ~7,800ms (OpenAI API, no caching)  
+**Use Case**: Quick analysis of COBOL snippets, Dashboard UI, testing code fragments  
+**Cost**: ~$0.01-0.03 per analysis  
+**Intelligence**: Same AI analysis as Path 2, no file system access required  
+**Requirements**: None - public endpoint for demo/testing
 
 ### Redis Caching Effectiveness
 **Tested at Scale**: 100 AI analysis requests  
@@ -167,4 +197,4 @@ Client → Node.js → COBOL → OpenAI GPT-4o → Redis Cache → Response
 **Cost Savings**: $3.00 saved per 100 cached requests  
 **TTL**: 1 hour (configurable)
 
-**The Magic**: Same infrastructure, different endpoints - you choose speed or intelligence based on your needs.
+**The Magic**: Same infrastructure, three different endpoints - you choose speed, intelligence, or flexibility based on your needs.

@@ -5,7 +5,7 @@ import NavigationPanel from './components/NavigationPanel';
 import MainPanel from './components/MainPanel';
 import ActivityPanel from './components/ActivityPanel';
 
-const WS_URL = `ws://localhost:${import.meta.env.VITE_PORT || 3100}`;
+const WS_URL = `ws://${window.location.host}`;
 
 function App() {
   const { messages, connected, sendMessage } = useWebSocket(WS_URL);
