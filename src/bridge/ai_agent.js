@@ -36,6 +36,10 @@ const metrics = {
     totalInputTokens: 0,
     totalOutputTokens: 0,
     totalCostUSD: 0.0,
+    totalCyclomaticComplexity: 0,
+    totalLogicDepth: 0,
+    totalVariableCount: 0,
+    totalDecisionPoints: 0,
     sessionStartTime: new Date().toISOString(),
     lastResetTime: new Date().toISOString()
 };
@@ -82,7 +86,19 @@ function getMetrics() {
             : 0,
         averageCostPerCall: metrics.totalCalls > 0
             ? (metrics.totalCostUSD / metrics.totalCalls).toFixed(4)
-            : '0.0000'
+            : '0.0000',
+        averageCyclomaticComplexity: metrics.totalCalls > 0
+            ? Math.round(metrics.totalCyclomaticComplexity / metrics.totalCalls)
+            : 0,
+        averageLogicDepth: metrics.totalCalls > 0
+            ? Math.round(metrics.totalLogicDepth / metrics.totalCalls)
+            : 0,
+        averageVariableCount: metrics.totalCalls > 0
+            ? Math.round(metrics.totalVariableCount / metrics.totalCalls)
+            : 0,
+        averageDecisionPoints: metrics.totalCalls > 0
+            ? Math.round(metrics.totalDecisionPoints / metrics.totalCalls)
+            : 0
     };
 }
 
@@ -95,8 +111,28 @@ function resetMetrics() {
     metrics.totalInputTokens = 0;
     metrics.totalOutputTokens = 0;
     metrics.totalCostUSD = 0.0;
+    metrics.totalCyclomaticComplexity = 0;
+    metrics.totalLogicDepth = 0;
+    metrics.totalVariableCount = 0;
+    metrics.totalDecisionPoints = 0;
     metrics.lastResetTime = new Date().toISOString();
     logger.info('Metrics reset');
+}
+
+/**
+ * Update metrics for cache hit (no AI cost, but still track call)
+ * @param {number} duration - Request duration in ms
+ * @param {object} complexityMetrics - Complexity metrics from cached analysis
+ */
+function updateMetricsForCacheHit(duration, complexityMetrics) {
+    metrics.totalCalls += 1;
+    metrics.totalProcessingTimeMs += duration;
+    metrics.totalCyclomaticComplexity += complexityMetrics.cyclomatic_complexity || 0;
+    metrics.totalLogicDepth += complexityMetrics.logic_depth || 0;
+    metrics.totalVariableCount += complexityMetrics.variable_count || 0;
+    metrics.totalDecisionPoints += complexityMetrics.decision_points || 0;
+    // Note: No cost added for cache hits
+    logger.info({ duration, cached: true }, 'Cache hit tracked in metrics');
 }
 
 /**
@@ -224,19 +260,31 @@ OUTPUT FORMAT (JSON only, no markdown):
         const totalTokens = usage.total_tokens || 0;
         const cost = calculateCost(inputTokens, outputTokens, model);
 
+        // Extract complexity metrics from analysis
+        const complexityMetrics = analysis.complexity_metrics || {};
+        const cyclomaticComplexity = complexityMetrics.cyclomatic_complexity || 0;
+        const logicDepth = complexityMetrics.logic_depth || 0;
+        const variableCount = complexityMetrics.variable_count || 0;
+        const decisionPoints = complexityMetrics.decision_points || 0;
+
         // Update global metrics
         metrics.totalCalls += 1;
         metrics.totalProcessingTimeMs += duration;
         metrics.totalInputTokens += inputTokens;
         metrics.totalOutputTokens += outputTokens;
         metrics.totalCostUSD += cost;
+        metrics.totalCyclomaticComplexity += cyclomaticComplexity;
+        metrics.totalLogicDepth += logicDepth;
+        metrics.totalVariableCount += variableCount;
+        metrics.totalDecisionPoints += decisionPoints;
 
         logger.info({ 
             inputTokens, 
             outputTokens, 
             totalTokens, 
             cost: cost.toFixed(6),
-            totalCost: metrics.totalCostUSD.toFixed(6)
+            totalCost: metrics.totalCostUSD.toFixed(6),
+            cyclomaticComplexity
         }, 'OpenAI API usage tracked');
 
         // Add metadata
@@ -305,7 +353,7 @@ async function explainCode(codeSection) {
 
         const duration = Date.now() - startTime;
         
-        // Track metrics
+        // Track metrics (explainCode doesn't analyze structure, so no LOC/complexity)
         const usage = completion.usage || {};
         const inputTokens = usage.prompt_tokens || 0;
         const outputTokens = usage.completion_tokens || 0;
@@ -316,6 +364,9 @@ async function explainCode(codeSection) {
         metrics.totalInputTokens += inputTokens;
         metrics.totalOutputTokens += outputTokens;
         metrics.totalCostUSD += cost;
+        // Note: explainCode doesn't count LOC/complexity since it's not a full analysis
+
+        logger.info({ inputTokens, outputTokens, cost: cost.toFixed(6) }, 'explainCode metrics tracked');
 
         return completion.choices[0].message.content;
 
@@ -338,5 +389,6 @@ module.exports = {
     explainCode,
     isAIAvailable,
     getMetrics,
-    resetMetrics
+    resetMetrics,
+    updateMetricsForCacheHit
 };

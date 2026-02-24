@@ -70,12 +70,17 @@ const Header = ({ connected, bridgeStatus, gatewayStatus }) => {
             
             <div className="status-indicator">
               <span className="status-dot active"></span>
-              <span>PROC TIME: {formatTime(metrics.totalProcessingTimeMs)}</span>
+              <span>AVG TIME: {formatTime(metrics.averageProcessingTimeMs)}</span>
             </div>
             
             <div className="status-indicator">
               <span className="status-dot active"></span>
               <span>COST: ${metrics.totalCostUSD.toFixed(6)}</span>
+            </div>
+
+            <div className="status-indicator">
+              <span className="status-dot active"></span>
+              <span>AVG COMPLEXITY: {metrics.averageCyclomaticComplexity || 0}</span>
             </div>
           </>
         )}

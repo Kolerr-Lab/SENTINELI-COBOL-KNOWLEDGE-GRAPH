@@ -227,6 +227,11 @@ app.get('/api/metrics', publicLimiter, asyncHandler(async (req, res) => {
             totalTokens: metrics.totalInputTokens + metrics.totalOutputTokens,
             totalCostUSD: parseFloat(metrics.totalCostUSD.toFixed(6)),
             averageCostPerCall: metrics.averageCostPerCall,
+            totalCyclomaticComplexity: metrics.totalCyclomaticComplexity,
+            averageCyclomaticComplexity: metrics.averageCyclomaticComplexity,
+            averageLogicDepth: metrics.averageLogicDepth,
+            averageVariableCount: metrics.averageVariableCount,
+            averageDecisionPoints: metrics.averageDecisionPoints,
             sessionStartTime: metrics.sessionStartTime,
             lastResetTime: metrics.lastResetTime,
             uptimeMinutes: metrics.uptimeMinutes
@@ -437,8 +442,16 @@ app.post(
                     const duration = Date.now() - startTime;
                     logger.logAiAnalysis(file, true, duration);
                     
+                    // Parse cached result to extract complexity for metrics tracking
+                    const cachedData = JSON.parse(cached);
+                    const cachedComplexity = cachedData.complexity_metrics || {};
+                    
+                    // Update metrics for cache hit (but no cost since no AI call)
+                    const { updateMetricsForCacheHit } = require('./ai_agent');
+                    updateMetricsForCacheHit(duration, cachedComplexity);
+                    
                     return res.json({
-                        ...JSON.parse(cached),
+                        ...cachedData,
                         cached: true,
                         duration
                     });

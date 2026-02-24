@@ -89,6 +89,9 @@ const AnalyzeView = ({ onAnalyze, messages }) => {
                     <div>📤 Output Tokens: <strong>{result.metadata.output_tokens || 0}</strong></div>
                     <div>📊 Total Tokens: <strong>{result.metadata.tokens_used || 0}</strong></div>
                     <div>🤖 Model: <strong>{result.metadata.model || 'N/A'}</strong></div>
+                    {result.complexity_metrics && (
+                      <div>🔢 Cyclomatic Complexity: <strong>{result.complexity_metrics.cyclomatic_complexity || 0}</strong></div>
+                    )}
                   </div>
                 </div>
               )}
