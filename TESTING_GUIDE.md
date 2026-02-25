@@ -26,16 +26,16 @@ Before running tests, ensure all services are running:
 ```powershell
 # Check all services
 Write-Host "`nSYSTEM STATUS:" -ForegroundColor Yellow
-try { Invoke-WebRequest -Uri "http://localhost:3000/health" -UseBasicParsing -TimeoutSec 2 | Out-Null; Write-Host "  ✓ Bridge:    ONLINE (port 3000)" -ForegroundColor Green } catch { Write-Host "  ✗ Bridge:    OFFLINE" -ForegroundColor Red }
-try { Invoke-WebRequest -Uri "http://localhost:3102/api/health" -UseBasicParsing -TimeoutSec 2 | Out-Null; Write-Host "  ✓ Dashboard: ONLINE (port 3102)" -ForegroundColor Green } catch { Write-Host "  ✗ Dashboard: OFFLINE" -ForegroundColor Red }
+try { Invoke-WebRequest -Uri "http://localhost:8766/health" -UseBasicParsing -TimeoutSec 2 | Out-Null; Write-Host "  ✓ Bridge:    ONLINE (Docker port 8766)" -ForegroundColor Green } catch { Write-Host "  ✗ Bridge:    OFFLINE" -ForegroundColor Red }
+try { Invoke-WebRequest -Uri "http://localhost:3100/api/health" -UseBasicParsing -TimeoutSec 2 | Out-Null; Write-Host "  ✓ Dashboard: ONLINE (port 3100)" -ForegroundColor Green } catch { Write-Host "  ✗ Dashboard: OFFLINE" -ForegroundColor Red }
 try { Invoke-WebRequest -Uri "http://localhost:8080/" -UseBasicParsing -TimeoutSec 2 | Out-Null; Write-Host "  ✓ Gateway:   ONLINE (port 8080)" -ForegroundColor Green } catch { Write-Host "  ✗ Gateway:   OFFLINE" -ForegroundColor Red }
 Write-Host ""
 ```
 
 ### Required Services
 
-- **Bridge** (port 3000): AI analysis service with GPT-4o
-- **Dashboard** (port 3102): Real-time monitoring UI  
+- **Bridge** (Docker port 8766): AI analysis service with GPT-4o
+- **Dashboard** (port 3100): Real-time monitoring UI with system logs
 - **Gateway** (port 8080): Rust API gateway (optional for some tests)
 
 ### Environment Variables
@@ -45,8 +45,8 @@ Ensure your `.env` file is configured:
 ```bash
 OPENAI_API_KEY=your-api-key-here
 OPENAI_MODEL=gpt-4o
-PORT=3000
-DASHBOARD_PORT=3102
+PORT=3050                  # Internal Bridge port (Docker maps to 8766)
+DASHBOARD_PORT=3100        # Dashboard server port
 ```
 
 ---
@@ -62,7 +62,7 @@ Write-Host "  SENTINELI SYSTEM STATUS" -ForegroundColor Cyan
 Write-Host "═══════════════════════════════════════════`n" -ForegroundColor Cyan
 
 $services = @(
-    @{N="Dashboard";P=3102;E="/api/health"}, 
+    @{N="Dashboard";P=3100;E="/api/health"}, 
     @{N="Bridge";P=3000;E="/health"}, 
     @{N="Gateway";P=8080;E="/"}
 )
@@ -89,7 +89,7 @@ Write-Host "`n══════════════════════
 ```powershell
 # Check current system metrics
 try {
-    $response = Invoke-WebRequest -Uri "http://localhost:3000/api/metrics" -UseBasicParsing -TimeoutSec 3
+    $response = Invoke-WebRequest -Uri "http://localhost:8766/api/metrics" -UseBasicParsing -TimeoutSec 3
     $data = $response.Content | ConvertFrom-Json
     
     Write-Host "`n📊 SYSTEM METRICS:" -ForegroundColor Yellow
@@ -507,7 +507,7 @@ $body = @{
     code = $cobolCode
 } | ConvertTo-Json
 
-$response = Invoke-RestMethod -Uri "http://localhost:3000/api/analyze" -Method POST -Body $body -ContentType "application/json"
+$response = Invoke-RestMethod -Uri "http://localhost:8766/api/analyze" -Method POST -Body $body -ContentType "application/json"
 
 Write-Host "`n✅ ANALYSIS COMPLETE" -ForegroundColor Green
 Write-Host "Analysis: $($response.analysis)" -ForegroundColor White
@@ -520,7 +520,7 @@ Write-Host "Tokens: $($response.metadata.tokens_used)" -ForegroundColor Yellow
 
 ```powershell
 # Analyze existing COBOL file
-$response = Invoke-RestMethod -Uri "http://localhost:3000/api/analyze/loan_approval.cob" -Method POST
+$response = Invoke-RestMethod -Uri "http://localhost:8766/api/analyze/loan_approval.cob" -Method POST
 
 Write-Host "`n✅ FILE ANALYSIS COMPLETE" -ForegroundColor Green
 Write-Host "File: loan_approval.cob" -ForegroundColor Cyan
@@ -532,7 +532,7 @@ Write-Host "Complexity: $($response.metadata.complexity_metrics.cyclomatic_compl
 
 ```powershell
 # Retrieve current metrics
-$metrics = Invoke-RestMethod -Uri "http://localhost:3000/api/metrics"
+$metrics = Invoke-RestMethod -Uri "http://localhost:8766/api/metrics"
 
 Write-Host "`n📊 SYSTEM METRICS" -ForegroundColor Yellow
 Write-Host "Total Calls: $($metrics.metrics.totalCalls)" -ForegroundColor Cyan
@@ -545,7 +545,7 @@ Write-Host "Avg Complexity: $($metrics.metrics.averageCyclomaticComplexity)" -Fo
 
 ```powershell
 # Reset all metrics (admin only)
-Invoke-RestMethod -Uri "http://localhost:3000/api/metrics/reset" -Method POST
+Invoke-RestMethod -Uri "http://localhost:8766/api/metrics/reset" -Method POST
 
 Write-Host "`n✅ METRICS RESET" -ForegroundColor Green
 ```
@@ -608,11 +608,11 @@ Error: Too many requests (429)
 **Solution**:
 ```powershell
 # Wait and retry, or check current metrics
-$metrics = Invoke-RestMethod -Uri "http://localhost:3000/api/metrics"
+$metrics = Invoke-RestMethod -Uri "http://localhost:8766/api/metrics"
 Write-Host "Total Calls: $($metrics.metrics.totalCalls)"
 
 # Consider resetting metrics if testing
-Invoke-RestMethod -Uri "http://localhost:3000/api/metrics/reset" -Method POST
+Invoke-RestMethod -Uri "http://localhost:8766/api/metrics/reset" -Method POST
 ```
 
 #### 4. Dashboard WebSocket Not Connecting
@@ -624,13 +624,13 @@ Invoke-RestMethod -Uri "http://localhost:3000/api/metrics/reset" -Method POST
 ```powershell
 # Check Dashboard is running on correct port
 try {
-    $response = Invoke-WebRequest -Uri "http://localhost:3102/api/health" -UseBasicParsing
+    $response = Invoke-WebRequest -Uri "http://localhost:3100/api/health" -UseBasicParsing
     Write-Host "Dashboard: ONLINE" -ForegroundColor Green
 } catch {
     Write-Host "Dashboard: OFFLINE - Restarting..." -ForegroundColor Yellow
     
     # Restart Dashboard
-    $env:DASHBOARD_PORT="3102"
+    $env:DASHBOARD_PORT="3100"
     cd dashboard
     node server.js
 }
@@ -670,7 +670,7 @@ cd src\bridge
 node server.js
 
 # Terminal 2: Dashboard
-$env:DASHBOARD_PORT="3102"
+$env:DASHBOARD_PORT="3100"
 cd dashboard
 node server.js
 
@@ -707,7 +707,7 @@ node hft_flood.js
 # Watch metrics in real-time
 while ($true) {
     Clear-Host
-    $m = Invoke-RestMethod -Uri "http://localhost:3000/api/metrics"
+    $m = Invoke-RestMethod -Uri "http://localhost:8766/api/metrics"
     Write-Host "`n📊 LIVE METRICS (refreshing every 3s)" -ForegroundColor Cyan
     Write-Host "Calls: $($m.metrics.totalCalls)" -ForegroundColor White
     Write-Host "Time:  $($m.metrics.averageProcessingTimeMs)ms" -ForegroundColor Yellow

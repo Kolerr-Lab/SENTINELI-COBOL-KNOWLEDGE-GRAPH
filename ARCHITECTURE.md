@@ -12,8 +12,8 @@ This project represents a **Neuro-Symbolic** approach to system design, combinin
 The architecture follows a **three-tier design** for ultra-high performance, security, and scalability:
 
 ```
-Client → [Rust Gateway] → [Node.js Bridge] → [COBOL Engine + PostgreSQL + Redis]
-         Port 3000       Internal Port 3050    Internal Services
+Client → Dashboard → [Rust Gateway] → [Node.js Bridge] → [COBOL Engine + PostgreSQL + Redis]
+         Port 3100    Port 8080         Port 3050 (Docker: 8766)  Internal Services
 ```
 
 ### 0. The Shield (Rust Gateway) ⚡ NEW
@@ -41,8 +41,10 @@ Client → [Rust Gateway] → [Node.js Bridge] → [COBOL Engine + PostgreSQL + 
     *   Wraps the COBOL binary in a modern REST API.
     *   Intercepts `stdin` / `stdout` streams for real-time analysis.
     *   Interacts with OpenAI GPT-4o to "explain" the execution path.
-    *   **Now internal-only** (exposed on port 3050, accessible only through Rust gateway)
+    *   **Docker deployment** (exposed on port 8766, mapped from internal port 3050)
     *   **Real OpenAI Integration**: Production dotenv-based configuration for secure API key management
+    *   **Activity Logging**: Real-time system logs via /api/logs endpoint
+    *   **Ollama Support**: Local LLM integration with status monitoring
 
 ### 3. The Knowledge Graph (Long-Term Memory)
 *   **Database**: PostgreSQL

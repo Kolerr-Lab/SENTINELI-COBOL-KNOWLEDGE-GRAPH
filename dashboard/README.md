@@ -28,40 +28,58 @@ cd dashboard
 npm install
 ```
 
-### Development Mode
-
-```bash
-npm run dev
-```
-
-This starts the **Vite dev server** on `http://localhost:5173` with React hot reload.
-
-**Port Architecture:**
-- **5173**: Vite dev server (React app with HMR) - proxies /api to Backend
-- **8766**: Backend Bridge API (Docker container)
-
-**Data flow:** Browser (5173) → Backend (8766)
-
-### Production Build
+### Production Mode (Recommended)
 
 ```bash
 npm run build
 npm start
 ```
 
+This starts the **Express production server** on `http://localhost:3100` serving the built React app.
+
+**Port Architecture:**
+- **3100**: Dashboard production server (Express + built React)
+- **8766**: Backend Bridge API (Docker container)
+- **8080**: Rust Gateway (high-performance proxy)
+
+**Data flow:** Browser (3100) → Backend (8766)
+
+### Development Mode (Optional)
+
+```bash
+npm run dev
+```
+
+This starts the **Vite dev server** on `http://localhost:5173` for hot reload development.
+
 ## 📡 Architecture
 
+**Current Production Setup:**
 ```
 ┌─────────────────┐
-│   Dashboard UI  │  ← React + Vite (Port 5173)
-│  (Mainframe UI) │
+│ Dashboard Server│  ← Express + React (Port 3100)
+│ (Mainframe UI)  │  
 └────────┬────────┘
-         │ HTTP/REST (proxied /api)
+         │ HTTP/REST to /api
          ↓
 ┌─────────────────┐     ┌─────────────────┐
 │  Node.js Bridge │──→──│  Rust Gateway   │
-│    (Port 3000)  │     │   (Port 8080)   │
+│ (Docker: 8766)  │     │   (Port 8080)   │
 └─────────────────┘     └─────────────────┘
+```
+
+**Development Alternative:**
+```
+┌─────────────────┐
+│   Vite Dev      │  ← React HMR (Port 5173)  
+│ (Hot Reload)    │  
+└────────┬────────┘
+         │ Proxied /api
+         ↓
+┌─────────────────┐ 
+│  Docker Bridge  │
+│   (Port 8766)   │
+└─────────────────┘
 ```
 
 ## 🎨 Design Philosophy
@@ -245,7 +263,7 @@ Ensure both services are running before starting the dashboard.
 ## 📝 Environment Variables
 
 ```bash
-DASHBOARD_PORT=5173
+DASHBOARD_PORT=3100        # Production server port (recommended)
 BRIDGE_URL=http://localhost:8766
 GATEWAY_URL=http://localhost:8080
 ```
@@ -253,7 +271,7 @@ GATEWAY_URL=http://localhost:8080
 ## 🐛 Troubleshooting
 
 ### Connection Failed
-- Ensure dashboard server is running on port 5173
+- Ensure dashboard server is running on port 3100 (production) or 5173 (dev)
 - Verify Backend Bridge is running (Docker: kg_ai_cobol_modernizer)
 - Check network connectivity
 

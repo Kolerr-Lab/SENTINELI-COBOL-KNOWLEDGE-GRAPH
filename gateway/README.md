@@ -15,13 +15,13 @@ The Rust Gateway is the first layer in Sentineli's three-tier architecture, prov
 ## Architecture
 
 ```
-Client Request → Rust Gateway (Port 3000)
+Client Request → Rust Gateway (Port 8080)
                      ↓
               Rate Limiting (Governor)
                      ↓
               Metrics Recording (Prometheus)
                      ↓
-           Zero-Copy Proxy to Node.js (Port 3050)
+           Zero-Copy Proxy to Node.js (Docker: 8766)
                      ↓
               Stream Response to Client
 ```
@@ -54,8 +54,8 @@ Client Request → Rust Gateway (Port 3000)
 ```bash
 # Rust Gateway Configuration
 RUST_LOG=info              # Log level (trace, debug, info, warn, error)
-GATEWAY_PORT=3000          # External port for client connections
-BACKEND_URL=http://kg-ai-cobol-modernize:3050  # Internal Node.js backend
+GATEWAY_PORT=8080          # External port for client connections
+BACKEND_URL=http://kg-ai-cobol-modernizer:3050  # Internal Node.js backend (Docker network)
 
 # Rate Limiting
 RATE_LIMIT_PER_MINUTE=10000  # Max requests per IP per minute (default: 10,000)
@@ -229,7 +229,7 @@ scrape_configs:
 ## Troubleshooting
 
 ### High Latency
-- Check Node.js backend performance (port 3050)
+- Check Node.js backend performance (Docker port 8766, internal 3050)
 - Increase worker threads if CPU usage is low
 - Verify network latency between gateway and backend
 

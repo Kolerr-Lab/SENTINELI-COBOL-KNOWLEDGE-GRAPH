@@ -9,12 +9,12 @@ Common issues and solutions for getting Sentineli running smoothly.
 **Run this first to check system health:**
 
 ```bash
-# Check all services
-curl http://localhost:3000/health
-curl http://localhost:3102/api/health
+# Check all services  
+curl http://localhost:8766/health     # Docker Bridge (main backend)
+curl http://localhost:3100/api/health # Dashboard server
 
 # View recent logs
-docker-compose logs --tail=50 bridge
+docker logs kg_ai_cobol_modernizer --tail=50
 
 # Check environment
 cat .env | grep -v "^#" | grep -v "^$"
@@ -93,16 +93,20 @@ sudo usermod -aG docker $USER  # Add yourself to docker group
 
 **Windows:**
 ```powershell
-# Find process on port 3000
-netstat -ano | findstr :3000
+# Find process on port 8766 (Docker Bridge)
+netstat -ano | findstr :8766
+# Or check dashboard port
+netstat -ano | findstr :3100
 # Kill the process (replace PID with actual number)
 taskkill /PID <PID> /F
 ```
 
 **macOS/Linux:**
 ```bash
-# Find process on port 3000
-lsof -i :3000
+# Find process on port 8766 (Docker Bridge) 
+lsof -i :8766
+# Or check dashboard port
+lsof -i :3100
 # Kill the process
 kill -9 <PID>
 ```
@@ -137,10 +141,10 @@ cat .env | grep API_KEYS
 2. **Verify header format:**
 ```bash
 # Correct
-curl -H "X-API-Key: demo-api-key-sentineli-2026" http://localhost:3000/api/run/main
+curl -H "X-API-Key: demo-api-key-sentineli-2026" http://localhost:8766/api/run/main
 
 # Wrong (no space after colon)
-curl -H "X-API-Key:demo-api-key-sentineli-2026" http://localhost:3000/api/run/main
+curl -H "X-API-Key:demo-api-key-sentineli-2026" http://localhost:8766/api/run/main
 ```
 
 3. **Generate new API key:**
@@ -324,7 +328,7 @@ REDIS_URL=redis://localhost:6379
 
 1. **Check AI is enabled:**
 ```bash
-curl http://localhost:3000/health | grep ai
+curl http://localhost:8766/health | grep ai
 # Should show: "ai": "enabled"
 ```
 
@@ -353,7 +357,7 @@ OPENAI_MODEL=gpt-4o  # Use latest model
 1. **Enable Redis caching:**
 ```bash
 # Check cache is working
-curl http://localhost:3000/api/analyze/bank/loan_approval.cob
+curl http://localhost:8766/api/analyze/bank/loan_approval.cob
 # Second call should be faster (cache hit)
 ```
 
@@ -402,7 +406,7 @@ Look for error messages
 
 4. **Verify backend is running:**
 ```bash
-curl http://localhost:3000/health
+curl http://localhost:8766/health
 # Should return 200 OK
 ```
 
@@ -419,12 +423,12 @@ curl http://localhost:3000/health
 1. **Check WebSocket port:**
 ```bash
 # Dashboard uses same port as HTTP
-# WebSocket: ws://localhost:3102
+# WebSocket: ws://localhost:3100
 ```
 
 2. **Check firewall:**
 ```bash
-# Windows: Allow port 3102 in Windows Firewall
+# Windows: Allow port 3100 in Windows Firewall
 # macOS: System Preferences → Security → Firewall
 ```
 
@@ -494,7 +498,7 @@ docker-compose ps | grep redis
 
 1. **Check metrics:**
 ```bash
-curl http://localhost:3000/api/metrics
+curl http://localhost:8766/api/metrics
 # Review totalCostUSD
 ```
 
@@ -654,13 +658,13 @@ cat logs/app.log
 
 ```bash
 # System health
-curl http://localhost:3000/health
+curl http://localhost:8766/health
 
 # View all environment variables
 printenv | grep -E "(PORT|OPENAI|DATABASE|REDIS)"
 
 # Check ports in use
-netstat -an | findstr "3000 3102 5432 6385"
+netstat -an | findstr "3000 3100 5432 6385"
 
 # Docker status
 docker-compose ps
