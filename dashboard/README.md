@@ -34,17 +34,13 @@ npm install
 npm run dev
 ```
 
-This starts **two servers**:
-- **Express WebSocket server** on `http://localhost:3100` (server.js)
-- **Vite dev server** on `http://localhost:5173` (React hot reload)
-- Dashboard accessible at `http://localhost:5173`
+This starts the **Vite dev server** on `http://localhost:5173` with React hot reload.
 
 **Port Architecture:**
-- **5173**: Vite dev server (React app with HMR)
-- **3100**: Express server (WebSocket + API proxy to backend)
+- **5173**: Vite dev server (React app with HMR) - proxies /api to Backend
 - **8766**: Backend Bridge API (Docker container)
 
-**Data flow:** Browser (5173) → Express (3100) → Backend (8766)
+**Data flow:** Browser (5173) → Backend (8766)
 
 ### Production Build
 
@@ -57,16 +53,10 @@ npm start
 
 ```
 ┌─────────────────┐
-│   Dashboard UI  │  ← React + Vite (Port 3100)
+│   Dashboard UI  │  ← React + Vite (Port 5173)
 │  (Mainframe UI) │
 └────────┬────────┘
-         │ WebSocket
-         ↓
-┌─────────────────┐
-│  WebSocket      │  ← Express + WS (Port 3100)
-│  Server         │
-└────────┬────────┘
-         │ HTTP/REST
+         │ HTTP/REST (proxied /api)
          ↓
 ┌─────────────────┐     ┌─────────────────┐
 │  Node.js Bridge │──→──│  Rust Gateway   │
@@ -84,11 +74,11 @@ npm start
 - **Terminal-style** command interfaces
 
 ### Modern Capabilities
-- **Real-time WebSocket streaming**
 - **React components** for interactivity
 - **Responsive grid layouts**
 - **Live metrics & charts**
-- **Hot module replacement**
+- **Hot module replacement (HMR)**
+- **Direct API communication** via Vite proxy
 
 ## 📊 Dashboard Views
 
@@ -255,21 +245,16 @@ Ensure both services are running before starting the dashboard.
 ## 📝 Environment Variables
 
 ```bash
-DASHBOARD_PORT=3100
+DASHBOARD_PORT=5173
 BRIDGE_URL=http://localhost:8766
 GATEWAY_URL=http://localhost:8080
 ```
 
 ## 🐛 Troubleshooting
 
-### WebSocket Connection Failed
-- Ensure dashboard server is running
-- Check firewall settings for port 3100
-- Verify no port conflicts
-
-### Bridge/Gateway Down
-- Check if services are running
-- Verify URLs in environment variables
+### Connection Failed
+- Ensure dashboard server is running on port 5173
+- Verify Backend Bridge is running (Docker: kg_ai_cobol_modernizer)
 - Check network connectivity
 
 ### Build Errors

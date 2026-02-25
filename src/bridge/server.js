@@ -27,6 +27,7 @@ require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 
 // Import middleware and utilities
 const logger = require('./utils/logger');
+const activityLogger = require('./utils/activityLogger');
 const { sanitize } = require('./middleware/validation');
 const { publicLimiter } = require('./middleware/rateLimiting');
 const {
@@ -244,9 +245,26 @@ app.post('/api/metrics/reset', publicLimiter, asyncHandler(async (req, res) => {
     const { resetAllMetrics } = require('./utils/dbMetrics');
     const result = await resetAllMetrics(pool);
     
+    activityLogger.success('Metrics reset', { admin: true });
+    
     res.json({
         success: true,
         message: result.message
+    });
+}));
+
+/**
+ * System logs endpoint - Get recent activity logs
+ * GET /api/logs
+ */
+app.get('/api/logs', publicLimiter, asyncHandler(async (req, res) => {
+    const limit = parseInt(req.query.limit) || 50;
+    const logs = activityLogger.getLogs(limit);
+    
+    res.json({
+        success: true,
+        logs,
+        count: logs.length
     });
 }));
 
@@ -377,6 +395,15 @@ const server = app.listen(PORT, () => {
     logger.info(`Environment: ${NODE_ENV}`);
     logger.info(`Health check: http://localhost:${PORT}/health`);
     logger.info(`Ready to process COBOL workloads`);
+    
+    // Log startup to activity logger
+    activityLogger.success(`Server started on port ${PORT}`, { 
+        environment: NODE_ENV,
+        timestamp: new Date().toISOString()
+    });
+    activityLogger.info('System ready to process COBOL workloads', {
+        openai: process.env.OPENAI_API_KEY ? 'configured' : 'not configured'
+    });
 });
 
 // Setup graceful shutdown

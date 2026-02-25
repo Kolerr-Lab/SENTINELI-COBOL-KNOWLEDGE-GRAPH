@@ -10,6 +10,7 @@ const path = require('path');
 const router = express.Router();
 
 const logger = require('../utils/logger');
+const activityLogger = require('../utils/activityLogger');
 const { authenticateEither } = require('../middleware/auth');
 const {
     validateCobolExecution,
@@ -190,8 +191,17 @@ router.post(
             try {
                 const analysisId = await storeAnalysis(pool, program, fileType, normalizedAnalysis);
                 logger.info({ program, id: analysisId, fileType }, 'Stored analysis in knowledge graph');
+                
+                // Log to activity logger
+                activityLogger.success(`Analyzed ${fileType}: ${program}`, {
+                    fileType,
+                    duration,
+                    complexity: analysis.cyclomatic_complexity,
+                    cost: analysis.metadata?.cost_usd
+                });
             } catch (err) {
                 logger.error({ error: err.message, stack: err.stack, program }, 'Failed to store in knowledge graph');
+                activityLogger.error(`Failed to store analysis: ${program}`, { error: err.message });
             }
 
             res.json({
@@ -205,6 +215,11 @@ router.post(
                 fileType, 
                 error: error.message 
             }, 'Analysis failed');
+            
+            activityLogger.error(`Analysis failed: ${program}`, { 
+                fileType, 
+                error: error.message 
+            });
             
             throw new AppError(
                 `${fileType} analysis failed: ${error.message}`,

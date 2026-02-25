@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const DashboardView = ({ messages }) => {
+const DashboardView = () => {
   const [metrics, setMetrics] = useState({
     totalPrograms: 127,
     analyzedToday: 15,
@@ -43,21 +43,10 @@ const DashboardView = ({ messages }) => {
           ═══ SYSTEM CONSOLE ═══
         </div>
         
-        {messages.slice(-10).map((msg, idx) => (
-          <div key={idx} className="terminal-line">
-            <span className="terminal-prompt">SYSTEM&gt;</span>
-            <span className="terminal-output">
-              [{new Date(msg.timestamp || Date.now()).toLocaleTimeString()}] {msg.message || msg.type}
-            </span>
-          </div>
-        ))}
-        
-        {messages.length === 0 && (
-          <div className="terminal-line">
-            <span className="terminal-prompt">SYSTEM&gt;</span>
-            <span className="terminal-output">Awaiting commands...</span>
-          </div>
-        )}
+        <div className="terminal-line">
+          <span className="terminal-prompt">SYSTEM&gt;</span>
+          <span className="terminal-output">Bridge connected — use Analyze or Metrics tabs for live data.</span>
+        </div>
       </div>
     </div>
   );

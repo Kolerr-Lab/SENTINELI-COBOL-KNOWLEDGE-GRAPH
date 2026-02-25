@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import FileUploader from '../FileUploader';
 
-const ImpactView = ({ onImpactAnalysis, messages }) => {
+const ImpactView = () => {
   const [field, setField] = useState('');
   const [newType, setNewType] = useState('');
   const [result, setResult] = useState(null);

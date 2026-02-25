@@ -7,10 +7,7 @@ import LogsView from './views/LogsView';
 import MetricsView from './views/MetricsView';
 
 const MainPanel = ({ 
-  activeView, 
-  messages, 
-  onAnalyze, 
-  onImpactAnalysis,
+  activeView,
   loadedModules,
   setLoadedModules,
   graphData,
@@ -19,15 +16,14 @@ const MainPanel = ({
   const renderView = () => {
     switch (activeView) {
       case 'dashboard':
-        return <DashboardView messages={messages} />;
+        return <DashboardView />;
       case 'analyze':
-        return <AnalyzeView onAnalyze={onAnalyze} messages={messages} />;
+        return <AnalyzeView />;
       case 'impact':
-        return <ImpactView onImpactAnalysis={onImpactAnalysis} messages={messages} />;
+        return <ImpactView />;
       case 'graph':
         return (
           <GraphView 
-            messages={messages}
             loadedModules={loadedModules}
             setLoadedModules={setLoadedModules}
             graphData={graphData}
@@ -35,11 +31,11 @@ const MainPanel = ({
           />
         );
       case 'logs':
-        return <LogsView messages={messages} />;
+        return <LogsView />;
       case 'metrics':
-        return <MetricsView messages={messages} />;
+        return <MetricsView />;
       default:
-        return <DashboardView messages={messages} />;
+        return <DashboardView />;
     }
   };
 

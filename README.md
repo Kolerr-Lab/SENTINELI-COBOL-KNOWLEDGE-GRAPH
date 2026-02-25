@@ -249,7 +249,7 @@ npm run start:pm2
 npm run dev
 ```
 
-**Access the Mainframe Dashboard:** http://localhost:5173 (dev) or http://localhost:3100 (production)
+**Access the Mainframe Dashboard:** http://localhost:5173
 
 **What you get instantly:**
 - 🔬 **Formal verification** - Upload COBOL, get Z3 proofs
@@ -279,7 +279,6 @@ node tests/z3_proof.js
 **Production Deployment:**
 - 🚀 **[Deployment Guide](DEPLOYMENT.md)** - Deploy to production safely
 - 🏗️ **[Architecture Guide](ARCHITECTURE.md)** - System design deep dive
-- � **[Port Architecture](PORT_ARCHITECTURE.md)** - Understanding the 3-port setup
 - �🔧 **[Troubleshooting Guide](TROUBLESHOOTING.md)** - Fix common issues
 - 🧪 **[Testing Guide](TESTING_GUIDE.md)** - Run and write tests
 
@@ -408,7 +407,7 @@ Financial institutions need **audit trails**. The dashboard provides:
 ```bash
 # Production mode (PM2)
 npm run start:pm2
-# Dashboard: http://localhost:5173 (Vite dev server)
+# Dashboard: http://localhost:5173
 # Bridge API: http://localhost:8766 (Docker container)
 
 # Development mode
@@ -747,7 +746,7 @@ npm run start:pm2
 ```
 
 This starts both services:
-- 🖥️ **Dashboard**: http://localhost:5173 (Vite dev) or http://localhost:3100 (production build)
+- 🖥️ **Dashboard**: http://localhost:5173
 - 🤖 **Bridge API**: http://localhost:8766 (Docker container)
 
 **4. Verify Installation**
@@ -841,8 +840,7 @@ Builds: Rust gateway, GnuCOBOL compiler, Node.js bridge, PostgreSQL, Redis
 
 | Service | URL | Purpose |
 |---------|-----|----------|
-| Dashboard (Dev) | http://localhost:5173 | Vite dev server with HMR |
-| Dashboard (Prod) | http://localhost:3100 | Express + built React app |
+| Dashboard | http://localhost:5173 | React dashboard (Vite dev / production) |
 | Bridge API | http://localhost:8766 | AI analysis endpoints (Docker) |
 | Health Check | http://localhost:8766/health | Service status |
 | Metrics | http://localhost:8766/api/metrics | LLM usage & cost tracking |

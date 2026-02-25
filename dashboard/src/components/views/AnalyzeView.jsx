@@ -9,7 +9,7 @@ const FILE_TYPES = [
   { value: 'COPYBOOK', label: 'Copybook', extensions: ['.cpy', '.copy'], color: '#00ff88' }
 ];
 
-const AnalyzeView = ({ onAnalyze, messages }) => {
+const AnalyzeView = () => {
   const [program, setProgram] = useState('');
   const [code, setCode] = useState('');
   const [fileType, setFileType] = useState('COBOL');
@@ -47,7 +47,6 @@ const AnalyzeView = ({ onAnalyze, messages }) => {
         setResult({ error: data.error || data.message || `HTTP ${response.status}` });
       } else {
         setResult(data);
-        onAnalyze(program, code, fileType);
       }
     } catch (error) {
       setResult({ error: `Network error: ${error.message}. Check if Bridge service is running.` });

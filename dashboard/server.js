@@ -137,6 +137,26 @@ app.get('/api/metrics', async (req, res) => {
   }
 });
 
+app.get('/api/logs', async (req, res) => {
+  try {
+    const limit = req.query.limit || 50;
+    const response = await axios.get(`${BRIDGE_URL}/api/logs`, {
+      params: { limit },
+      timeout: 5000
+    });
+    res.json(response.data);
+  } catch (error) {
+    console.error('Bridge /api/logs error:', error.message);
+    res.status(503).json({ 
+      success: false,
+      error: 'Bridge backend unavailable',
+      message: 'Cannot fetch logs. Please ensure Bridge service is running.',
+      logs: [],
+      count: 0
+    });
+  }
+});
+
 app.post('/api/impact', async (req, res) => {
   try {
     const response = await axios.post(`${BRIDGE_URL}/api/impact`, req.body);

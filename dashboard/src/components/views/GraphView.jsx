@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import FileUploader from '../FileUploader';
 import mermaid from 'mermaid';
 
-const GraphView = ({ messages, loadedModules, setLoadedModules, graphData, setGraphData }) => {
+const GraphView = ({ loadedModules, setLoadedModules, graphData, setGraphData }) => {
   const [showUploader, setShowUploader] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
