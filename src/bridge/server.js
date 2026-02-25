@@ -210,10 +210,11 @@ app.get('/health', publicLimiter, asyncHandler(async (req, res) => {
 
 /**
  * Metrics endpoint - Real-time LLM cost and performance tracking
- * GET /api/metrics
+ * GET /api/metrics - Now DB-backed (persistent across restarts)
  */
 app.get('/api/metrics', publicLimiter, asyncHandler(async (req, res) => {
-    const metrics = getMetrics();
+    const { getMetricsFromDB } = require('./utils/dbMetrics');
+    const metrics = await getMetricsFromDB(pool);
     const providerInfo = getProviderInfo();
     
     res.json({
@@ -221,20 +222,17 @@ app.get('/api/metrics', publicLimiter, asyncHandler(async (req, res) => {
         metrics: {
             totalCalls: metrics.totalCalls,
             totalProcessingTimeMs: metrics.totalProcessingTimeMs,
-            averageProcessingTimeMs: metrics.averageProcessingTimeMs,
-            totalInputTokens: metrics.totalInputTokens,
-            totalOutputTokens: metrics.totalOutputTokens,
-            totalTokens: metrics.totalInputTokens + metrics.totalOutputTokens,
+            averageProcessingTimeMs: parseFloat(metrics.averageProcessingTimeMs.toFixed(2)),
+            totalTokens: metrics.totalTokens,
             totalCostUSD: parseFloat(metrics.totalCostUSD.toFixed(6)),
-            averageCostPerCall: metrics.averageCostPerCall,
+            averageCostPerCall: parseFloat(metrics.averageCostPerCall.toFixed(6)),
             totalCyclomaticComplexity: metrics.totalCyclomaticComplexity,
-            averageCyclomaticComplexity: metrics.averageCyclomaticComplexity,
-            averageLogicDepth: metrics.averageLogicDepth,
-            averageVariableCount: metrics.averageVariableCount,
-            averageDecisionPoints: metrics.averageDecisionPoints,
-            sessionStartTime: metrics.sessionStartTime,
-            lastResetTime: metrics.lastResetTime,
-            uptimeMinutes: metrics.uptimeMinutes,
+            averageCyclomaticComplexity: parseFloat(metrics.averageCyclomaticComplexity.toFixed(2)),
+            averageLogicDepth: parseFloat(metrics.averageLogicDepth.toFixed(2)),
+            averageVariableCount: parseFloat(metrics.averageVariableCount.toFixed(2)),
+            averageDecisionPoints: parseFloat(metrics.averageDecisionPoints.toFixed(2)),
+            firstAnalysis: metrics.firstAnalysis,
+            lastAnalysis: metrics.lastAnalysis,
             // AI Provider info
             aiProvider: providerInfo.provider,
             aiModel: providerInfo.model
@@ -243,14 +241,16 @@ app.get('/api/metrics', publicLimiter, asyncHandler(async (req, res) => {
 }));
 
 /**
- * Reset metrics endpoint
+ * Reset metrics endpoint - Clears all analyses from database
  * POST /api/metrics/reset
  */
 app.post('/api/metrics/reset', publicLimiter, asyncHandler(async (req, res) => {
-    resetMetrics();
+    const { resetAllMetrics } = require('./utils/dbMetrics');
+    const result = await resetAllMetrics(pool);
+    
     res.json({
         success: true,
-        message: 'Metrics reset successfully'
+        message: result.message
     });
 }));
 

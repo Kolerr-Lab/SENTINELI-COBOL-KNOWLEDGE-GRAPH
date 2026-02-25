@@ -20,22 +20,34 @@ async function analyze(code, program, options = {}) {
 CICS Source:
 ${code}
 
-Return JSON with this schema:
+Return JSON with this exact schema:
 {
-  "business_rules": ["Transaction processes customer inquiry", ...],
-  "decision_tree": { "screens": [...], "commands": [...] },
-  "propagator_network": { "maps": [...], "files": [...], "programs": [...] },
+  "business_rules": ["Transaction processes customer inquiry", "SEND MAP displays data to terminal"],
+  "decision_tree": { 
+    "root": "CICS Transaction Flow",
+    "branches": [
+      { "condition": "EIBCALEN = 0", "action": "Initial entry", "branches": [] },
+      { "condition": "EIBAID = ENTER", "action": "Process input", "branches": [] }
+    ]
+  },
+  "propagator_network": { 
+    "dataflows": [
+      { "source": "TERMINAL", "target": "COMMAREA", "operation": "RECEIVE" },
+      { "source": "FILE", "target": "WORKING-STORAGE", "operation": "READ" },
+      { "source": "MAP", "target": "TERMINAL", "operation": "SEND" }
+    ]
+  },
   "complexity_metrics": {
     "cyclomatic_complexity": number,
-    "command_count": number,
-    "screen_count": number,
-    "error_handlers": number
+    "logic_depth": number,
+    "variable_count": number,
+    "decision_points": number
   },
   "dependencies": {
-    "maps": ["MAP1", "MAP2"],
-    "programs": ["PROG1"],
-    "files": ["FILE1"],
-    "queues": ["QUEUE1"]
+    "called_programs": ["PROG1", "PROG2"],
+    "copybooks": ["MAP1", "MAP2"],
+    "files": ["FILE1", "QUEUE1"],
+    "databases": []
   }
 }`;
 

@@ -45,27 +45,96 @@ router.get(
             
             if (result.rows.length > 0) {
                 // Build graph from analyzed modules
-                const nodes = result.rows.map((row, idx) => ({
-                    id: idx,
-                    label: row.file_name,
-                    type: 'COBOL_PROGRAM',
-                    complexity: JSON.parse(row.analysis).complexity_metrics?.cyclomatic_complexity || 0,
-                    metadata: {
-                        analyzed_at: row.created_at
-                    }
-                }));
+                const nodes = result.rows.map((row, idx) => {
+                    const analysis = JSON.parse(row.analysis);
+                    const fileType = row.file_name.endsWith('.cob') || row.file_name.endsWith('.cbl') ? 'COBOL' :
+                                    row.file_name.endsWith('.jcl') ? 'JCL' :
+                                    row.file_name.endsWith('.asm') ? 'ASSEMBLER' :
+                                    row.file_name.endsWith('.rpg') || row.file_name.endsWith('.rpgle') ? 'RPG' :
+                                    row.file_name.endsWith('.rexx') ? 'REXX' :
+                                    row.file_name.endsWith('.pli') ? 'PL/I' : 'UNKNOWN';
+                    
+                    return {
+                        id: idx,
+                        label: row.file_name,
+                        type: 'PROGRAM',
+                        fileType: fileType,
+                        complexity: analysis.complexity_metrics?.cyclomatic_complexity || 0,
+                        metadata: {
+                            analyzed_at: row.created_at,
+                            logic_depth: analysis.complexity_metrics?.logic_depth || 0,
+                            variable_count: analysis.complexity_metrics?.variable_count || 0,
+                            decision_points: analysis.complexity_metrics?.decision_points || 0
+                        }
+                    };
+                });
                 
-                // Generate edges based on dependencies (simplified)
+                // Generate edges from analysis dataflows (new format) or edges (old format - backwards compatible)
                 const edges = [];
-                for (let i = 0; i < nodes.length - 1; i++) {
-                    if (Math.random() > 0.5) { // Simulate dependency
-                        edges.push({
-                            from: i,
-                            to: i + 1,
-                            type: 'CALLS'
+                result.rows.forEach((row, fromIdx) => {
+                    const analysis = JSON.parse(row.analysis);
+                    const propagator = analysis.propagator_network;
+                    
+                    // Check for dataflows (new format) or edges (old format)
+                    const dataflows = propagator?.dataflows || propagator?.edges || [];
+                    
+                    // Build internal dataflow edges
+                    dataflows.forEach((flow, flowIdx) => {
+                        const source = flow.source || flow.from;
+                        const target = flow.target || flow.to;
+                        const operation = flow.operation || flow.type || 'DATAFLOW';
+                        
+                        if (source && target) {
+                            edges.push({
+                                from: fromIdx,
+                                to: fromIdx, // Internal dataflow within same module
+                                type: operation,
+                                metadata: {
+                                    internal: true,
+                                    source,
+                                    target
+                                }
+                            });
+                        }
+                    });
+                    
+                    // Build external dependency edges
+                    const deps = analysis.dependencies || {};
+                    
+                    // CALL statements -> program dependencies
+                    if (deps.called_programs && deps.called_programs.length > 0) {
+                        deps.called_programs.forEach(calledProg => {
+                            const toIdx = result.rows.findIndex(r => 
+                                r.file_name.toUpperCase().includes(calledProg.toUpperCase())
+                            );
+                            if (toIdx >= 0 && toIdx !== fromIdx) {
+                                edges.push({
+                                    from: fromIdx,
+                                    to: toIdx,
+                                    type: 'CALLS',
+                                    metadata: { program: calledProg }
+                                });
+                            }
                         });
                     }
-                }
+                    
+                    // Add edges for copybooks (if present in graph)
+                    if (deps.copybooks && deps.copybooks.length > 0) {
+                        deps.copybooks.forEach(copybook => {
+                            const toIdx = result.rows.findIndex(r => 
+                                r.file_name.toUpperCase().includes(copybook.toUpperCase())
+                            );
+                            if (toIdx >= 0 && toIdx !== fromIdx) {
+                                edges.push({
+                                    from: fromIdx,
+                                    to: toIdx,
+                                    type: 'INCLUDES',
+                                    metadata: { copybook }
+                                });
+                            }
+                        });
+                    }
+                });
                 
                 graphData = { nodes, edges };
             } else {

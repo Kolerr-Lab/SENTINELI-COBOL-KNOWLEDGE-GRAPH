@@ -19,22 +19,33 @@ async function analyze(code, program, options = {}) {
 VSAM Definition:
 ${code}
 
-Return JSON with this schema:
+Return JSON with this exact schema:
 {
-  "business_rules": ["KSDS with primary key on customer ID", ...],
-  "decision_tree": { "access_methods": [...] },
-  "propagator_network": { "keys": [...], "records": [...] },
+  "business_rules": ["KSDS with primary key on customer ID", "Alternate index on account number"],
+  "decision_tree": { 
+    "root": "VSAM Access",
+    "branches": [
+      { "condition": "Direct read by key", "action": "KSDS lookup", "branches": [] },
+      { "condition": "Sequential scan", "action": "Browse records", "branches": [] }
+    ]
+  },
+  "propagator_network": { 
+    "dataflows": [
+      { "source": "PRIMARY_KEY", "target": "INDEX", "operation": "KEY_LOOKUP" },
+      { "source": "INDEX", "target": "DATA_RECORD", "operation": "READ" }
+    ]
+  },
   "complexity_metrics": {
     "cyclomatic_complexity": 1,
-    "key_count": number,
-    "record_length": number,
-    "field_count": number
+    "logic_depth": 1,
+    "variable_count": number,
+    "decision_points": 0
   },
   "dependencies": {
-    "cluster_name": "string",
-    "catalog": "string",
-    "data_component": "string",
-    "index_component": "string"
+    "called_programs": [],
+    "copybooks": [],
+    "files": ["CLUSTER_NAME", "DATA_COMPONENT", "INDEX_COMPONENT"],
+    "databases": []
   }
 }`;
 

@@ -181,9 +181,22 @@ router.post(
                 cost: analysis.metadata?.cost_usd 
             }, `${fileType} analysis completed`);
 
+            // Normalize schema and check dependencies
+            const { normalizeSchema, checkDependencies, storeAnalysis } = require('../utils/dbMetrics');
+            let normalizedAnalysis = normalizeSchema(analysis);
+            normalizedAnalysis = checkDependencies(normalizedAnalysis, fileType);
+
+            // Store in knowledge graph database
+            try {
+                const analysisId = await storeAnalysis(pool, program, fileType, normalizedAnalysis);
+                logger.info({ program, id: analysisId, fileType }, 'Stored analysis in knowledge graph');
+            } catch (err) {
+                logger.error({ error: err.message, stack: err.stack, program }, 'Failed to store in knowledge graph');
+            }
+
             res.json({
                 success: true,
-                ...analysis,
+                ...normalizedAnalysis,
                 duration
             });
         } catch (error) {
@@ -272,21 +285,32 @@ router.post(
         const duration = Date.now() - startTime;
         logger.logAiAnalysis(file, false, duration);
 
-        // Store in knowledge graph database
+        // Normalize schema (backwards compatible)
+        const { normalizeSchema, checkDependencies, storeAnalysis } = require('../utils/dbMetrics');
+        let normalizedAnalysis = normalizeSchema(analysis);
+        
+        // Check dependencies and add warnings
+        const fileType = file.endsWith('.cob') || file.endsWith('.cbl') ? 'COBOL' :
+                        file.endsWith('.jcl') ? 'JCL' :
+                        file.endsWith('.asm') ? 'ASSEMBLER' :
+                        file.endsWith('.rpg') || file.endsWith('.rpgle') ? 'RPG' :
+                        file.endsWith('.rexx') ? 'REXX' :
+                        file.endsWith('.pli') ? 'PL/I' : 'UNKNOWN';
+        
+        normalizedAnalysis = checkDependencies(normalizedAnalysis, fileType);
+
+        // Store in knowledge graph database (never overwrites - always inserts new row)
         try {
-            await pool.query(
-                'INSERT INTO knowledge_graph (file_name, analysis) VALUES ($1, $2) ON CONFLICT (file_name) DO UPDATE SET analysis = $2, created_at = NOW()',
-                [file, JSON.stringify(analysis)]
-            );
-            logger.info({ file }, 'Stored analysis in knowledge graph');
+            const analysisId = await storeAnalysis(pool, file, fileType, normalizedAnalysis);
+            logger.info({ file, id: analysisId, fileType }, 'Stored analysis in knowledge graph');
         } catch (err) {
-            logger.warn({ error: err }, 'Failed to store in knowledge graph');
+            logger.error({ error: err.message, stack: err.stack, file }, 'Failed to store in knowledge graph');
         }
 
         // Cache result
         try {
             if (redisConnected) {
-                await redisClient.setEx(cacheKey, 3600, JSON.stringify(analysis)); // 1 hour TTL
+                await redisClient.setEx(cacheKey, 3600, JSON.stringify(normalizedAnalysis)); // 1 hour TTL
                 logger.info({ file }, 'Cached analysis result');
             }
         } catch (err) {
@@ -294,7 +318,7 @@ router.post(
         }
 
         res.json({
-            ...analysis,
+            ...normalizedAnalysis,
             duration,
             cached: false
         });

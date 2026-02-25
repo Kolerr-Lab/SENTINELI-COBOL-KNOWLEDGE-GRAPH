@@ -20,21 +20,32 @@ async function analyze(code, program, options = {}) {
 Copybook Source:
 ${code}
 
-Return JSON with this schema:
+Return JSON with this exact schema:
 {
-  "business_rules": ["Defines customer record structure", ...],
-  "decision_tree": { "redefines": [...], "conditions": [...] },
-  "propagator_network": { "fields": [...], "hierarchy": [...] },
+  "business_rules": ["Defines customer record structure with 01 level", "REDEFINES provides alternate layout"],
+  "decision_tree": { 
+    "root": "Record Layout",
+    "branches": [
+      { "condition": "REDEFINES clause", "action": "Alternate view", "branches": [] }
+    ]
+  },
+  "propagator_network": { 
+    "dataflows": [
+      { "source": "01-LEVEL", "target": "05-FIELD", "operation": "HIERARCHY" },
+      { "source": "FIELD", "target": "REDEFINES-FIELD", "operation": "OVERLAY" }
+    ]
+  },
   "complexity_metrics": {
     "cyclomatic_complexity": 1,
-    "field_count": number,
-    "hierarchy_depth": number,
-    "total_bytes": number
+    "logic_depth": number,
+    "variable_count": number,
+    "decision_points": 0
   },
   "dependencies": {
-    "used_by_programs": [],
-    "nested_copybooks": [],
-    "pic_types": ["X", "9", "S9", "COMP-3"]
+    "called_programs": [],
+    "copybooks": [],
+    "files": [],
+    "databases": []
   }
 }`;
 

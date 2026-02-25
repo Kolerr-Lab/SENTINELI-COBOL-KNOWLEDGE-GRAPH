@@ -19,10 +19,10 @@ async function analyze(code, program, options = {}) {
 
   const prompt = `Analyze this COBOL program and extract:
 1. Business rules (as plain English statements)
-2. Decision tree (conditional logic flow)
-3. Propagator network (data dependencies)
+2. Decision tree (conditional logic flow with nested branches)
+3. Propagator network (data flow relationships)
 4. Complexity metrics (cyclomatic complexity, logic depth, decision points)
-5. External dependencies (CALL statements, copybooks, file I/O)
+5. External dependencies (CALL statements, copybooks, file I/O, embedded SQL)
 
 COBOL Source:
 ${code}
@@ -30,8 +30,17 @@ ${code}
 Return JSON with this exact schema:
 {
   "business_rules": ["rule1", "rule2", ...],
-  "decision_tree": { "root": "condition", "branches": [...] },
-  "propagator_network": { "variables": [...], "dataflows": [...] },
+  "decision_tree": { 
+    "root": "condition", 
+    "branches": [
+      { "condition": "...", "action": "...", "branches": [...] }
+    ] 
+  },
+  "propagator_network": { 
+    "dataflows": [
+      { "source": "var1", "target": "var2", "operation": "MOVE/COMPUTE/etc" }
+    ]
+  },
   "complexity_metrics": {
     "cyclomatic_complexity": number,
     "logic_depth": number,
@@ -42,7 +51,7 @@ Return JSON with this exact schema:
     "called_programs": ["PROG1", "PROG2"],
     "copybooks": ["COPYBOOK1"],
     "files": ["FILE1"],
-    "databases": []
+    "databases": ["DB1", "TABLE1"] // Extract from EXEC SQL statements
   }
 }`;
 

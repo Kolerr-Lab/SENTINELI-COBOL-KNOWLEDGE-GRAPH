@@ -14,27 +14,38 @@ async function analyze(code, program, options = {}) {
 1. Job flow (step sequence and dependencies)
 2. Program execution calls (EXEC PGM=...)
 3. Dataset dependencies (DD statements)
-4. Conditional logic (IF/THEN/ELSE, COND)
+4. Conditional logic (IF/THEN/ELSE, COND with nested branches)
 5. Complexity metrics
 
 JCL Source:
 ${code}
 
-Return JSON with this schema:
+Return JSON with this exact schema:
 {
   "business_rules": ["Step X executes COBOL program Y", ...],
-  "decision_tree": { "steps": [...], "conditions": [...] },
-  "propagator_network": { "datasets": [...], "programs_called": [...] },
+  "decision_tree": { 
+    "root": "Job Flow",
+    "branches": [
+      { "step": "STEP01", "condition": "RC=0", "action": "EXEC PGM", "branches": [...] }
+    ]
+  },
+  "propagator_network": { 
+    "dataflows": [
+      { "source": "DATASET1", "target": "PROG1", "operation": "INPUT" },
+      { "source": "PROG1", "target": "DATASET2", "operation": "OUTPUT" }
+    ]
+  },
   "complexity_metrics": {
     "cyclomatic_complexity": number,
     "logic_depth": number,
-    "step_count": number,
+    "variable_count": number,
     "decision_points": number
   },
   "dependencies": {
     "called_programs": ["PROG1", "PROG2"],
-    "datasets": ["DATASET1", "DATASET2"],
-    "proclibs": ["PROC1"]
+    "copybooks": [],
+    "files": ["DATASET1", "DATASET2"],
+    "databases": []
   }
 }`;
 

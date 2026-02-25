@@ -20,22 +20,32 @@ async function analyze(code, program, options = {}) {
 DB2 Source:
 ${code}
 
-Return JSON with this schema:
+Return JSON with this exact schema:
 {
-  "business_rules": ["Query retrieves customer data", ...],
-  "decision_tree": { "queries": [...], "conditions": [...] },
-  "propagator_network": { "tables": [...], "columns": [...], "relationships": [...] },
+  "business_rules": ["Query retrieves customer data", "Join between CUSTOMER and ACCOUNT tables"],
+  "decision_tree": { 
+    "root": "SQL Query Flow",
+    "branches": [
+      { "condition": "WHERE clause", "action": "Filter rows", "branches": [] }
+    ]
+  },
+  "propagator_network": { 
+    "dataflows": [
+      { "source": "CUSTOMER.ID", "target": "ACCOUNT.CUSTOMER_ID", "operation": "JOIN" },
+      { "source": "TABLE.COLUMN", "target": "RESULT_SET", "operation": "SELECT" }
+    ]
+  },
   "complexity_metrics": {
     "cyclomatic_complexity": number,
-    "join_depth": number,
-    "table_count": number,
-    "query_count": number
+    "logic_depth": number,
+    "variable_count": number,
+    "decision_points": number
   },
   "dependencies": {
-    "tables": ["CUSTOMER", "ACCOUNT"],
-    "views": ["V_CUSTOMER_SUMMARY"],
-    "stored_procedures": ["SP_PROCESS_TXN"],
-    "triggers": ["TRG_AUDIT"]
+    "called_programs": [],
+    "copybooks": [],
+    "files": [],
+    "databases": ["CUSTOMER", "ACCOUNT", "V_CUSTOMER_SUMMARY"]
   }
 }`;
 

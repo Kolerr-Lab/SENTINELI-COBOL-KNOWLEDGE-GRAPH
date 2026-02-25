@@ -163,9 +163,120 @@ const AnalyzeView = ({ onAnalyze, messages }) => {
                   </div>
                 </div>
               )}
-              <pre style={{ whiteSpace: 'pre-wrap', fontSize: '0.85rem' }}>
-                {JSON.stringify(result, null, 2)}
-              </pre>
+
+              {/* Warnings Section */}
+              {result.warnings && result.warnings.length > 0 && (
+                <div style={{ 
+                  marginBottom: '1rem', 
+                  padding: '0.75rem', 
+                  border: '1px solid var(--warning-amber)',
+                  backgroundColor: 'rgba(255, 170, 0, 0.1)'
+                }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--warning-amber)' }}>
+                    ⚠️ Warnings:
+                  </div>
+                  {result.warnings.map((warning, idx) => (
+                    <div key={idx} style={{ fontSize: '0.85rem', marginBottom: '0.3rem' }}>
+                      • {warning.message}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Dependencies Section */}
+              {result.dependencies && (
+                <div style={{ marginBottom: '1rem' }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--modern-blue)' }}>
+                    📦 Dependencies:
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', fontSize: '0.85rem' }}>
+                    {result.dependencies.called_programs && result.dependencies.called_programs.length > 0 && (
+                      <div>
+                        <span style={{ color: 'var(--primary-green)' }}>Called Programs:</span>
+                        <div style={{ marginLeft: '1rem' }}>
+                          {result.dependencies.called_programs.map((prog, idx) => (
+                            <div key={idx}>→ {prog}</div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {result.dependencies.copybooks && result.dependencies.copybooks.length > 0 && (
+                      <div>
+                        <span style={{ color: 'var(--primary-green)' }}>Copybooks:</span>
+                        <div style={{ marginLeft: '1rem' }}>
+                          {result.dependencies.copybooks.map((cb, idx) => (
+                            <div key={idx}>→ {cb}</div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {result.dependencies.files && result.dependencies.files.length > 0 && (
+                      <div>
+                        <span style={{ color: 'var(--primary-green)' }}>Files:</span>
+                        <div style={{ marginLeft: '1rem' }}>
+                          {result.dependencies.files.map((file, idx) => (
+                            <div key={idx}>→ {file}</div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {result.dependencies.databases && result.dependencies.databases.length > 0 && (
+                      <div>
+                        <span style={{ color: 'var(--primary-green)' }}>Databases:</span>
+                        <div style={{ marginLeft: '1rem' }}>
+                          {result.dependencies.databases.map((db, idx) => (
+                            <div key={idx}>→ {db}</div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Business Rules */}
+              {result.business_rules && result.business_rules.length > 0 && (
+                <div style={{ marginBottom: '1rem' }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--modern-blue)' }}>
+                    📋 Business Rules:
+                  </div>
+                  {result.business_rules.map((rule, idx) => (
+                    <div key={idx} style={{ fontSize: '0.85rem', marginBottom: '0.2rem', color: 'var(--primary-green)' }}>
+                      {idx + 1}. {rule}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Complexity Metrics */}
+              {result.complexity_metrics && (
+                <div style={{ marginBottom: '1rem' }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--modern-blue)' }}>
+                    📊 Complexity Metrics:
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem', fontSize: '0.85rem' }}>
+                    <div>Cyclomatic: <strong>{result.complexity_metrics.cyclomatic_complexity || 0}</strong></div>
+                    <div>Logic Depth: <strong>{result.complexity_metrics.logic_depth || 0}</strong></div>
+                    <div>Variables: <strong>{result.complexity_metrics.variable_count || 0}</strong></div>
+                    <div>Decisions: <strong>{result.complexity_metrics.decision_points || 0}</strong></div>
+                  </div>
+                </div>
+              )}
+
+              {/* Full JSON (collapsed by default) */}
+              <details style={{ marginTop: '1rem' }}>
+                <summary style={{ 
+                  cursor: 'pointer', 
+                  fontWeight: 'bold', 
+                  color: 'var(--modern-blue)',
+                  marginBottom: '0.5rem'
+                }}>
+                  🔍 View Complete JSON
+                </summary>
+                <pre style={{ whiteSpace: 'pre-wrap', fontSize: '0.75rem', marginTop: '0.5rem' }}>
+                  {JSON.stringify(result, null, 2)}
+                </pre>
+              </details>
             </>
           )}
         </div>

@@ -91,7 +91,7 @@ const Header = ({ connected, bridgeStatus, gatewayStatus }) => {
 
             <div className="status-indicator">
               <span className="status-dot active"></span>
-              <span>AVG COMPLEXITY: {metrics.averageCyclomaticComplexity || 0}</span>
+              <span>AVG COMPLEXITY: {(metrics.averageCyclomaticComplexity || 0).toFixed(1)}</span>
             </div>
           </>
         )}
