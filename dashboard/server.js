@@ -8,6 +8,7 @@ const http = require('http');
 const WebSocket = require('ws');
 const cors = require('cors');
 const axios = require('axios');
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
@@ -19,7 +20,7 @@ const GATEWAY_URL = process.env.GATEWAY_URL || 'http://localhost:8080';
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static('dist'));
+app.use(express.static(path.join(__dirname, 'dist')));
 
 // Store active connections
 const clients = new Set();
@@ -88,15 +89,19 @@ app.get('/api/health', async (req, res) => {
 
 app.get('/api/system/status', async (req, res) => {
   try {
-    const status = {
-      uptime: process.uptime(),
-      memory: process.memoryUsage(),
-      connections: clients.size,
-      timestamp: new Date().toISOString()
-    };
-    res.json(status);
+    // Forward directly to Bridge system status
+    const bridgeStatus = await axios.get(`${BRIDGE_URL}/api/system/status`, { timeout: 5000 });
+    
+    // Return Bridge data directly (includes all metrics)
+    res.json(bridgeStatus.data);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Bridge /api/system/status error:', error.message);
+    res.status(503).json({ 
+      error: 'Bridge backend unavailable',
+      message: 'The Bridge service is not responding. Please ensure it is running on port 3000.',
+      status: 'OFFLINE',
+      bridgeUrl: BRIDGE_URL
+    });
   }
 });
 
@@ -106,26 +111,57 @@ app.post('/api/analyze', async (req, res) => {
     broadcast({ type: 'analysis', data: response.data });
     res.json(response.data);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(error.response?.status || 500).json({ 
+      error: error.message,
+      details: error.response?.data 
+    });
   }
 });
 
 app.get('/api/metrics', async (req, res) => {
   try {
-    const response = await axios.get(`${BRIDGE_URL}/api/metrics`);
+    const response = await axios.get(`${BRIDGE_URL}/api/metrics`, { timeout: 5000 });
     res.json(response.data);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Bridge /api/metrics error:', error.message);
+    res.status(503).json({ 
+      success: false,
+      error: 'Bridge backend unavailable',
+      message: 'Cannot fetch metrics. Please ensure Bridge service is running.',
+      metrics: {
+        totalCalls: 0,
+        totalCostUSD: 0,
+        totalProcessingTimeMs: 0
+      }
+    });
   }
 });
 
 app.post('/api/impact', async (req, res) => {
   try {
-    const response = await axios.post(`${BRIDGE_URL}/api/impact-analysis`, req.body);
+    const response = await axios.post(`${BRIDGE_URL}/api/impact`, req.body);
     broadcast({ type: 'impact', data: response.data });
     res.json(response.data);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(error.response?.status || 500).json({ 
+      error: error.message,
+      details: error.response?.data 
+    });
+  }
+});
+
+app.get('/api/graph', async (req, res) => {
+  try {
+    const response = await axios.get(`${BRIDGE_URL}/api/graph`, { timeout: 5000 });
+    res.json(response.data);
+  } catch (error) {
+    console.error('Bridge /api/graph error:', error.message);
+    res.status(503).json({ 
+      success: false,
+      error: 'Bridge backend unavailable',
+      message: 'Cannot fetch knowledge graph. Please ensure Bridge service is running.',
+      graph: { nodes: [], edges: [] }
+    });
   }
 });
 
@@ -143,7 +179,7 @@ async function handleAnalysis(ws, payload) {
 async function handleImpactAnalysis(ws, payload) {
   try {
     ws.send(JSON.stringify({ type: 'status', message: 'Running impact analysis...' }));
-    const response = await axios.post(`${BRIDGE_URL}/api/impact-analysis`, payload);
+    const response = await axios.post(`${BRIDGE_URL}/api/impact`, payload);
     ws.send(JSON.stringify({ type: 'impact_result', data: response.data }));
   } catch (error) {
     ws.send(JSON.stringify({ type: 'error', message: error.message }));
@@ -182,6 +218,11 @@ function broadcast(message) {
     }
   });
 }
+
+// Serve React SPA for all non-API routes (must be last!)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
 
 // Start server
 server.listen(PORT, () => {

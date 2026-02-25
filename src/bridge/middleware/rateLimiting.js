@@ -106,6 +106,7 @@ const aiAnalysisLimiter = rateLimit({
 
 /**
  * Moderate rate limiter for public endpoints
+ * Excludes localhost/dashboard for real-time polling
  */
 const publicLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
@@ -119,6 +120,12 @@ const publicLimiter = rateLimit({
             message: 'Please slow down your requests.',
             retryAfter: Math.ceil(req.rateLimit.resetTime / 1000)
         });
+    },
+    // Skip rate limiting for dashboard (localhost polling)
+    skip: (req) => {
+        // Allow unlimited requests from localhost (dashboard polling)
+        const isLocalhost = req.ip === '::1' || req.ip === '127.0.0.1' || req.ip === '::ffff:127.0.0.1';
+        return isLocalhost;
     }
 });
 

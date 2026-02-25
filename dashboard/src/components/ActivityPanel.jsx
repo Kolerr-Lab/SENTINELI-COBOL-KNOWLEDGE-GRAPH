@@ -27,6 +27,30 @@ const ActivityPanel = ({ messages }) => {
     }
   };
 
+  const formatMessage = (activity) => {
+    // If there's a direct message, show it
+    if (activity.message && typeof activity.message === 'string') {
+      return activity.message;
+    }
+    
+    // If message is an object, format it
+    if (activity.message && typeof activity.message === 'object') {
+      return JSON.stringify(activity.message, null, 2);
+    }
+    
+    // Show specific data fields based on type
+    if (activity.type === 'analysis' && activity.data) {
+      return JSON.stringify(activity.data, null, 2);
+    }
+    
+    if (activity.type === 'impact' && activity.data) {
+      return JSON.stringify(activity.data, null, 2);
+    }
+    
+    // Fallback: show full object
+    return JSON.stringify(activity, null, 2);
+  };
+
   return (
     <div className="panel activity-panel">
       <div className="panel-header">═══ LIVE ACTIVITY ═══</div>
@@ -45,9 +69,9 @@ const ActivityPanel = ({ messages }) => {
             <div className="activity-time">
               {getActivityIcon(activity.type)} {formatTimestamp(activity.timestamp)}
             </div>
-            <div className="activity-message">
-              {activity.message || JSON.stringify(activity).substring(0, 100)}
-            </div>
+            <pre className="activity-message">
+              {formatMessage(activity)}
+            </pre>
           </div>
         ))
       )}

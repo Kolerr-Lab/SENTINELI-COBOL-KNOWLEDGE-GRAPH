@@ -324,6 +324,28 @@ body {
 
 .activity-message {
   color: var(--mainframe-green);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-height: 400px;
+  overflow-y: auto;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  margin: 0;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.activity-message::-webkit-scrollbar {
+  width: 6px;
+}
+
+.activity-message::-webkit-scrollbar-thumb {
+  background: var(--mainframe-border);
+  border-radius: 3px;
+}
+
+.activity-message::-webkit-scrollbar-thumb:hover {
+  background: var(--mainframe-green);
 }
 
 /* Knowledge Graph Visualization */

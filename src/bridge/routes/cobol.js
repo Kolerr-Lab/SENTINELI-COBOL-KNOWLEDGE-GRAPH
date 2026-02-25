@@ -1,0 +1,267 @@
+/**
+ * COBOL Execution & Analysis Routes
+ * Copyright (c) 2026 Ricky Anh Nguyen, OrchesityAI & Kolerr Lab
+ */
+
+const express = require('express');
+const { spawn } = require('child_process');
+const fs = require('fs');
+const path = require('path');
+const router = express.Router();
+
+const logger = require('../utils/logger');
+const { authenticateEither } = require('../middleware/auth');
+const {
+    validateCobolExecution,
+    validateFileAnalysis,
+    validateProgramWhitelist
+} = require('../middleware/validation');
+const {
+    generalLimiter,
+    executionLimiter,
+    aiAnalysisLimiter
+} = require('../middleware/rateLimiting');
+const { AppError, asyncHandler } = require('../middleware/errorHandler');
+const { extractSymbolicConstraints } = require('../ai_agent');
+
+// External dependencies (injected when mounting routes)
+let pool, redisClient, redisConnected;
+
+/**
+ * Initialize route dependencies
+ */
+function initCobolRoutes(dependencies) {
+    pool = dependencies.pool;
+    redisClient = dependencies.redisClient;
+    redisConnected = dependencies.redisConnected;
+}
+
+/**
+ * Execute COBOL Program
+ * POST /api/run/:program
+ * 
+ * Body: { AGE, INCOME, CREDIT_SCORE, DEBT, NAME? }
+ * Auth: JWT or API Key required
+ * Rate Limit: 50/15min
+ */
+router.post(
+    '/run/:program',
+    generalLimiter,
+    executionLimiter,
+    authenticateEither,
+    validateProgramWhitelist,
+    validateCobolExecution,
+    asyncHandler(async (req, res) => {
+        const startTime = Date.now();
+        const { program } = req.params;
+        const inputs = req.body;
+
+        logger.info({ program, inputs, user: req.user?.sub || 'api_key' }, 'Executing COBOL program');
+
+        // Path to executable
+        const execPath = path.join(__dirname, '../../../bin', program);
+
+        if (!fs.existsSync(execPath)) {
+            throw new AppError(
+                `Program '${program}' not found. Please ensure COBOL source is compiled.`,
+                404,
+                { program, execPath }
+            );
+        }
+
+        // Set up environment variables for COBOL program
+        const env = { ...process.env, ...inputs };
+
+        // Execute COBOL program
+        const child = spawn(execPath, [], { env });
+
+        let stdout = '';
+        let stderr = '';
+
+        child.stdout.on('data', (data) => {
+            stdout += data.toString();
+        });
+
+        child.stderr.on('data', (data) => {
+            stderr += data.toString();
+        });
+
+        // Wait for execution to complete
+        await new Promise((resolve, reject) => {
+            child.on('close', (code) => {
+                const duration = Date.now() - startTime;
+
+                if (code !== 0 && stderr) {
+                    logger.error({ program, exitCode: code, stderr, duration }, 'COBOL execution failed');
+                    reject(new AppError(
+                        `COBOL program execution failed with exit code ${code}`,
+                        500,
+                        { exitCode: code, stderr: stderr.substring(0, 500) }
+                    ));
+                } else {
+                    logger.logCobolExecution(program, inputs, { exitCode: code }, duration);
+                    resolve();
+                }
+            });
+
+            child.on('error', (err) => {
+                logger.error({ program, error: err }, 'COBOL execution error');
+                reject(new AppError('Failed to execute COBOL program', 500));
+            });
+        });
+
+        const duration = Date.now() - startTime;
+
+        // Parse output
+        const result = {
+            program,
+            success: true,
+            duration,
+            stdout: stdout.trim(),
+            metadata: {
+                executed_at: new Date().toISOString(),
+                user: req.user?.sub || 'api_key'
+            }
+        };
+
+        res.json(result);
+    })
+);
+
+/**
+ * Analyze COBOL Source Code (Ad-hoc)
+ * POST /api/analyze
+ * 
+ * Body: { program, code }
+ * Auth: Optional (public endpoint for demo)
+ * Rate Limit: 10/hour (expensive AI calls)
+ */
+router.post(
+    '/analyze',
+    generalLimiter,
+    aiAnalysisLimiter,
+    asyncHandler(async (req, res) => {
+        const startTime = Date.now();
+        const { program, code } = req.body;
+
+        if (!program || !code) {
+            throw new AppError('Missing required fields: program and code', 400);
+        }
+
+        logger.info({ program, codeLength: code.length }, 'Ad-hoc AI analysis requested');
+
+        // Perform AI analysis on provided code
+        const analysis = await extractSymbolicConstraints(code);
+        analysis.program = program;
+        analysis.analyzed_at = new Date().toISOString();
+
+        const duration = Date.now() - startTime;
+        logger.info({ program, duration }, 'Ad-hoc analysis completed');
+
+        res.json({
+            ...analysis,
+            duration
+        });
+    })
+);
+
+/**
+ * Analyze COBOL Source File with AI
+ * POST /api/analyze/:file
+ * 
+ * Auth: JWT or API Key required
+ * Rate Limit: 10/hour (expensive AI calls)
+ */
+router.post(
+    '/analyze/:file',
+    generalLimiter,
+    aiAnalysisLimiter,
+    authenticateEither,
+    validateFileAnalysis,
+    asyncHandler(async (req, res) => {
+        const startTime = Date.now();
+        const { file } = req.params;
+        const cacheKey = `analysis:${file}`;
+
+        logger.info({ file, user: req.user?.sub || 'api_key' }, 'AI analysis requested');
+
+        // Check cache first (if Redis is available)
+        try {
+            if (redisConnected) {
+                const cached = await redisClient.get(cacheKey);
+                if (cached) {
+                    const duration = Date.now() - startTime;
+                    logger.logAiAnalysis(file, true, duration);
+                    
+                    // Parse cached result to extract complexity for metrics tracking
+                    const cachedData = JSON.parse(cached);
+                    const cachedComplexity = cachedData.complexity_metrics || {};
+                    
+                    // Update metrics for cache hit (but no cost since no AI call)
+                    const { updateMetricsForCacheHit } = require('../ai_agent');
+                    updateMetricsForCacheHit(cachedComplexity);
+
+                    return res.json({
+                        ...cachedData,
+                        cached: true,
+                        duration
+                    });
+                }
+            }
+        } catch (err) {
+            logger.warn({ error: err }, 'Redis cache check failed');
+        }
+
+        // Read COBOL file
+        const filePath = path.join(__dirname, '../../../src/cobol', file);
+        
+        if (!fs.existsSync(filePath)) {
+            throw new AppError(
+                `File '${file}' not found in COBOL directory`,
+                404,
+                { file, filePath }
+            );
+        }
+
+        const code = fs.readFileSync(filePath, 'utf-8');
+        logger.info({ file, codeLength: code.length }, 'Read COBOL source');
+
+        // Perform AI symbolic analysis
+        const analysis = await extractSymbolicConstraints(code);
+        analysis.file = file;
+        analysis.analyzed_at = new Date().toISOString();
+        analysis.ai_model = process.env.OPENAI_MODEL || 'gpt-4o';
+
+        const duration = Date.now() - startTime;
+        logger.logAiAnalysis(file, false, duration);
+
+        // Store in knowledge graph database
+        try {
+            await pool.query(
+                'INSERT INTO knowledge_graph (file_name, analysis) VALUES ($1, $2) ON CONFLICT (file_name) DO UPDATE SET analysis = $2, created_at = NOW()',
+                [file, JSON.stringify(analysis)]
+            );
+            logger.info({ file }, 'Stored analysis in knowledge graph');
+        } catch (err) {
+            logger.warn({ error: err }, 'Failed to store in knowledge graph');
+        }
+
+        // Cache result
+        try {
+            if (redisConnected) {
+                await redisClient.setEx(cacheKey, 3600, JSON.stringify(analysis)); // 1 hour TTL
+                logger.info({ file }, 'Cached analysis result');
+            }
+        } catch (err) {
+            logger.warn({ error: err }, 'Redis caching failed');
+        }
+
+        res.json({
+            ...analysis,
+            duration,
+            cached: false
+        });
+    })
+);
+
+module.exports = { router, initCobolRoutes };
