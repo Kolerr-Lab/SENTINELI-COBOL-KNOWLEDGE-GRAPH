@@ -1,6 +1,6 @@
 /**
  * SENTINELI RUST GATEWAY
- * Ultra-high-performance API gateway for COBOL modernization
+ * Ultra-high-performance API gateway for mainframe modernization
  * 
  * By Ricky Anh Nguyen | OrchesityAI & Kolerr Lab | 2026
  * 

@@ -6,7 +6,7 @@ const { init } = require('z3-solver');
     const solver = new Solver();
 
     console.clear();
-    console.log("\x1b[1m\x1b[35m🧠 ORCHESITY NEURAL-CORE: FORMAL VERIFICATION (Z3)\x1b[0m");
+    console.log("\x1b[1m\x1b[35m🧠 SENTINELI: FORMAL VERIFICATION (Z3)\x1b[0m");
     console.log("\x1b[36m    Target: Verifying 4-Stage Credit Logic Integrity\x1b[0m\n");
 
     // 1. DEFINE SYMBOLS (The "Variables" of the system)

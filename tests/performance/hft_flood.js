@@ -43,7 +43,7 @@ const generateUser = (i) => ({
 
 async function runHFT() {
     console.clear();
-    console.log(`${BOLD}${BG_RED}  ⚡ THE ORCHESITY NEURAL-CORE: HFT FLOOD (${TOTAL_REQUESTS} TX)  ${RESET}\n`);
+    console.log(`${BOLD}${BG_RED}  ⚡ SENTINELI: HFT FLOOD (${TOTAL_REQUESTS} TX)  ${RESET}\n`);
 
     let completed = 0;
     let success = 0;

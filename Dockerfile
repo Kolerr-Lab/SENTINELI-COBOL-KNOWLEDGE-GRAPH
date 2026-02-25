@@ -2,7 +2,7 @@ FROM debian:bookworm-slim
 
 # Metadata
 LABEL maintainer="Kolerr Lab"
-LABEL description="Orchesity Neural-Core - COBOL Knowledge Graph with AI"
+LABEL description="Sentineli - COBOL Knowledge Graph with AI"
 LABEL version="1.0.0"
 
 # Install dependencies

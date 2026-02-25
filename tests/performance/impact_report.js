@@ -7,7 +7,7 @@ const WHITE = "\x1b[37m";
 
 // Stats derived from git diff b597d54 HEAD
 const ORIGINAL_FILES = 35; // Orchesity Generated
-const ADDED_FILES = 15;    // Neural-Core extensions
+const ADDED_FILES = 15;    // Sentineli extensions
 const MODIFIED_FILES = 5;  // Logic upgrades
 const TOTAL_FILES = ORIGINAL_FILES + ADDED_FILES;
 
@@ -17,7 +17,7 @@ console.clear();
 console.log(`${BOLD}${CYAN}
 ╔════════════════════════════════════════════════════════════════╗
 ║             🚀  NEURO-SYMBOLIC UPGRADE REPORT  🚀              ║
-║             ${WHITE}Comparing Legacy Core vs. Neural-Core${CYAN}                  ║
+║             ${WHITE}Comparing Legacy Core vs. Sentineli${CYAN}                     ║
 ╚════════════════════════════════════════════════════════════════╝
 ${RESET}`);
 

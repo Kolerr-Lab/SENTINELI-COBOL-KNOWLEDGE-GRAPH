@@ -332,7 +332,7 @@ node hft_flood.js
 
 **Expected output**:
 ```
-⚡ THE ORCHESITY NEURAL-CORE: HFT FLOOD (1000 TX)
+⚡ SENTINELI: HFT FLOOD (1000 TX)
 
 Initializing Reactor Core...
 [████████████████████████████████████████] 100% | SPEED: 156 Req/Sec
@@ -364,13 +364,13 @@ node master_dashboard.js
 **What it shows**:
 ```
 ╔════════════════════════════════════════════════════════════════╗
-║         🧠  THE ORCHESITY NEURAL-CORE v1.0  🧠                 ║
+║         🧠  SENTINELI v1.0  🧠                                  ║
 ║             Status: BATTLE TESTED (HARD MODE)                  ║
 ╚════════════════════════════════════════════════════════════════╝
 
 1. SYSTEM VITALS
    CORE OPERATING SYSTEM   : ONLINE (Windows/Docker)
-   NEURAL-CORE (COBOL)     : ACTIVE (4-Stage Logic)
+   SENTINELI (COBOL)       : ACTIVE (4-Stage Logic)
    NEURAL BRIDGE (Node.js) : ACTIVE (Port 3000)
    KNOWLEDGE GRAPH (PG)    : HEALTHY (5435)
    CORTEX MEMORY (Redis)   : HEALTHY (6385)

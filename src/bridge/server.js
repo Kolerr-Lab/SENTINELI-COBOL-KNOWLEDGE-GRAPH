@@ -2,7 +2,7 @@
  * Sentineli - Production Server
  * Copyright (c) 2026 Ricky Anh Nguyen, OrchesityAI & Kolerr Lab
  * 
- * Neuro-Symbolic COBOL Modernization Engine
+ * Neuro-Symbolic Mainframe Modernization Platform
  * 
  * Features:
  * - JWT & API Key Authentication
@@ -37,7 +37,7 @@ const {
     handleUnhandledRejection,
     setupGracefulShutdown
 } = require('./middleware/errorHandler');
-const { getMetrics, resetMetrics, openai } = require('./ai_agent');
+const { getMetrics, resetMetrics, getProviderInfo, openai } = require('./ai_agent');
 
 // Import route modules
 const { router: cobolRouter, initCobolRoutes } = require('./routes/cobol');
@@ -195,7 +195,14 @@ app.get('/health', publicLimiter, asyncHandler(async (req, res) => {
         // Don't mark as degraded - server can run without Redis
     }
 
-    health.ai = process.env.OPENAI_API_KEY ? 'configured' : 'not_configured';
+    // Get AI provider information
+    const providerInfo = getProviderInfo();
+    health.ai = {
+        status: providerInfo.status,
+        provider: providerInfo.provider,
+        model: providerInfo.model,
+        endpoint: providerInfo.provider === 'ollama' ? providerInfo.endpoint : undefined
+    };
 
     // Return 200 OK even if dependencies are unavailable (demo mode)
     res.status(200).json(health);
@@ -207,6 +214,8 @@ app.get('/health', publicLimiter, asyncHandler(async (req, res) => {
  */
 app.get('/api/metrics', publicLimiter, asyncHandler(async (req, res) => {
     const metrics = getMetrics();
+    const providerInfo = getProviderInfo();
+    
     res.json({
         success: true,
         metrics: {
@@ -225,7 +234,10 @@ app.get('/api/metrics', publicLimiter, asyncHandler(async (req, res) => {
             averageDecisionPoints: metrics.averageDecisionPoints,
             sessionStartTime: metrics.sessionStartTime,
             lastResetTime: metrics.lastResetTime,
-            uptimeMinutes: metrics.uptimeMinutes
+            uptimeMinutes: metrics.uptimeMinutes,
+            // AI Provider info
+            aiProvider: providerInfo.provider,
+            aiModel: providerInfo.model
         }
     });
 }));
@@ -247,7 +259,7 @@ app.post('/api/metrics/reset', publicLimiter, asyncHandler(async (req, res) => {
  */
 app.get('/', publicLimiter, (req, res) => {
     res.json({
-        service: 'Sentineli - Neuro-Symbolic COBOL Modernization Engine',
+        service: 'Sentineli - Neuro-Symbolic Mainframe Modernization Platform',
         version: require('../../package.json').version,
         author: 'Ricky Anh Nguyen (OrchesityAI & Kolerr Lab)',
         documentation: '/api/docs',

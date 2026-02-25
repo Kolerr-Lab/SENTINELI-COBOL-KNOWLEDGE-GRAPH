@@ -65,6 +65,17 @@ const Header = ({ connected, bridgeStatus, gatewayStatus }) => {
           <>
             <div className="status-indicator" style={{ borderLeft: '1px solid var(--primary-green)', paddingLeft: '1rem' }}>
               <span className="status-dot active"></span>
+              <span>
+                AI: {metrics.aiModel === 'gpt-4o' ? 'GPT-4o' : 
+                     metrics.aiModel === 'gpt-4o-mini' ? 'GPT-4o-mini' :
+                     metrics.aiModel?.includes('llama') ? 'Llama 3.3' :
+                     metrics.aiModel || 'Unknown'} 
+                ({metrics.aiProvider === 'openai' ? 'Cloud' : 'Local'})
+              </span>
+            </div>
+            
+            <div className="status-indicator">
+              <span className="status-dot active"></span>
               <span>LLM CALLS: {metrics.totalCalls}</span>
             </div>
             

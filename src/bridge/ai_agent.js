@@ -12,10 +12,17 @@
 
 const OpenAI = require('openai');
 const logger = require('./utils/logger');
+const axios = require('axios');
 
+// AI Provider Configuration
+const AI_PROVIDER = process.env.AI_PROVIDER || 'openai';
 const apiKey = process.env.OPENAI_API_KEY;
 const model = process.env.OPENAI_MODEL || 'gpt-4o';
 const maxRetries = 3;
+
+// Ollama Configuration
+const OLLAMA_ENDPOINT = process.env.OLLAMA_ENDPOINT || 'http://localhost:11434';
+const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'llama3.3';
 
 // GPT-4o Pricing (per million tokens)
 const PRICING = {
@@ -45,16 +52,96 @@ const metrics = {
 };
 
 let openai;
+let aiProviderInfo = {
+    provider: AI_PROVIDER,
+    model: AI_PROVIDER === 'openai' ? model : OLLAMA_MODEL,
+    endpoint: AI_PROVIDER === 'ollama' ? OLLAMA_ENDPOINT : 'https://api.openai.com',
+    status: 'not_initialized'
+};
 
-if (apiKey) {
-    openai = new OpenAI({ 
-        apiKey,
-        maxRetries: maxRetries,
-        timeout: 60000 // 60 seconds
-    });
-    logger.info({ model }, 'OpenAI client initialized');
+// Initialize AI provider based on configuration
+if (AI_PROVIDER === 'openai') {
+    if (apiKey) {
+        openai = new OpenAI({ 
+            apiKey,
+            maxRetries: maxRetries,
+            timeout: 60000 // 60 seconds
+        });
+        aiProviderInfo.status = 'configured';
+        logger.info({ model, provider: 'openai' }, 'OpenAI client initialized');
+    } else {
+        aiProviderInfo.status = 'not_configured';
+        logger.warn('OPENAI_API_KEY is missing. AI features will be disabled.');
+    }
+} else if (AI_PROVIDER === 'ollama') {
+    // Ollama doesn't need a client initialization - uses direct HTTP calls
+    aiProviderInfo.status = 'configured';
+    logger.info({ model: OLLAMA_MODEL, endpoint: OLLAMA_ENDPOINT, provider: 'ollama' }, 'Ollama provider configured');
 } else {
-    logger.warn('OPENAI_API_KEY is missing. AI features will be disabled.');
+    aiProviderInfo.status = 'invalid_provider';
+    logger.error({ provider: AI_PROVIDER }, 'Invalid AI_PROVIDER. Must be "openai" or "ollama"');
+}
+
+/**
+ * Call Ollama API (OpenAI-compatible chat completions endpoint)
+ * @param {Array} messages - Chat messages array
+ * @param {object} options - Additional options (temperature, max_tokens, etc.)
+ * @returns {Promise<object>} Completion response
+ */
+async function callOllamaAPI(messages, options = {}) {
+    const url = `${OLLAMA_ENDPOINT}/v1/chat/completions`;
+    
+    const requestBody = {
+        model: OLLAMA_MODEL,
+        messages: messages,
+        temperature: options.temperature || 0.0,
+        max_tokens: options.max_tokens || 4000,
+        stream: false
+    };
+
+    try {
+        const response = await axios.post(url, requestBody, {
+            headers: { 'Content-Type': 'application/json' },
+            timeout: 120000 // 2 minutes for local LLM
+        });
+
+        // Ollama returns OpenAI-compatible format
+        return response.data;
+    } catch (error) {
+        logger.error({ 
+            err: error, 
+            endpoint: OLLAMA_ENDPOINT, 
+            model: OLLAMA_MODEL 
+        }, 'Ollama API call failed');
+        
+        throw new Error(`Ollama API Error: ${error.message}. Ensure Ollama is running at ${OLLAMA_ENDPOINT}`);
+    }
+}
+
+/**
+ * Unified AI completion call - routes to OpenAI or Ollama based on provider
+ * @param {Array} messages - Chat messages array  
+ * @param {object} options - Additional options
+ * @returns {Promise<object>} Completion response
+ */
+async function createChatCompletion(messages, options = {}) {
+    if (AI_PROVIDER === 'openai') {
+        if (!openai) {
+            throw new Error('OpenAI client not configured. Set OPENAI_API_KEY in .env');
+        }
+        
+        return await openai.chat.completions.create({
+            messages,
+            model: model,
+            response_format: options.response_format,
+            temperature: options.temperature || 0.0,
+            max_tokens: options.max_tokens || 4000
+        });
+    } else if (AI_PROVIDER === 'ollama') {
+        return await callOllamaAPI(messages, options);
+    } else {
+        throw new Error(`Invalid AI provider: ${AI_PROVIDER}. Must be \"openai\" or \"ollama\"`);
+    }
 }
 
 /**
@@ -65,6 +152,11 @@ if (apiKey) {
  * @returns {number} Cost in USD
  */
 function calculateCost(inputTokens, outputTokens, modelName) {
+    // Ollama is free (local inference)
+    if (AI_PROVIDER === 'ollama') {
+        return 0.0;
+    }
+    
     const pricing = PRICING[modelName] || PRICING['gpt-4o'];
     const inputCost = (inputTokens / 1000000) * pricing.input;
     const outputCost = (outputTokens / 1000000) * pricing.output;
@@ -226,24 +318,22 @@ OUTPUT FORMAT (JSON only, no markdown):
 `;
 
     try {
-        logger.info('Sending COBOL code to AI for analysis');
+        logger.info({ provider: AI_PROVIDER, model: aiProviderInfo.model }, 'Sending COBOL code to AI for analysis');
         
         const startTime = Date.now();
         
-        const completion = await openai.chat.completions.create({
-            messages: [
-                {
-                    role: "system",
-                    content: "You are a specialized symbolic logic analyzer. Output ONLY valid JSON, no markdown formatting, no code blocks, no explanations."
-                },
-                {
-                    role: "user",
-                    content: prompt
-                }
-            ],
-            model: model,
+        const completion = await createChatCompletion([
+            {
+                role: "system",
+                content: "You are a specialized symbolic logic analyzer. Output ONLY valid JSON, no markdown formatting, no code blocks, no explanations."
+            },
+            {
+                role: "user",
+                content: prompt
+            }
+        ], {
             response_format: { type: "json_object" },
-            temperature: 0.0, // Deterministic for consistency
+            temperature: 0.0,
             max_tokens: 4000
         });
 
@@ -328,25 +418,23 @@ OUTPUT FORMAT (JSON only, no markdown):
  * @returns {Promise<string>} Plain English explanation
  */
 async function explainCode(codeSection) {
-    if (!openai) {
+    if (!isAIAvailable()) {
         return 'AI service unavailable';
     }
 
     try {
         const startTime = Date.now();
         
-        const completion = await openai.chat.completions.create({
-            messages: [
-                {
-                    role: "system",
-                    content: "You are a COBOL expert. Explain code sections clearly in plain English."
-                },
-                {
-                    role: "user",
-                    content: `Explain this COBOL code:\n\n${codeSection}`
-                }
-            ],
-            model: model,
+        const completion = await createChatCompletion([
+            {
+                role: "system",
+                content: "You are a COBOL expert. Explain code sections clearly in plain English."
+            },
+            {
+                role: "user",
+                content: `Explain this COBOL code:\n\n${codeSection}`
+            }
+        ], {
             temperature: 0.3,
             max_tokens: 500
         });
@@ -378,10 +466,23 @@ async function explainCode(codeSection) {
 
 /**
  * Check if AI service is available
- * @returns {boolean} True if OpenAI client is configured
+ * @returns {boolean} True if AI provider is configured
  */
 function isAIAvailable() {
-    return openai !== null && openai !== undefined;
+    if (AI_PROVIDER === 'openai') {
+        return openai !== null && openai !== undefined;
+    } else if (AI_PROVIDER === 'ollama') {
+        return aiProviderInfo.status === 'configured';
+    }
+    return false;
+}
+
+/**
+ * Get AI provider information
+ * @returns {object} Provider info (provider, model, endpoint, status)
+ */
+function getProviderInfo() {
+    return { ...aiProviderInfo };
 }
 
 module.exports = {
@@ -391,5 +492,6 @@ module.exports = {
     getMetrics,
     resetMetrics,
     updateMetricsForCacheHit,
+    getProviderInfo,
     openai  // Export OpenAI client for multi-language analyzers
 };

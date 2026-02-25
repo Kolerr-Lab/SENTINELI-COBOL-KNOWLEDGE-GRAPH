@@ -14,18 +14,18 @@ const _BG_BLUE = "\x1b[44m\x1b[37m";
 console.clear();
 console.log(`${BOLD}${BLUE}
 ╔════════════════════════════════════════════════════════════════╗
-║         🧠  THE ORCHESITY NEURAL-CORE v1.0  🧠                 ║
+║         🧠  SENTINELI v1.0  🧠                                  ║
 ║             Status: BATTLE TESTED (HARD MODE)                  ║
 ╚════════════════════════════════════════════════════════════════╝
 ${RESET}`);
 
 console.log(`${BOLD}${WHITE}1. SYSTEM VITALS${RESET}`);
 console.log(`   ${CYAN}CORE OPERATING SYSTEM${RESET}   : ${GREEN}ONLINE (Windows/Docker)${RESET}`);
-console.log(`   ${CYAN}NEURAL-CORE (COBOL)${RESET}     : ${GREEN}ACTIVE (4-Stage Logic)${RESET}`);
+console.log(`   ${CYAN}SENTINELI (COBOL)${RESET}       : ${GREEN}ACTIVE (4-Stage Logic)${RESET}`);
 console.log(`   ${CYAN}NEURAL BRIDGE (Node.js)${RESET} : ${GREEN}ACTIVE (Port 3050)${RESET}`);
 console.log(`   ${CYAN}KNOWLEDGE GRAPH (PG)${RESET}    : ${GREEN}HEALTHY (5435)${RESET}`);
 console.log(`   ${CYAN}CORTEX MEMORY (Redis)${RESET}   : ${GREEN}HEALTHY (6385)${RESET}`);
-console.log("");
+console.log("\n");
 
 console.log(`${BOLD}${WHITE}2. INTELLIGENCE REPORT${RESET}`);
 console.log(`   ${MAGENTA}AI MODEL${RESET}               : ${YELLOW}GPT-4o (Authenticated)${RESET}`);

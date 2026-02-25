@@ -19,6 +19,7 @@
 [![Redis](https://img.shields.io/badge/Redis-Cache-red?style=flat&logo=redis)](https://redis.io/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat&logo=docker)](https://www.docker.com/)
 [![Powered by OpenAI](https://img.shields.io/badge/Powered_by-OpenAI_GPT--4o-412991?style=flat&logo=openai)](https://openai.com/)
+[![Ollama Ready](https://img.shields.io/badge/Ollama-Local_LLM-7C3AED?style=flat&logo=ollama)](docs/OLLAMA_SETUP.md)
 [![Z3 Verified](https://img.shields.io/badge/Z3-100%25_Proven-success?style=flat&logo=microsoft)](docs/Z3_VERIFICATION_GUIDE.md)
 
 <!-- Quality & Community -->
@@ -234,6 +235,12 @@ npm install
 # 2. Configure (add your OpenAI API key)
 cp .env.example .env
 # Edit .env and add: OPENAI_API_KEY=sk-your-key-here
+
+# OR use Ollama for local LLM (air-gapped deployments):
+# AI_PROVIDER=ollama
+# OLLAMA_ENDPOINT=http://localhost:11434
+# OLLAMA_MODEL=llama3.3
+# See: docs/OLLAMA_SETUP.md
 
 # 3. Start with PM2 (production mode)
 npm run start:pm2

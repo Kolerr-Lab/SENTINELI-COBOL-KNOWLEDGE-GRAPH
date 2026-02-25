@@ -1,6 +1,6 @@
 /**
  * Sentineli Enterprise Dashboard WebSocket Server
- * Real-time streaming for COBOL modernization monitoring
+ * Real-time streaming for mainframe modernization monitoring
  */
 
 const express = require('express');

@@ -11,7 +11,7 @@ We release patches for security vulnerabilities in the following versions:
 
 ## Reporting a Vulnerability
 
-The Orchesity Neural-Core team takes security vulnerabilities seriously. We appreciate your efforts to responsibly disclose your findings.
+The Sentineli team takes security vulnerabilities seriously. We appreciate your efforts to responsibly disclose your findings.
 
 ### How to Report a Security Vulnerability
 
@@ -222,7 +222,7 @@ For security concerns or questions:
 
 ## Acknowledgments
 
-We thank the security researchers and community members who help keep Orchesity Neural-Core secure.
+We thank the security researchers and community members who help keep Sentineli secure.
 
 Security researchers who responsibly disclose vulnerabilities will be credited in:
 - Security advisories

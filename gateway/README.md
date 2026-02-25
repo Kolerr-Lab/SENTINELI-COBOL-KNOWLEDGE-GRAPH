@@ -1,6 +1,6 @@
 # 🚀 Sentineli Rust Gateway
 
-**Ultra-high-performance API gateway for enterprise COBOL modernization**
+**Ultra-high-performance API gateway for enterprise mainframe modernization**
 
 ## Overview
 

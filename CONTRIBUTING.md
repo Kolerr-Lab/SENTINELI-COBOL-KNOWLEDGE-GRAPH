@@ -1,6 +1,6 @@
-# Contributing to Orchesity Neural-Core
+# Contributing to Sentineli
 
-First off, thank you for considering contributing to the Orchesity Neural-Core! This project aims to bridge the gap between legacy COBOL systems and modern AI technologies, and we welcome contributions from the mainframe community and beyond.
+First off, thank you for considering contributing to Sentineli! This project aims to bridge the gap between legacy COBOL systems and modern AI technologies, and we welcome contributions from the mainframe community and beyond.
 
 ## Table of Contents
 
@@ -351,4 +351,4 @@ Contributors are recognized in:
 - Release notes
 - Project documentation
 
-Thank you for contributing to the Orchesity Neural-Core! 🧠🚀
+Thank you for contributing to Sentineli! 🧠🚀

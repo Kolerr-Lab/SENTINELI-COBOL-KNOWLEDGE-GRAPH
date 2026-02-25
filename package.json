@@ -1,7 +1,7 @@
 {
     "name": "sentineli",
     "version": "1.0.0",
-    "description": "Sentineli - Neuro-Symbolic COBOL Modernization Engine",
+    "description": "Sentineli - Neuro-Symbolic Mainframe Modernization Platform",
     "main": "src/bridge/server.js",
     "author": "Ricky Anh Nguyen <ricky@orchesity.com> (OrchesityAI & Kolerr Lab)",
     "license": "MIT",
@@ -46,7 +46,7 @@
         "format:check": "prettier --check \"src/**/*.js\" \"tests/**/*.js\"",
         "audit": "npm audit --audit-level=moderate",
         "audit:fix": "npm audit fix",
-        "security:scan": "npm audit && docker scan orchesity-neural-core:latest || true",
+        "security:scan": "npm audit && docker scan sentineli:latest || true",
         "docker:build": "docker-compose build",
         "docker:up": "docker-compose up -d",
         "docker:down": "docker-compose down",
