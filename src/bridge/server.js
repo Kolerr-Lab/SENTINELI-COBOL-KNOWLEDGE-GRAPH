@@ -18,8 +18,6 @@ const express = require('express');
 const helmet = require('helmet');
 const compression = require('compression');
 const cors = require('cors');
-const { spawn } = require('child_process');
-const fs = require('fs');
 const path = require('path');
 const { Pool } = require('pg');
 const { createClient } = require('redis');
@@ -29,21 +27,9 @@ require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 
 // Import middleware and utilities
 const logger = require('./utils/logger');
-const { authenticateEither } = require('./middleware/auth');
+const { sanitize } = require('./middleware/validation');
+const { publicLimiter } = require('./middleware/rateLimiting');
 const {
-    validateCobolExecution,
-    validateFileAnalysis,
-    validateProgramWhitelist,
-    sanitize
-} = require('./middleware/validation');
-const {
-    generalLimiter,
-    executionLimiter,
-    aiAnalysisLimiter,
-    publicLimiter
-} = require('./middleware/rateLimiting');
-const {
-    AppError,
     notFoundHandler,
     errorHandler,
     asyncHandler,
@@ -51,7 +37,12 @@ const {
     handleUnhandledRejection,
     setupGracefulShutdown
 } = require('./middleware/errorHandler');
-const { extractSymbolicConstraints, getMetrics, resetMetrics } = require('./ai_agent');
+const { getMetrics, resetMetrics, openai } = require('./ai_agent');
+
+// Import route modules
+const { router: cobolRouter, initCobolRoutes } = require('./routes/cobol');
+const impactRouter = require('./routes/impact');
+const { router: graphRouter, initGraphRoutes } = require('./routes/graph');
 
 // Initialize Express app
 const app = express();
@@ -273,243 +264,81 @@ app.get('/', publicLimiter, (req, res) => {
 });
 
 // ============================================================================
+// MODULAR API ROUTES
+// ============================================================================
+
+// Initialize route dependencies
+initCobolRoutes({ pool, redisClient, redisConnected, openai });
+initGraphRoutes({ pool });
+
+// Mount route modules
+app.use('/api', cobolRouter);  // /api/run/:program, /api/analyze, /api/analyze/:file
+app.use('/api', impactRouter);  // /api/impact
+app.use('/api', graphRouter);   // /api/graph
+
+// ============================================================================
 // PROTECTED API ROUTES (Authentication required)
 // ============================================================================
 
 /**
- * Execute COBOL Program
- * POST /api/run/:program
+ * System Status & Performance Metrics
+ * GET /api/system/status
  * 
- * Body: { AGE, INCOME, CREDIT_SCORE, DEBT, NAME? }
- * Auth: JWT or API Key required
- * Rate Limit: 50/15min
+ * Returns: System health, performance metrics, resource usage
+ * Auth: Optional (public endpoint)
+ * Rate Limit: 100/minute
  */
-app.post(
-    '/api/run/:program',
-    generalLimiter,
-    executionLimiter,
-    authenticateEither,
-    validateProgramWhitelist,
-    validateCobolExecution,
+app.get(
+    '/api/system/status',
+    publicLimiter,
     asyncHandler(async (req, res) => {
         const startTime = Date.now();
-        const { program } = req.params;
-        const inputs = req.body;
 
-        logger.info({ program, inputs, user: req.user?.sub || 'api_key' }, 'Executing COBOL program');
-
-        // Path to executable
-        const execPath = path.join(__dirname, '../../bin', program);
-
-        if (!fs.existsSync(execPath)) {
-            throw new AppError(
-                `Program '${program}' not found. Please ensure COBOL source is compiled.`,
-                404,
-                { program, execPath }
-            );
-        }
-
-        // Set up environment variables for COBOL program
-        const env = { ...process.env, ...inputs };
-
-        // Execute COBOL program
-        const child = spawn(execPath, [], { env });
-
-        let stdout = '';
-        let stderr = '';
-
-        child.stdout.on('data', (data) => {
-            stdout += data.toString();
-        });
-
-        child.stderr.on('data', (data) => {
-            stderr += data.toString();
-        });
-
-        // Wait for execution to complete
-        await new Promise((resolve, reject) => {
-            child.on('close', (code) => {
-                const duration = Date.now() - startTime;
-
-                if (code !== 0 && stderr) {
-                    logger.error({ program, exitCode: code, stderr, duration }, 'COBOL execution failed');
-                    reject(new AppError(
-                        `COBOL program execution failed with exit code ${code}`,
-                        500,
-                        { exitCode: code, stderr: stderr.substring(0, 500) }
-                    ));
-                } else {
-                    logger.logCobolExecution(program, inputs, { exitCode: code }, duration);
-                    resolve();
-                }
-            });
-
-            child.on('error', (err) => {
-                logger.error({ program, error: err }, 'COBOL execution error');
-                reject(new AppError('Failed to execute COBOL program', 500));
-            });
-        });
-
-        const duration = Date.now() - startTime;
-
-        // Parse output
-        const result = {
-            program,
-            success: true,
-            duration,
-            stdout: stdout.trim(),
-            stderr: stderr.trim(),
-            timestamp: new Date().toISOString()
+        // Get system metrics
+        const systemMetrics = {
+            uptime: process.uptime(),
+            memory: {
+                total: (process.memoryUsage().heapTotal / 1024 / 1024).toFixed(2) + ' MB',
+                used: (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2) + ' MB',
+                rss: (process.memoryUsage().rss / 1024 / 1024).toFixed(2) + ' MB'
+            },
+            cpu: {
+                user: process.cpuUsage().user / 1000000,
+                system: process.cpuUsage().system / 1000000
+            },
+            environment: NODE_ENV,
+            version: process.version,
+            platform: process.platform
         };
 
-        // Store execution in database for audit trail
+        // Get database status
+        let dbStatus = 'UNKNOWN';
         try {
-            await pool.query(
-                'INSERT INTO execution_log (program, inputs, result, duration, user_id, created_at) VALUES ($1, $2, $3, $4, $5, NOW())',
-                [program, JSON.stringify(inputs), stdout.trim(), duration, req.user?.sub || 'api_key']
-            );
+            const result = await pool.query('SELECT NOW()');
+            dbStatus = result.rows.length > 0 ? 'CONNECTED' : 'ERROR';
         } catch (err) {
-            // Log but don't fail the request if audit logging fails
-            logger.warn({ error: err }, 'Failed to log execution to database');
+            dbStatus = 'DISCONNECTED';
         }
 
-        res.json(result);
-    })
-);
+        // Get Redis status
+        const redisStatus = redisConnected ? 'CONNECTED' : 'DISCONNECTED';
 
-/**
- * Analyze COBOL Source Code (Ad-hoc)
- * POST /api/analyze
- * 
- * Body: { program, code }
- * Auth: Optional (public endpoint for demo)
- * Rate Limit: 10/hour (expensive AI calls)
- */
-app.post(
-    '/api/analyze',
-    generalLimiter,
-    aiAnalysisLimiter,
-    asyncHandler(async (req, res) => {
-        const startTime = Date.now();
-        const { program, code } = req.body;
-
-        if (!program || !code) {
-            throw new AppError('Missing required fields: program and code', 400);
-        }
-
-        logger.info({ program, codeLength: code.length }, 'Ad-hoc AI analysis requested');
-
-        // Perform AI analysis on provided code
-        const analysis = await extractSymbolicConstraints(code);
-        analysis.program = program;
-        analysis.analyzed_at = new Date().toISOString();
+        // Get AI agent metrics
+        const aiMetrics = getMetrics();
 
         const duration = Date.now() - startTime;
-        logger.info({ program, duration }, 'Ad-hoc analysis completed');
 
         res.json({
-            ...analysis,
-            duration
-        });
-    })
-);
-
-/**
- * Analyze COBOL Source File with AI
- * POST /api/analyze/:file
- * 
- * Auth: JWT or API Key required
- * Rate Limit: 10/hour (expensive AI calls)
- */
-app.post(
-    '/api/analyze/:file',
-    generalLimiter,
-    aiAnalysisLimiter,
-    authenticateEither,
-    validateFileAnalysis,
-    asyncHandler(async (req, res) => {
-        const startTime = Date.now();
-        const { file } = req.params;
-        const cacheKey = `analysis:${file}`;
-
-        logger.info({ file, user: req.user?.sub || 'api_key' }, 'AI analysis requested');
-
-        // Check cache first (if Redis is available)
-        try {
-            if (redisConnected) {
-                const cached = await redisClient.get(cacheKey);
-                if (cached) {
-                    const duration = Date.now() - startTime;
-                    logger.logAiAnalysis(file, true, duration);
-                    
-                    // Parse cached result to extract complexity for metrics tracking
-                    const cachedData = JSON.parse(cached);
-                    const cachedComplexity = cachedData.complexity_metrics || {};
-                    
-                    // Update metrics for cache hit (but no cost since no AI call)
-                    const { updateMetricsForCacheHit } = require('./ai_agent');
-                    updateMetricsForCacheHit(duration, cachedComplexity);
-                    
-                    return res.json({
-                        ...cachedData,
-                        cached: true,
-                        duration
-                    });
-                }
-            }
-        } catch (err) {
-            logger.warn({ error: err }, 'Cache lookup failed');
-        }
-
-        // Read source file
-        const filePath = path.join(__dirname, '../../src/cobol', file);
-        
-        if (!fs.existsSync(filePath)) {
-            throw new AppError(`Source file '${file}' not found`, 404);
-        }
-
-        const sourceCode = fs.readFileSync(filePath, 'utf-8');
-
-        // Perform AI analysis
-        const analysis = await extractSymbolicConstraints(sourceCode);
-        analysis.file = file;
-        analysis.analyzed_at = new Date().toISOString();
-
-        const duration = Date.now() - startTime;
-        logger.logAiAnalysis(file, false, duration);
-
-        // Store in database (knowledge graph persistence)
-        try {
-            await pool.query(
-                `CREATE TABLE IF NOT EXISTS knowledge_graph (
-                    id SERIAL PRIMARY KEY,
-                    file_name TEXT,
-                    analysis JSONB,
-                    user_id TEXT,
-                    created_at TIMESTAMP DEFAULT NOW()
-                )`
-            );
-
-            await pool.query(
-                'INSERT INTO knowledge_graph (file_name, analysis, user_id) VALUES ($1, $2, $3)',
-                [file, JSON.stringify(analysis), req.user?.sub || 'api_key']
-            );
-        } catch (err) {
-            logger.error({ error: err }, 'Failed to persist analysis to database');
-        }
-
-        // Cache the result (TTL: 1 hour) if Redis is available
-        try {
-            if (redisConnected) {
-                await redisClient.set(cacheKey, JSON.stringify(analysis), { EX: 3600 });
-            }
-        } catch (err) {
-            logger.warn({ error: err }, 'Failed to cache analysis');
-        }
-
-        res.json({
-            ...analysis,
-            cached: false,
+            status: 'OPERATIONAL',
+            timestamp: new Date().toISOString(),
+            uptime: systemMetrics.uptime,
+            system: systemMetrics,
+            services: {
+                database: dbStatus,
+                redis: redisStatus,
+                ai: process.env.OPENAI_API_KEY ? 'CONFIGURED' : 'NOT_CONFIGURED'
+            },
+            metrics: aiMetrics,
             duration
         });
     })

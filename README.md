@@ -150,6 +150,77 @@ This is why Sentineli is safe for banking modernization - every claim is mathema
 
 ---
 
+## 🌐 Multi-Language Mainframe Support
+
+**Sentineli is the ONLY formal verification platform that analyzes the ENTIRE mainframe ecosystem.**
+
+While competitors focus solely on COBOL, real-world banking systems comprise **6 interconnected languages**. Sentineli analyzes all of them:
+
+### Supported Languages
+
+| Language | Purpose | File Extensions | Color Code |
+|----------|---------|----------------|------------|
+| **COBOL** 📦 | Business logic & batch processing | `.cbl`, `.cob`, `.cobol` | 🟢 Green |
+| **JCL** ⚙️ | Job orchestration & scheduling | `.jcl` | 🔵 Cyan |
+| **DB2** 🗄️ | SQL queries & database operations | `.db2`, `.sql` | 🟡 Yellow |
+| **VSAM** 📁 | File structure definitions | `.vsam` | 🟣 Magenta |
+| **CICS** 🖥️ | Transaction processing | `.cics` | 🟠 Orange |
+| **COPYBOOK** 📋 | Data structure definitions | `.cpy`, `.copy` | 🟢 Teal |
+
+### Cross-Language Dependency Tracking
+
+Sentineli's Knowledge Graph visualizes how these languages interact:
+
+```
+JCL Job (BATCH001.jcl) ⚙️
+  └─ EXECUTES → COBOL Program (credit_scoring.cob) 📦
+      ├─ QUERIES → DB2 Table (CUSTOMER.db2) 🗄️
+      ├─ READS → VSAM File (ACCTFILE.vsam) 📁
+      └─ INCLUDES → Copybook (CUSTOMER-RECORD.cpy) 📋
+           └─ USED BY → CICS Transaction (TXN001.cics) 🖥️
+```
+
+**Color-Coded Knowledge Graph:**
+- Nodes are colored by file type for instant recognition
+- Cross-language edges shown with dotted lines
+- Icons indicate language type (⚙️📦🗄️📁🖥️📋)
+- Automatic file type detection by extension
+
+### Plugin Analyzer Architecture
+
+Each language has its own specialized analyzer with consistent output schema:
+
+```javascript
+// Central router auto-detects file type
+const fileType = detectFileType("BATCH001.jcl"); // → "JCL"
+const analysis = await analyzeByType(code, fileType);
+
+// Returns standardized schema:
+{
+  business_rules: [...],
+  decision_tree: {...},
+  complexity_metrics: {...},
+  dependencies: {...},
+  metadata: { cost_usd, tokens, duration_ms }
+}
+```
+
+**All analyzers use GPT-4o** with language-specific prompts for optimal extraction.
+
+### What This Means for Banking Modernization
+
+✅ **Complete System Understanding** - Not just COBOL in isolation  
+✅ **True Impact Analysis** - See how JCL changes affect downstream COBOL  
+✅ **Database Migration Planning** - Trace DB2 dependencies across programs  
+✅ **Transaction Flow Mapping** - Understand CICS → COBOL → VSAM chains  
+✅ **Data Structure Governance** - Track copybook usage across the estate  
+
+**No other tool does this.** Banks modernizing mainframes need to understand the entire ecosystem, not just one language.
+
+📚 **Learn More:** [Multi-Language Analysis Guide](docs/MULTI_LANGUAGE_GUIDE.md)
+
+---
+
 ## ⚡ Quick Start (5 Minutes)
 
 **See formal verification in action:**

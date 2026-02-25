@@ -390,5 +390,6 @@ module.exports = {
     isAIAvailable,
     getMetrics,
     resetMetrics,
-    updateMetricsForCacheHit
+    updateMetricsForCacheHit,
+    openai  // Export OpenAI client for multi-language analyzers
 };

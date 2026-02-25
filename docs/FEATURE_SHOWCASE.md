@@ -42,7 +42,135 @@ SYSTEM> [16:54:18] Knowledge graph updated: 8 new nodes
 
 ---
 
-## 🔍 **FEATURE 2: COBOL ANALYSIS**
+## 🌐 **FEATURE 2: MULTI-LANGUAGE MAINFRAME ANALYSIS** ✨ NEW
+
+### **What It Does**
+Analyze **6 mainframe languages** with unified formal verification: COBOL, JCL, DB2, VSAM, CICS, and COPYBOOK. The dashboard auto-detects file type and routes to the appropriate analyzer.
+
+### **Supported Languages**
+
+| Language | Icon | Purpose | Extensions |
+|----------|------|---------|------------|
+| COBOL | 📦 | Business logic | `.cbl`, `.cob`, `.cobol` |
+| JCL | ⚙️ | Job control | `.jcl` |
+| DB2 | 🗄️ | SQL queries | `.db2`, `.sql` |
+| VSAM | 📁 | File definitions | `.vsam` |
+| CICS | 🖥️ | Transactions | `.cics` |
+| COPYBOOK | 📋 | Data structures | `.cpy`, `.copy` |
+
+### **Input Example 1: JCL Job Analysis**
+
+```json
+{
+  "program": "BATCH001.jcl",
+  "code": "//BATCH001 JOB (ACCT),'DAILY PROCESS'\n//STEP01 EXEC PGM=PAYROLL\n//INPUT DD DSN=HR.SALARY.FILE,DISP=SHR\n//OUTPUT DD DSN=PAYROLL.REPORT,DISP=(NEW,CATLG)",
+  "fileType": "JCL"
+}
+```
+
+### **Output Format** ✨
+
+```json
+{
+  "success": true,
+  "fileType": "JCL",
+  "business_rules": [
+    "Step 01 executes COBOL program PAYROLL",
+    "Reads input from HR.SALARY.FILE dataset",
+    "Writes output to PAYROLL.REPORT (cataloged)"
+  ],
+  "decision_tree": {
+    "steps": ["STEP01"],
+    "conditions": []
+  },
+  "propagator_network": {
+    "datasets": ["HR.SALARY.FILE", "PAYROLL.REPORT"],
+    "programs_called": ["PAYROLL"]
+  },
+  "complexity_metrics": {
+    "cyclomatic_complexity": 1,
+    "step_count": 1,
+    "decision_points": 0
+  },
+  "dependencies": {
+    "called_programs": ["PAYROLL"],
+    "datasets": ["HR.SALARY.FILE", "PAYROLL.REPORT"],
+    "proclibs": []
+  },
+  "metadata": {
+    "model": "gpt-4o",
+    "cost_usd": 0.0026,
+    "duration_ms": 5212
+  }
+}
+```
+
+### **Input Example 2: DB2 SQL Analysis**
+
+```json
+{
+  "program": "CUSTOMER_QUERY.db2",
+  "code": "SELECT c.customer_id, c.name, o.order_date FROM customers c JOIN orders o ON c.customer_id = o.customer_id WHERE o.order_date > '2024-01-01' ORDER BY o.order_date DESC",
+  "fileType": "DB2"
+}
+```
+
+### **Output Format** ✨
+
+```json
+{
+  "success": true,
+  "fileType": "DB2",
+  "business_rules": [
+    "Query retrieves customer data with order dates",
+    "Filters orders after January 1, 2024",
+    "Results sorted by order date descending"
+  ],
+  "propagator_network": {
+    "tables": ["customers", "orders"],
+    "columns": ["customer_id", "name", "order_date"],
+    "relationships": [
+      {
+        "type": "JOIN",
+        "tables": ["customers", "orders"],
+        "on": "customers.customer_id = orders.customer_id"
+      }
+    ]
+  },
+  "complexity_metrics": {
+    "join_depth": 1,
+    "table_count": 2,
+    "query_count": 1
+  },
+  "dependencies": {
+    "tables": ["customers", "orders"],
+    "views": [],
+    "stored_procedures": []
+  },
+  "metadata": {
+    "model": "gpt-4o",
+    "cost_usd": 0.0040,
+    "duration_ms": 5020
+  }
+}
+```
+
+### **Dashboard Features**
+
+- **Auto-Detection**: Type "BATCH001.jcl" → dropdown changes to JCL
+- **Color-Coded Dropdown**: Each language has its own color
+- **Dynamic Placeholder**: "Paste your JCL source code here..."
+- **File Type Badge**: Results show colored badge (🟢 COBOL, 🔵 JCL, 🟡 DB2, etc.)
+
+### **WOW Factor** 🌟
+- **Industry First**: No other tool analyzes all 6 mainframe languages
+- **Cross-Language Tracking**: See how JCL jobs call COBOL programs that query DB2
+- **Instant Recognition**: Color-coded UI immediately shows file type
+- **Consistent Schema**: All languages return same output structure
+
+---
+
+## 🔍 **FEATURE 3: COBOL ANALYSIS (Classic)**
 
 ### **What It Does**
 Deep AI-powered analysis of COBOL source code using GPT-4 to extract business logic, data structures, and symbolic constraints with Z3 verification.

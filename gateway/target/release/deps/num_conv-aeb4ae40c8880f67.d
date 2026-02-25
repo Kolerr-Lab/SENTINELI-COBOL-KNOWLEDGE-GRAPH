@@ -1,0 +1,7 @@
+C:\Kolerr Lab_Projects\SENTINELI-COBOL-KNOWLEDGE-GRAPH\gateway\target\release\deps\num_conv-aeb4ae40c8880f67.d: C:\Users\CellPhoneS\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\num-conv-0.2.0\src\lib.rs
+
+C:\Kolerr Lab_Projects\SENTINELI-COBOL-KNOWLEDGE-GRAPH\gateway\target\release\deps\libnum_conv-aeb4ae40c8880f67.rlib: C:\Users\CellPhoneS\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\num-conv-0.2.0\src\lib.rs
+
+C:\Kolerr Lab_Projects\SENTINELI-COBOL-KNOWLEDGE-GRAPH\gateway\target\release\deps\libnum_conv-aeb4ae40c8880f67.rmeta: C:\Users\CellPhoneS\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\num-conv-0.2.0\src\lib.rs
+
+C:\Users\CellPhoneS\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\num-conv-0.2.0\src\lib.rs:

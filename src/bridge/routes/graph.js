@@ -99,29 +99,48 @@ router.get(
 
 /**
  * Generate demo knowledge graph for demonstration purposes
- * Returns a sample banking system graph
+ * Returns a sample banking system graph with multi-language support
  */
 function generateDemoGraph() {
     const nodes = [
-        { id: 0, label: 'credit_scoring.cob', type: 'COBOL_PROGRAM', complexity: 15 },
-        { id: 1, label: 'account_management.cob', type: 'COBOL_PROGRAM', complexity: 45 },
-        { id: 2, label: 'transaction_processor.cob', type: 'COBOL_PROGRAM', complexity: 67 },
-        { id: 3, label: 'fraud_detection.cob', type: 'COBOL_PROGRAM', complexity: 52 },
-        { id: 4, label: 'loan_approval.cob', type: 'COBOL_PROGRAM', complexity: 38 },
-        { id: 5, label: 'customer_profile.cob', type: 'COBOL_PROGRAM', complexity: 22 },
-        { id: 6, label: 'payment_processor.cob', type: 'COBOL_PROGRAM', complexity: 41 },
-        { id: 7, label: 'interest_calculator.cob', type: 'COBOL_PROGRAM', complexity: 18 }
+        { id: 0, label: 'BATCH001.jcl', type: 'JCL', fileType: 'JCL', complexity: 8 },
+        { id: 1, label: 'credit_scoring.cob', type: 'COBOL_PROGRAM', fileType: 'COBOL', complexity: 15 },
+        { id: 2, label: 'CUSTOMER.db2', type: 'DATABASE', fileType: 'DB2', complexity: 25 },
+        { id: 3, label: 'account_management.cob', type: 'COBOL_PROGRAM', fileType: 'COBOL', complexity: 45 },
+        { id: 4, label: 'ACCTFILE.vsam', type: 'VSAM_FILE', fileType: 'VSAM', complexity: 5 },
+        { id: 5, label: 'transaction_processor.cob', type: 'COBOL_PROGRAM', fileType: 'COBOL', complexity: 67 },
+        { id: 6, label: 'TXN001.cics', type: 'CICS_TRANSACTION', fileType: 'CICS', complexity: 38 },
+        { id: 7, label: 'fraud_detection.cob', type: 'COBOL_PROGRAM', fileType: 'COBOL', complexity: 52 },
+        { id: 8, label: 'CUSTOMER-RECORD.cpy', type: 'COPYBOOK', fileType: 'COPYBOOK', complexity: 3 },
+        { id: 9, label: 'loan_approval.cob', type: 'COBOL_PROGRAM', fileType: 'COBOL', complexity: 38 },
+        { id: 10, label: 'payment_processor.cob', type: 'COBOL_PROGRAM', fileType: 'COBOL', complexity: 41 }
     ];
 
     const edges = [
-        { from: 0, to: 1, type: 'CALLS' },
-        { from: 1, to: 2, type: 'CALLS' },
-        { from: 1, to: 5, type: 'CALLS' },
-        { from: 2, to: 3, type: 'CALLS' },
-        { from: 2, to: 6, type: 'CALLS' },
-        { from: 4, to: 0, type: 'CALLS' },
-        { from: 4, to: 5, type: 'CALLS' },
-        { from: 6, to: 7, type: 'CALLS' }
+        // JCL orchestrates the batch process
+        { from: 0, to: 1, type: 'EXECUTES' },
+        { from: 0, to: 3, type: 'EXECUTES' },
+        
+        // COBOL programs query databases
+        { from: 1, to: 2, type: 'QUERIES' },
+        { from: 3, to: 2, type: 'QUERIES' },
+        { from: 3, to: 4, type: 'READS' },
+        
+        // Program calls and dependencies
+        { from: 3, to: 5, type: 'CALLS' },
+        { from: 5, to: 7, type: 'CALLS' },
+        
+        // CICS transaction handling
+        { from: 6, to: 5, type: 'INVOKES' },
+        { from: 6, to: 9, type: 'INVOKES' },
+        
+        // Copybook usage
+        { from: 1, to: 8, type: 'INCLUDES' },
+        { from: 3, to: 8, type: 'INCLUDES' },
+        { from: 9, to: 8, type: 'INCLUDES' },
+        
+        // Payment flow
+        { from: 9, to: 10, type: 'CALLS' }
     ];
 
     return { nodes, edges };

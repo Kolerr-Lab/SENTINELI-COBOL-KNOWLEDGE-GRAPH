@@ -15,6 +15,10 @@ function App() {
     gateway: 'UNKNOWN',
     connections: 0
   });
+  
+  // Lift graph state to App level to persist across tab switches
+  const [loadedModules, setLoadedModules] = useState([]);
+  const [graphData, setGraphData] = useState(null);
 
   useEffect(() => {
     // Update system status from messages
@@ -75,6 +79,10 @@ function App() {
           messages={messages}
           onAnalyze={handleAnalyze}
           onImpactAnalysis={handleImpactAnalysis}
+          loadedModules={loadedModules}
+          setLoadedModules={setLoadedModules}
+          graphData={graphData}
+          setGraphData={setGraphData}
         />
         
         <ActivityPanel messages={messages} />

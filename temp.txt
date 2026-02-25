@@ -1,0 +1,2 @@
+﻿// eslint-disable-next-line no-unused-vars
+let failed = 0; // false positive - used in nested function

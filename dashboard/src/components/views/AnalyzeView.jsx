@@ -1,35 +1,66 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+
+const FILE_TYPES = [
+  { value: 'COBOL', label: 'COBOL', extensions: ['.cbl', '.cob', '.cobol'], color: '#00ff00' },
+  { value: 'JCL', label: 'JCL (Job Control Language)', extensions: ['.jcl'], color: '#00ffff' },
+  { value: 'DB2', label: 'DB2 (SQL + Embedded)', extensions: ['.db2', '.sql'], color: '#ffff00' },
+  { value: 'VSAM', label: 'VSAM', extensions: ['.vsam'], color: '#ff00ff' },
+  { value: 'CICS', label: 'CICS', extensions: ['.cics'], color: '#ff8800' },
+  { value: 'COPYBOOK', label: 'Copybook', extensions: ['.cpy', '.copy'], color: '#00ff88' }
+];
 
 const AnalyzeView = ({ onAnalyze, messages }) => {
   const [program, setProgram] = useState('');
   const [code, setCode] = useState('');
+  const [fileType, setFileType] = useState('COBOL');
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // Auto-detect file type based on program name/extension
+  useEffect(() => {
+    if (program) {
+      const lowerProgram = program.toLowerCase();
+      for (const type of FILE_TYPES) {
+        if (type.extensions.some(ext => lowerProgram.endsWith(ext))) {
+          setFileType(type.value);
+          break;
+        }
+      }
+    }
+  }, [program]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setResult(null);
     
     try {
       const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ program, code })
+        body: JSON.stringify({ program, code, fileType })
       });
       
       const data = await response.json();
-      setResult(data);
-      onAnalyze(program, code);
+      
+      if (!response.ok) {
+        setResult({ error: data.error || data.message || `HTTP ${response.status}` });
+      } else {
+        setResult(data);
+        onAnalyze(program, code, fileType);
+      }
     } catch (error) {
-      setResult({ error: error.message });
+      setResult({ error: `Network error: ${error.message}. Check if Bridge service is running.` });
     } finally {
       setLoading(false);
     }
   };
 
+  const selectedType = FILE_TYPES.find(t => t.value === fileType);
+
   return (
     <div>
-      <div className="panel-header">═══ COBOL PROGRAM ANALYSIS ═══</div>
+      <div className="panel-header">═══ MAINFRAME SOURCE ANALYSIS ═══</div>
       
       <form onSubmit={handleSubmit}>
         <div className="form-group">
@@ -39,18 +70,52 @@ const AnalyzeView = ({ onAnalyze, messages }) => {
             className="form-input"
             value={program}
             onChange={(e) => setProgram(e.target.value)}
-            placeholder="e.g., INVMAINT"
+            placeholder="e.g., INVMAINT.cbl or JOB001.jcl"
             required
           />
         </div>
+
+        <div className="form-group">
+          <label className="form-label">FILE TYPE:</label>
+          <select
+            className="form-input"
+            value={fileType}
+            onChange={(e) => setFileType(e.target.value)}
+            style={{ 
+              color: selectedType?.color || 'var(--primary-green)',
+              fontWeight: 'bold'
+            }}
+          >
+            {FILE_TYPES.map(type => (
+              <option 
+                key={type.value} 
+                value={type.value}
+                style={{ 
+                  backgroundColor: '#000',
+                  color: type.color 
+                }}
+              >
+                {type.label}
+              </option>
+            ))}
+          </select>
+          <div style={{ 
+            fontSize: '0.75rem', 
+            marginTop: '0.25rem', 
+            color: 'var(--scanline-color)',
+            fontStyle: 'italic'
+          }}>
+            Auto-detected from extension: {selectedType?.extensions.join(', ')}
+          </div>
+        </div>
         
         <div className="form-group">
-          <label className="form-label">COBOL SOURCE CODE:</label>
+          <label className="form-label">SOURCE CODE ({fileType}):</label>
           <textarea
             className="form-textarea"
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            placeholder="Paste your COBOL code here..."
+            placeholder={`Paste your ${fileType} source code here...`}
             required
           />
         </div>
@@ -83,6 +148,9 @@ const AnalyzeView = ({ onAnalyze, messages }) => {
                     ⚡ Performance Metrics:
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', fontSize: '0.85rem' }}>
+                    <div style={{ color: selectedType?.color }}>
+                      📝 File Type: <strong>{result.fileType || fileType}</strong>
+                    </div>
                     <div>⏱️ Processing Time: <strong>{result.metadata.duration_ms}ms</strong></div>
                     <div>💰 Cost: <strong>${result.metadata.cost_usd ? result.metadata.cost_usd.toFixed(6) : '0.000000'}</strong></div>
                     <div>📥 Input Tokens: <strong>{result.metadata.input_tokens || 0}</strong></div>

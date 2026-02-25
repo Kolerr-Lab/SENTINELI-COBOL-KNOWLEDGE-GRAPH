@@ -3,15 +3,32 @@ import React, { useState, useEffect } from 'react';
 const MetricsView = ({ messages }) => {
   const [metrics, setMetrics] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchMetrics = async () => {
       try {
+        setError(null);
         const response = await fetch('/api/system/status');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
         const data = await response.json();
-        setMetrics(data);
+        
+        // Check if Bridge returned error state
+        if (data.status === 'OFFLINE') {
+          setError(data.message || 'Bridge backend is offline');
+          setMetrics(null);
+        } else {
+          setMetrics(data);
+          setError(null);
+        }
       } catch (error) {
         console.error('Failed to fetch metrics:', error);
+        setError(`Failed to fetch metrics: ${error.message}`);
+        setMetrics(null);
       } finally {
         setLoading(false);
       }
@@ -34,8 +51,47 @@ const MetricsView = ({ messages }) => {
   };
 
   if (loading) {
-    return <div className="panel-header">⏳ Loading metrics...</div>;
+    return (
+      <div>
+        <div className="panel-header">═══ PERFORMANCE METRICS ═══</div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '300px', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{ fontSize: '2rem' }}>⏳</div>
+          <div>Loading performance metrics...</div>
+        </div>
+      </div>
+    );
   }
+
+  if (error) {
+    return (
+      <div>
+        <div className="panel-header">═══ PERFORMANCE METRICS ═══</div>
+        <div style={{ 
+          padding: '2rem', 
+          background: 'var(--mainframe-dark)', 
+          borderLeft: '3px solid var(--error-red)',
+          marginTop: '1rem'
+        }}>
+          <div style={{ color: 'var(--error-red)', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+            ✗ ERROR
+          </div>
+          <div style={{ color: 'var(--mainframe-border)' }}>{error}</div>
+          <div style={{ marginTop: '1rem', fontSize: '0.85rem', color: 'var(--modern-blue)' }}>
+            💡 Make sure the Bridge backend is running on port 3000
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Extract memory values (handle both string and number formats)
+  const getMemory = (memStr) => {
+    if (typeof memStr === 'number') return memStr;
+    return memStr || 'N/A';
+  };
+
+  const apiCalls = metrics?.metrics?.totalCalls || 0;
+  const totalCost = metrics?.metrics?.totalCostUSD || 0;
 
   return (
     <div>
@@ -52,22 +108,23 @@ const MetricsView = ({ messages }) => {
         <div className="metric-card">
           <div className="metric-label">MEMORY USAGE</div>
           <div className="metric-value" style={{ fontSize: '1.2rem' }}>
-            {metrics ? formatBytes(metrics.memory.heapUsed) : 'N/A'}
+            {metrics ? getMemory(metrics.system?.memory?.used) : 'N/A'}
           </div>
           <div className="metric-change">
-            Total: {metrics ? formatBytes(metrics.memory.heapTotal) : 'N/A'}
+            Total: {metrics ? getMemory(metrics.system?.memory?.total) : 'N/A'}
           </div>
         </div>
         
         <div className="metric-card">
-          <div className="metric-label">ACTIVE CONNECTIONS</div>
-          <div className="metric-value">{metrics?.connections || 0}</div>
+          <div className="metric-label">API CALLS</div>
+          <div className="metric-value">{apiCalls}</div>
+          <div className="metric-change">Total Cost: ${totalCost.toFixed(4)}</div>
         </div>
         
         <div className="metric-card">
           <div className="metric-label">RSS MEMORY</div>
           <div className="metric-value" style={{ fontSize: '1.2rem' }}>
-            {metrics ? formatBytes(metrics.memory.rss) : 'N/A'}
+            {metrics ? getMemory(metrics.system?.memory?.rss) : 'N/A'}
           </div>
         </div>
       </div>

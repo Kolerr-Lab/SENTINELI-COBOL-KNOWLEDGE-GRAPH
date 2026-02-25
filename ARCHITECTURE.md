@@ -58,6 +58,56 @@ Client → [Rust Gateway] → [Node.js Bridge] → [COBOL Engine + PostgreSQL + 
     *   **Mathematical verification** that AI understanding ⟺ COBOL behavior
     *   Converts business rules into Z3 constraints (SMT-LIB format)
     *   Proves AI explanations are logically sound (SAT/UNSAT checking)
+
+### 6. Multi-Language Analyzer System 🌐 NEW
+*   **Files**: `src/bridge/analyzers/*.js` (7 modules)
+*   **Languages Supported**: COBOL, JCL, DB2, VSAM, CICS, COPYBOOK
+*   **Architecture**: Plugin-based analyzer system with central router
+*   **Role**:
+    *   **Unified Analysis**: Analyze 6 mainframe languages with consistent schema
+    *   **Auto-Detection**: Identify file type by extension (`.jcl`, `.db2`, `.vsam`, `.cics`, `.cpy`)
+    *   **Cross-Language Tracking**: Map dependencies across language boundaries
+    *   **Color-Coded Visualization**: Knowledge graph nodes colored by language type
+
+#### Analyzer Plugin Architecture
+
+```
+┌──────────────────────────────────────────────────────┐
+│  analyzers/index.js (Central Router)                │
+│  - detectFileType(filename) → fileType              │
+│  - analyzeByType(code, fileType, ...) → analysis   │
+└──────────────────────────────────────────────────────┘
+         │
+         ├─→ cobol_analyzer.js     (Business logic extraction)
+         ├─→ jcl_analyzer.js       (Job flow, EXEC calls, DD datasets)
+         ├─→ db2_analyzer.js       (SQL operations, table dependencies)
+         ├─→ vsam_analyzer.js      (File organization, key definitions)
+         ├─→ cics_analyzer.js      (Transaction flow, BMS maps)
+         └─→ copybook_analyzer.js  (Data structures, PIC clauses)
+```
+
+**Standardized Output Schema:**
+```javascript
+{
+  business_rules: Array,       // Extracted rules/logic
+  decision_tree: Object,       // Conditional flow
+  propagator_network: Object,  // Data/control flow
+  complexity_metrics: Object,  // Cyclomatic complexity, etc.
+  dependencies: Object,        // Cross-references
+  metadata: {
+    model: "gpt-4o",
+    cost_usd: Number,          // GPT-4o pricing
+    tokens: Number,
+    duration_ms: Number
+  }
+}
+```
+
+**Why Plugin Architecture?**
+- ✅ **Extensible**: Add new languages without modifying existing analyzers
+- ✅ **Testable**: Each analyzer is independently unit-testable
+- ✅ **Maintainable**: Language-specific logic isolated in dedicated modules
+- ✅ **Consistent**: Central router enforces uniform output schema
     *   **100% verification rate** across enterprise-scale systems
 *   **Capabilities**: 
     *   Formal proof in ~200ms average (real-time)

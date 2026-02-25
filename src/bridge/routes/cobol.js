@@ -23,9 +23,10 @@ const {
 } = require('../middleware/rateLimiting');
 const { AppError, asyncHandler } = require('../middleware/errorHandler');
 const { extractSymbolicConstraints } = require('../ai_agent');
+const { analyzeByType, detectFileType } = require('../analyzers');
 
 // External dependencies (injected when mounting routes)
-let pool, redisClient, redisConnected;
+let pool, redisClient, redisConnected, openai;
 
 /**
  * Initialize route dependencies
@@ -34,6 +35,7 @@ function initCobolRoutes(dependencies) {
     pool = dependencies.pool;
     redisClient = dependencies.redisClient;
     redisConnected = dependencies.redisConnected;
+    openai = dependencies.openai;
 }
 
 /**
@@ -129,12 +131,14 @@ router.post(
 );
 
 /**
- * Analyze COBOL Source Code (Ad-hoc)
+ * Analyze Mainframe Source Code (Ad-hoc, Multi-Language)
  * POST /api/analyze
  * 
- * Body: { program, code }
+ * Body: { program, code, fileType? }
  * Auth: Optional (public endpoint for demo)
  * Rate Limit: 10/hour (expensive AI calls)
+ * 
+ * Supported fileTypes: COBOL, JCL, DB2, VSAM, CICS, COPYBOOK
  */
 router.post(
     '/analyze',
@@ -142,26 +146,59 @@ router.post(
     aiAnalysisLimiter,
     asyncHandler(async (req, res) => {
         const startTime = Date.now();
-        const { program, code } = req.body;
+        const { program, code, fileType: requestedFileType } = req.body;
 
         if (!program || !code) {
             throw new AppError('Missing required fields: program and code', 400);
         }
 
-        logger.info({ program, codeLength: code.length }, 'Ad-hoc AI analysis requested');
+        // Auto-detect file type if not provided
+        const fileType = requestedFileType || detectFileType(program);
 
-        // Perform AI analysis on provided code
-        const analysis = await extractSymbolicConstraints(code);
-        analysis.program = program;
-        analysis.analyzed_at = new Date().toISOString();
+        logger.info({ 
+            program, 
+            fileType, 
+            codeLength: code.length 
+        }, 'Multi-language analysis requested');
 
-        const duration = Date.now() - startTime;
-        logger.info({ program, duration }, 'Ad-hoc analysis completed');
+        try {
+            // Use new multi-language analyzer
+            const analysis = await analyzeByType(code, fileType, program, {
+                openai,
+                logger
+            });
 
-        res.json({
-            ...analysis,
-            duration
-        });
+            // Add program metadata
+            analysis.program = program;
+            analysis.analyzed_at = new Date().toISOString();
+
+            const duration = Date.now() - startTime;
+            
+            logger.info({ 
+                program, 
+                fileType,
+                duration,
+                cost: analysis.metadata?.cost_usd 
+            }, `${fileType} analysis completed`);
+
+            res.json({
+                success: true,
+                ...analysis,
+                duration
+            });
+        } catch (error) {
+            logger.error({ 
+                program, 
+                fileType, 
+                error: error.message 
+            }, 'Analysis failed');
+            
+            throw new AppError(
+                `${fileType} analysis failed: ${error.message}`,
+                500,
+                { program, fileType }
+            );
+        }
     })
 );
 
