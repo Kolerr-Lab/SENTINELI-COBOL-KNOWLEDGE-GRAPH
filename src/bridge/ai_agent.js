@@ -164,70 +164,6 @@ function calculateCost(inputTokens, outputTokens, modelName) {
 }
 
 /**
- * Get current metrics
- * @returns {object} Metrics object
- */
-function getMetrics() {
-    const uptimeMs = Date.now() - new Date(metrics.sessionStartTime).getTime();
-    return {
-        ...metrics,
-        uptimeMs,
-        uptimeMinutes: Math.floor(uptimeMs / 60000),
-        averageProcessingTimeMs: metrics.totalCalls > 0 
-            ? Math.round(metrics.totalProcessingTimeMs / metrics.totalCalls) 
-            : 0,
-        averageCostPerCall: metrics.totalCalls > 0
-            ? (metrics.totalCostUSD / metrics.totalCalls).toFixed(4)
-            : '0.0000',
-        averageCyclomaticComplexity: metrics.totalCalls > 0
-            ? Math.round(metrics.totalCyclomaticComplexity / metrics.totalCalls)
-            : 0,
-        averageLogicDepth: metrics.totalCalls > 0
-            ? Math.round(metrics.totalLogicDepth / metrics.totalCalls)
-            : 0,
-        averageVariableCount: metrics.totalCalls > 0
-            ? Math.round(metrics.totalVariableCount / metrics.totalCalls)
-            : 0,
-        averageDecisionPoints: metrics.totalCalls > 0
-            ? Math.round(metrics.totalDecisionPoints / metrics.totalCalls)
-            : 0
-    };
-}
-
-/**
- * Reset metrics
- */
-function resetMetrics() {
-    metrics.totalCalls = 0;
-    metrics.totalProcessingTimeMs = 0;
-    metrics.totalInputTokens = 0;
-    metrics.totalOutputTokens = 0;
-    metrics.totalCostUSD = 0.0;
-    metrics.totalCyclomaticComplexity = 0;
-    metrics.totalLogicDepth = 0;
-    metrics.totalVariableCount = 0;
-    metrics.totalDecisionPoints = 0;
-    metrics.lastResetTime = new Date().toISOString();
-    logger.info('Metrics reset');
-}
-
-/**
- * Update metrics for cache hit (no AI cost, but still track call)
- * @param {number} duration - Request duration in ms
- * @param {object} complexityMetrics - Complexity metrics from cached analysis
- */
-function updateMetricsForCacheHit(duration, complexityMetrics) {
-    metrics.totalCalls += 1;
-    metrics.totalProcessingTimeMs += duration;
-    metrics.totalCyclomaticComplexity += complexityMetrics.cyclomatic_complexity || 0;
-    metrics.totalLogicDepth += complexityMetrics.logic_depth || 0;
-    metrics.totalVariableCount += complexityMetrics.variable_count || 0;
-    metrics.totalDecisionPoints += complexityMetrics.decision_points || 0;
-    // Note: No cost added for cache hits
-    logger.info({ duration, cached: true }, 'Cache hit tracked in metrics');
-}
-
-/**
  * Neuro-Symbolic Agent (Sussman-Kolmogorov Architecture)
  * 
  * Extracts symbolic constraints from COBOL code:
@@ -489,9 +425,6 @@ module.exports = {
     extractSymbolicConstraints,
     explainCode,
     isAIAvailable,
-    getMetrics,
-    resetMetrics,
-    updateMetricsForCacheHit,
     getProviderInfo,
     openai  // Export OpenAI client for multi-language analyzers
 };

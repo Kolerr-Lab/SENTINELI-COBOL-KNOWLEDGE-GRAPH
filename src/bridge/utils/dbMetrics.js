@@ -77,13 +77,8 @@ async function getMetricsFromDB(pool) {
  */
 async function storeAnalysis(pool, fileName, fileType, analysis) {
     try {
-        console.log(`[dbMetrics] Attempting to store analysis for ${fileName} (${fileType})`);
-        
         const complexity = analysis.complexity_metrics || {};
         const metadata = analysis.metadata || {};
-
-        console.log(`[dbMetrics] Extracted complexity:`, complexity);
-        console.log(`[dbMetrics] Extracted metadata:`, metadata);
 
         const result = await pool.query(
             `INSERT INTO knowledge_graph 
@@ -106,7 +101,6 @@ async function storeAnalysis(pool, fileName, fileType, analysis) {
             ]
         );
 
-        console.log(`[dbMetrics] Successfully inserted analysis with ID: ${result.rows[0].id}`);
         return result.rows[0].id;
     } catch (error) {
         console.error('[dbMetrics] Error storing analysis:', error.message, error.stack);

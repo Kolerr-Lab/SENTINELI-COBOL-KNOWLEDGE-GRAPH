@@ -243,13 +243,8 @@ router.post(
                     const duration = Date.now() - startTime;
                     logger.logAiAnalysis(file, true, duration);
                     
-                    // Parse cached result to extract complexity for metrics tracking
+                    // Return cached result
                     const cachedData = JSON.parse(cached);
-                    const cachedComplexity = cachedData.complexity_metrics || {};
-                    
-                    // Update metrics for cache hit (but no cost since no AI call)
-                    const { updateMetricsForCacheHit } = require('../ai_agent');
-                    updateMetricsForCacheHit(cachedComplexity);
 
                     return res.json({
                         ...cachedData,

@@ -37,7 +37,7 @@ const {
     handleUnhandledRejection,
     setupGracefulShutdown
 } = require('./middleware/errorHandler');
-const { getMetrics, resetMetrics, getProviderInfo, openai } = require('./ai_agent');
+const { getProviderInfo, openai } = require('./ai_agent');
 
 // Import route modules
 const { router: cobolRouter, initCobolRoutes } = require('./routes/cobol');
@@ -335,8 +335,9 @@ app.get(
         // Get Redis status
         const redisStatus = redisConnected ? 'CONNECTED' : 'DISCONNECTED';
 
-        // Get AI agent metrics
-        const aiMetrics = getMetrics();
+        // Get DB-backed AI metrics
+        const { getMetricsFromDB } = require('./utils/dbMetrics');
+        const aiMetrics = await getMetricsFromDB(pool);
 
         const duration = Date.now() - startTime;
 
@@ -350,7 +351,12 @@ app.get(
                 redis: redisStatus,
                 ai: process.env.OPENAI_API_KEY ? 'CONFIGURED' : 'NOT_CONFIGURED'
             },
-            metrics: aiMetrics,
+            metrics: {
+                totalCalls: aiMetrics.totalCalls,
+                totalCostUSD: aiMetrics.totalCostUSD,
+                averageProcessingTimeMs: aiMetrics.averageProcessingTimeMs,
+                averageCyclomaticComplexity: aiMetrics.averageCyclomaticComplexity
+            },
             duration
         });
     })
