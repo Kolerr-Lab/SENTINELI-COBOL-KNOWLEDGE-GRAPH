@@ -195,14 +195,9 @@ app.get('/health', publicLimiter, asyncHandler(async (req, res) => {
         // Don't mark as degraded - server can run without Redis
     }
 
-    // Get AI provider information
-    const providerInfo = getProviderInfo();
-    health.ai = {
-        status: providerInfo.status,
-        provider: providerInfo.provider,
-        model: providerInfo.model,
-        endpoint: providerInfo.provider === 'ollama' ? providerInfo.endpoint : undefined
-    };
+    // Get AI provider information (both OpenAI and Ollama)
+    const providerInfo = await getProviderInfo();
+    health.ai = providerInfo;
 
     // Return 200 OK even if dependencies are unavailable (demo mode)
     res.status(200).json(health);
@@ -215,7 +210,7 @@ app.get('/health', publicLimiter, asyncHandler(async (req, res) => {
 app.get('/api/metrics', publicLimiter, asyncHandler(async (req, res) => {
     const { getMetricsFromDB } = require('./utils/dbMetrics');
     const metrics = await getMetricsFromDB(pool);
-    const providerInfo = getProviderInfo();
+    const providerInfo = await getProviderInfo();
     
     res.json({
         success: true,
@@ -233,9 +228,10 @@ app.get('/api/metrics', publicLimiter, asyncHandler(async (req, res) => {
             averageDecisionPoints: parseFloat(metrics.averageDecisionPoints.toFixed(2)),
             firstAnalysis: metrics.firstAnalysis,
             lastAnalysis: metrics.lastAnalysis,
-            // AI Provider info
-            aiProvider: providerInfo.provider,
-            aiModel: providerInfo.model
+            // AI Provider info (both OpenAI and Ollama)
+            aiProvider: providerInfo.active.provider,
+            aiModel: providerInfo.active.model,
+            providers: providerInfo
         }
     });
 }));

@@ -18,7 +18,7 @@
 ### Prerequisites
 
 - Node.js 18+ installed
-- SENTINELI Bridge running on port 3000
+- SENTINELI Bridge running on port 8766 (Docker container)
 - SENTINELI Gateway running on port 8080
 
 ### Installation
@@ -34,10 +34,17 @@ npm install
 npm run dev
 ```
 
-This starts:
-- WebSocket server on `http://localhost:3100`
-- Vite dev server with hot reload
-- Dashboard accessible at `http://localhost:3100`
+This starts **two servers**:
+- **Express WebSocket server** on `http://localhost:3100` (server.js)
+- **Vite dev server** on `http://localhost:5173` (React hot reload)
+- Dashboard accessible at `http://localhost:5173`
+
+**Port Architecture:**
+- **5173**: Vite dev server (React app with HMR)
+- **3100**: Express server (WebSocket + API proxy to backend)
+- **8766**: Backend Bridge API (Docker container)
+
+**Data flow:** Browser (5173) → Express (3100) → Backend (8766)
 
 ### Production Build
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 const Header = ({ connected, bridgeStatus, gatewayStatus }) => {
   const [metrics, setMetrics] = useState(null);
+  const [providers, setProviders] = useState(null);
 
   useEffect(() => {
     const fetchMetrics = async () => {
@@ -10,6 +11,7 @@ const Header = ({ connected, bridgeStatus, gatewayStatus }) => {
         const data = await response.json();
         if (data.success) {
           setMetrics(data.metrics);
+          setProviders(data.metrics.providers);
         }
       } catch (error) {
         console.error('Failed to fetch metrics:', error);
@@ -27,6 +29,20 @@ const Header = ({ connected, bridgeStatus, gatewayStatus }) => {
     if (status === 'UP') return 'active';
     if (status === 'DOWN') return 'error';
     return 'warning';
+  };
+
+  const getOllamaStatusClass = (status) => {
+    if (status === 'active') return 'active';
+    if (status === 'waiting_config') return 'warning';
+    if (status === 'disconnected') return 'error';
+    return 'inactive'; // not installed
+  };
+
+  const getOllamaStatusText = (status) => {
+    if (status === 'active') return 'Active';
+    if (status === 'waiting_config') return 'Waiting for config';
+    if (status === 'disconnected') return 'Disconnected';
+    return 'Not installed';
   };
 
   const formatTime = (ms) => {
@@ -61,32 +77,49 @@ const Header = ({ connected, bridgeStatus, gatewayStatus }) => {
           <span>GATEWAY: {gatewayStatus}</span>
         </div>
 
+        {providers && (
+          <>
+            {/* Active AI Provider */}
+            <div className="status-indicator" style={{ borderLeft: '1px solid var(--primary-green)', paddingLeft: '1rem' }}>
+              <span className="status-dot active"></span>
+              <span>
+                ACTIVE AI: {providers.active.provider === 'openai' 
+                  ? (providers.openai.model === 'gpt-4o' ? 'GPT-4o' : 
+                     providers.openai.model === 'gpt-4o-mini' ? 'GPT-4o-mini' : 
+                     providers.openai.model) 
+                  : (providers.ollama.model?.includes('llama') ? 'Llama 3.3' : providers.ollama.model)}
+              </span>
+            </div>
+
+            {/* OpenAI Status */}
+            <div className="status-indicator">
+              <span className={`status-dot ${providers.openai.configured ? 'active' : 'warning'}`}></span>
+              <span>OPENAI: {providers.openai.configured ? 'Configured' : 'Not configured'}</span>
+            </div>
+
+            {/* Ollama Status */}
+            <div className="status-indicator">
+              <span className={`status-dot ${getOllamaStatusClass(providers.ollama.status)}`}></span>
+              <span>OLLAMA: {getOllamaStatusText(providers.ollama.status)}</span>
+            </div>
+          </>
+        )}
+
         {metrics && (
           <>
             <div className="status-indicator" style={{ borderLeft: '1px solid var(--primary-green)', paddingLeft: '1rem' }}>
               <span className="status-dot active"></span>
-              <span>
-                AI: {metrics.aiModel === 'gpt-4o' ? 'GPT-4o' : 
-                     metrics.aiModel === 'gpt-4o-mini' ? 'GPT-4o-mini' :
-                     metrics.aiModel?.includes('llama') ? 'Llama 3.3' :
-                     metrics.aiModel || 'Unknown'} 
-                ({metrics.aiProvider === 'openai' ? 'Cloud' : 'Local'})
-              </span>
+              <span>LLM CALLS: {metrics.totalCalls || 0}</span>
             </div>
             
             <div className="status-indicator">
               <span className="status-dot active"></span>
-              <span>LLM CALLS: {metrics.totalCalls}</span>
+              <span>AVG TIME: {formatTime(metrics.averageProcessingTimeMs || 0)}</span>
             </div>
             
             <div className="status-indicator">
               <span className="status-dot active"></span>
-              <span>AVG TIME: {formatTime(metrics.averageProcessingTimeMs)}</span>
-            </div>
-            
-            <div className="status-indicator">
-              <span className="status-dot active"></span>
-              <span>COST: ${metrics.totalCostUSD.toFixed(6)}</span>
+              <span>COST: ${(metrics.totalCostUSD || 0).toFixed(6)}</span>
             </div>
 
             <div className="status-indicator">

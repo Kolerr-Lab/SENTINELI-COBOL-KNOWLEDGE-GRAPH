@@ -5,7 +5,9 @@ import NavigationPanel from './components/NavigationPanel';
 import MainPanel from './components/MainPanel';
 import ActivityPanel from './components/ActivityPanel';
 
-const WS_URL = `ws://${window.location.host}`;
+// WebSocket connects directly to Express server (port 3100)
+// Vite dev server is on port 5173 and proxies /api requests to 3100
+const WS_URL = 'ws://localhost:3100';
 
 function App() {
   const { messages, connected, sendMessage } = useWebSocket(WS_URL);

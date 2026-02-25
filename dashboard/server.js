@@ -15,7 +15,7 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 const PORT = process.env.DASHBOARD_PORT || 3100;
-const BRIDGE_URL = process.env.BRIDGE_URL || 'http://localhost:3000';
+const BRIDGE_URL = process.env.BRIDGE_URL || 'http://localhost:8766';
 const GATEWAY_URL = process.env.GATEWAY_URL || 'http://localhost:8080';
 
 app.use(cors());

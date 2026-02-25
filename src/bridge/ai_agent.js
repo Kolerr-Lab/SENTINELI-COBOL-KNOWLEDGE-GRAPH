@@ -414,11 +414,50 @@ function isAIAvailable() {
 }
 
 /**
- * Get AI provider information
- * @returns {object} Provider info (provider, model, endpoint, status)
+ * Check Ollama connectivity
+ * @returns {Promise<string>} Status: 'active', 'waiting_config', 'disconnected'
  */
-function getProviderInfo() {
-    return { ...aiProviderInfo };
+async function checkOllamaStatus() {
+    // If OLLAMA_ENDPOINT not set, show "Waiting for config"
+    if (!process.env.OLLAMA_ENDPOINT) {
+        return 'waiting_config';
+    }
+
+    try {
+        const response = await axios.get(`${OLLAMA_ENDPOINT}/api/tags`, {
+            timeout: 2000 // 2 second timeout for status check
+        });
+        return response.status === 200 ? 'active' : 'disconnected';
+    } catch (error) {
+        return 'disconnected';
+    }
+}
+
+/**
+ * Get AI provider information (both OpenAI and Ollama status)
+ * @returns {Promise<object>} Provider info for both providers
+ */
+async function getProviderInfo() {
+    const ollamaStatus = await checkOllamaStatus();
+    
+    return {
+        active: {
+            provider: AI_PROVIDER,
+            model: aiProviderInfo.model,
+            endpoint: aiProviderInfo.endpoint,
+            status: aiProviderInfo.status
+        },
+        openai: {
+            configured: !!apiKey,
+            model: model,
+            status: apiKey ? 'configured' : 'not_configured'
+        },
+        ollama: {
+            endpoint: process.env.OLLAMA_ENDPOINT || null,
+            model: OLLAMA_MODEL,
+            status: ollamaStatus
+        }
+    };
 }
 
 module.exports = {
