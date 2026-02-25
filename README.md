@@ -19,7 +19,7 @@
 [![Redis](https://img.shields.io/badge/Redis-Cache-red?style=flat&logo=redis)](https://redis.io/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat&logo=docker)](https://www.docker.com/)
 [![Powered by OpenAI](https://img.shields.io/badge/Powered_by-OpenAI_GPT--4o-412991?style=flat&logo=openai)](https://openai.com/)
-[![Ollama Ready](https://img.shields.io/badge/Ollama-Local_LLM-7C3AED?style=flat&logo=ollama)](docs/OLLAMA_SETUP.md)
+[![Ollama Ready](https://img.shields.io/badge/Ollama-Local_LLM-7C3AED?style=flat&logo=ollama)](#ai-provider-configuration)
 [![Z3 Verified](https://img.shields.io/badge/Z3-100%25_Proven-success?style=flat&logo=microsoft)](docs/Z3_VERIFICATION_GUIDE.md)
 
 <!-- Quality & Community -->
@@ -206,7 +206,7 @@ const analysis = await analyzeByType(code, fileType);
 }
 ```
 
-**All analyzers use GPT-4o** with language-specific prompts for optimal extraction.
+**All analyzers use AI (GPT-4o or Ollama Llama 3.3)** with language-specific prompts for optimal extraction.
 
 ### What This Means for Banking Modernization
 
@@ -240,7 +240,7 @@ cp .env.example .env
 # AI_PROVIDER=ollama
 # OLLAMA_ENDPOINT=http://localhost:11434
 # OLLAMA_MODEL=llama3.3
-# See: docs/OLLAMA_SETUP.md
+# See AI Provider Configuration section below for full setup
 
 # 3. Start with PM2 (production mode)
 npm run start:pm2
@@ -249,7 +249,7 @@ npm run start:pm2
 npm run dev
 ```
 
-**Access the Mainframe Dashboard:** http://localhost:3102
+**Access the Mainframe Dashboard:** http://localhost:5173 (dev) or http://localhost:3100 (production)
 
 **What you get instantly:**
 - 🔬 **Formal verification** - Upload COBOL, get Z3 proofs
@@ -279,7 +279,8 @@ node tests/z3_proof.js
 **Production Deployment:**
 - 🚀 **[Deployment Guide](DEPLOYMENT.md)** - Deploy to production safely
 - 🏗️ **[Architecture Guide](ARCHITECTURE.md)** - System design deep dive
-- 🔧 **[Troubleshooting Guide](TROUBLESHOOTING.md)** - Fix common issues
+- � **[Port Architecture](PORT_ARCHITECTURE.md)** - Understanding the 3-port setup
+- �🔧 **[Troubleshooting Guide](TROUBLESHOOTING.md)** - Fix common issues
 - 🧪 **[Testing Guide](TESTING_GUIDE.md)** - Run and write tests
 
 **Advanced Topics:**
@@ -407,8 +408,8 @@ Financial institutions need **audit trails**. The dashboard provides:
 ```bash
 # Production mode (PM2)
 npm run start:pm2
-# Dashboard: http://localhost:3102
-# Bridge API: http://localhost:3000
+# Dashboard: http://localhost:5173 (Vite dev server)
+# Bridge API: http://localhost:8766 (Docker container)
 
 # Development mode
 npm run dev
@@ -718,7 +719,9 @@ Sentineli handles enterprise load that would break traditional COBOL analysis to
 ### Prerequisites
 - Node.js 18+ (LTS recommended)
 - GnuCOBOL 3.1+ (for COBOL compilation)
-- OpenAI API key (GPT-4o access)
+- **AI Provider**: Choose one:
+  - **OpenAI API key** (GPT-4o) - Cloud-based, fastest, $0.006/analysis
+  - **Ollama** - Local LLM, 100% offline, free, requires 8GB+ VRAM
 - Optional: PostgreSQL 15, Redis 7, Docker
 
 ### Quick Start (5 Minutes)
@@ -744,17 +747,85 @@ npm run start:pm2
 ```
 
 This starts both services:
-- 🖥️ **Dashboard**: http://localhost:3102 (mainframe UI)
-- 🤖 **Bridge API**: http://localhost:3000 (AI backend)
+- 🖥️ **Dashboard**: http://localhost:5173 (Vite dev) or http://localhost:3100 (production build)
+- 🤖 **Bridge API**: http://localhost:8766 (Docker container)
 
 **4. Verify Installation**
 ```bash
 # Check service health
-curl http://localhost:3000/health
+curl http://localhost:8766/health
 
 # Run verification tests
 node tests/z3_proof.js
 ```
+
+### AI Provider Configuration
+
+Sentineli supports **two AI providers** for flexible deployment scenarios:
+
+#### Option 1: OpenAI (Cloud - Recommended for Production)
+
+**Pros:** Industry-leading accuracy, fast inference, no local GPU needed  
+**Cons:** Requires internet, costs $0.006 per analysis, data leaves premises
+
+```bash
+# .env configuration
+AI_PROVIDER=openai
+OPENAI_API_KEY=sk-your-key-here
+OPENAI_MODEL=gpt-4o  # or gpt-4o-mini for lower cost
+```
+
+**Cost:** ~$0.006 per COBOL module (4,000x cheaper than manual analysis)  
+**Dashboard Status:** Shows "OPENAI: Configured" + "ACTIVE AI: GPT-4o"
+
+#### Option 2: Ollama (Local - Air-Gapped Deployments)
+
+**Pros:** 100% offline, zero API costs, data never leaves network  
+**Cons:** Requires GPU (8GB+ VRAM), slower inference (~30s vs 2s)
+
+**Installation:**
+```bash
+# 1. Install Ollama (macOS/Linux/Windows)
+curl -fsSL https://ollama.com/install.sh | sh
+
+# 2. Pull Llama 3.3 model (70B recommended, 8B for testing)
+ollama pull llama3.3
+
+# 3. Start Ollama server
+ollama serve  # Runs on http://localhost:11434
+
+# 4. Configure Sentineli
+# Edit .env:
+AI_PROVIDER=ollama
+OLLAMA_ENDPOINT=http://localhost:11434
+OLLAMA_MODEL=llama3.3
+```
+
+**Dashboard Status:** Shows "OLLAMA: Active" when running  
+**Performance:** ~30s per analysis (offline), 100% free
+
+#### Dashboard Status Indicators
+
+The dashboard header displays real-time status for both providers:
+
+- 🟢 **ACTIVE AI**: Currently selected provider (OpenAI/Ollama)
+- 🟢 **OPENAI**: Configured (API key set)
+- 🟡 **OLLAMA**: Waiting for config (endpoint not set)
+- 🟢 **OLLAMA**: Active (connected to local server)
+- 🔴 **OLLAMA**: Disconnected (endpoint unreachable)
+
+**Switching Providers:**
+```bash
+# Change AI_PROVIDER in .env
+AI_PROVIDER=ollama  # or openai
+
+# Restart services
+npm run start:pm2
+```
+
+**Use Cases:**
+- **OpenAI**: Banks with internet, fast development, cloud-first
+- **Ollama**: Air-gapped environments, defense contractors, regulated on-prem
 
 ### Docker Deployment (Optional)
 
@@ -770,23 +841,24 @@ Builds: Rust gateway, GnuCOBOL compiler, Node.js bridge, PostgreSQL, Redis
 
 | Service | URL | Purpose |
 |---------|-----|----------|
-| Dashboard | http://localhost:3102 | Mainframe UI control center  |
-| Bridge API | http://localhost:3000 | AI analysis endpoints |
-| Health Check | http://localhost:3000/health | Service status |
-| Metrics | http://localhost:3000/api/metrics | LLM usage stats |
-| Knowledge Graph | http://localhost:3000/api/graph | Dependency data |
+| Dashboard (Dev) | http://localhost:5173 | Vite dev server with HMR |
+| Dashboard (Prod) | http://localhost:3100 | Express + built React app |
+| Bridge API | http://localhost:8766 | AI analysis endpoints (Docker) |
+| Health Check | http://localhost:8766/health | Service status |
+| Metrics | http://localhost:8766/api/metrics | LLM usage & cost tracking |
+| Knowledge Graph | http://localhost:8766/api/graph | Dependency data |
 
 ### First Analysis
 
 **Via Dashboard:**
-1. Open http://localhost:3102
+1. Open http://localhost:5173 (dev mode)
 2. Click "COBOL Analysis" tab
 3. Paste COBOL code
 4. Watch real-time AI analysis + Z3 verification
 
 **Via API:**
 ```bash
-curl -X POST http://localhost:3000/api/analyze \
+curl -X POST http://localhost:8766/api/analyze \
   -H "Content-Type: application/json" \
   -d '{"program":"test","code":"...your COBOL..."}'
 ```
@@ -812,7 +884,7 @@ node tests/performance/master_dashboard.js
 
 **1. Ad-hoc COBOL Analysis + Z3 Verification**
 ```bash
-curl -X POST http://localhost:3000/api/analyze \
+curl -X POST http://localhost:8766/api/analyze \
   -H "Content-Type: application/json" \
   -d '{
     "program": "loan_calculator",
@@ -848,7 +920,7 @@ curl -X POST http://localhost:3000/api/analyze \
 
 **2. Impact Analysis (Dependency Tracing)**
 ```bash
-curl -X POST http://localhost:3000/api/impact \
+curl -X POST http://localhost:8766/api/impact \
   -H "Content-Type: application/json" \
   -d '{
     "program": "credit_card_processing.cob",
@@ -882,7 +954,7 @@ curl -X POST http://localhost:3000/api/impact \
 
 **3. Knowledge Graph (System Dependencies)**
 ```bash
-curl http://localhost:3000/api/graph
+curl http://localhost:8766/api/graph
 ```
 
 **Response:**
@@ -908,7 +980,7 @@ curl http://localhost:3000/api/graph
 
 **4. LLM Usage Metrics**
 ```bash
-curl http://localhost:3000/api/metrics
+curl http://localhost:8766/api/metrics
 ```
 
 **Response:**
@@ -1253,7 +1325,7 @@ git clone https://github.com/Kolerr-Lab/SENTINELI-COBOL-KNOWLEDGE-GRAPH.git
 cd SENTINELI-COBOL-KNOWLEDGE-GRAPH
 npm install
 npm run start:pm2
-# Open http://localhost:3102
+# Open http://localhost:5173
 ```
 
 **⭐ Star this repo if you believe in verified AI modernization**

@@ -247,7 +247,7 @@ Edit `dashboard-container` grid in CSS:
 ## 🤝 Integration with SENTINELI
 
 The dashboard automatically connects to:
-- **Bridge**: `http://localhost:3000` (configurable via BRIDGE_URL)
+- **Bridge**: `http://localhost:8766` (Docker container, configurable via BRIDGE_URL)
 - **Gateway**: `http://localhost:8080` (configurable via GATEWAY_URL)
 
 Ensure both services are running before starting the dashboard.
@@ -256,7 +256,7 @@ Ensure both services are running before starting the dashboard.
 
 ```bash
 DASHBOARD_PORT=3100
-BRIDGE_URL=http://localhost:3000
+BRIDGE_URL=http://localhost:8766
 GATEWAY_URL=http://localhost:8080
 ```
 
