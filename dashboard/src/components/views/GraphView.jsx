@@ -155,6 +155,10 @@ const GraphView = ({ loadedModules, setLoadedModules, graphData, setGraphData })
   };
 
   const copyJsonToClipboard = () => {
+    if (!graphData || !graphData.nodes) {
+      console.error('No graph data available to copy');
+      return;
+    }
     const jsonString = JSON.stringify({ nodes: graphData.nodes, edges: graphData.edges }, null, 2);
     navigator.clipboard.writeText(jsonString).then(() => {
       setJsonCopied(true);

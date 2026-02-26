@@ -11,16 +11,32 @@ const MainPanel = ({
   loadedModules,
   setLoadedModules,
   graphData,
-  setGraphData
+  setGraphData,
+  analyzeState,
+  setAnalyzeState,
+  impactState,
+  setImpactState
 }) => {
   const renderView = () => {
     switch (activeView) {
       case 'dashboard':
         return <DashboardView />;
       case 'analyze':
-        return <AnalyzeView />;
+        return (
+          <AnalyzeView 
+            analyzeState={analyzeState}
+            setAnalyzeState={setAnalyzeState}
+          />
+        );
       case 'impact':
-        return <ImpactView />;
+        return (
+          <ImpactView 
+            impactState={impactState}
+            setImpactState={setImpactState}
+            loadedModules={loadedModules}
+            setLoadedModules={setLoadedModules}
+          />
+        );
       case 'graph':
         return (
           <GraphView 

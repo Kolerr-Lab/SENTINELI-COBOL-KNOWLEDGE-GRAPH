@@ -25,45 +25,63 @@ router.post(
     generalLimiter,
     asyncHandler(async (req, res) => {
         const startTime = Date.now();
-        const { field, newType, module } = req.body;
+        const { field, newType, module, loadedModules } = req.body;
 
         if (!field || !newType) {
             throw new AppError('Missing required fields: field and newType', 400);
         }
 
-        logger.info({ field, newType, module }, 'Impact analysis requested');
+        logger.info({ field, newType, module, loadedModulesCount: loadedModules?.length || 0 }, 'Impact analysis requested');
+
+        // Convert loadedModules to array if it's an object (handle JSON parsing edge case)
+        let modulesArray = [];
+        if (loadedModules) {
+            if (Array.isArray(loadedModules)) {
+                modulesArray = loadedModules;
+            } else if (typeof loadedModules === 'object') {
+                // Convert object with numeric keys to array
+                modulesArray = Object.values(loadedModules);
+            }
+        }
+
+        // Determine affected programs from loaded modules or use defaults
+        let affectedPrograms = ['ACCOUNT-MANAGEMENT', 'TRANSACTION-PROCESSOR', 'FRAUD-DETECTION'];
+        
+        if (modulesArray.length > 0) {
+            // Use the loaded modules as the affected programs
+            affectedPrograms = modulesArray.map(m => m.program || m.name);
+            logger.info({ affectedPrograms, count: modulesArray.length }, 'Using uploaded modules for impact analysis');
+        } else if (module) {
+            affectedPrograms = [module];
+        }
+
+        // Calculate risk based on number of affected modules
+        const moduleCount = affectedPrograms.length;
+        const risk = moduleCount > 5 ? 'HIGH' : moduleCount > 2 ? 'MEDIUM' : 'LOW';
+        const hours = Math.ceil(moduleCount * 2.5); // 2.5 hours per module
 
         // Simulate impact analysis (in production, this would query knowledge graph database)
         // This analyzes how changing a field affects downstream programs
         const impactAnalysis = {
             field,
             newType,
-            affectedPrograms: module ? [module] : ['ACCOUNT-MANAGEMENT', 'TRANSACTION-PROCESSOR', 'FRAUD-DETECTION'],
-            risk: 'MEDIUM',
+            affectedPrograms: affectedPrograms,
+            affectedProgramsCount: affectedPrograms.length,
+            risk: risk,
             estimatedEffort: {
-                hours: 8,
-                complexity: 'MODERATE'
+                hours: hours,
+                complexity: risk === 'HIGH' ? 'COMPLEX' : risk === 'MEDIUM' ? 'MODERATE' : 'SIMPLE'
             },
-            dependencies: [
-                {
-                    program: 'ACCOUNT-MANAGEMENT',
-                    section: 'WORKING-STORAGE',
-                    impact: 'DIRECT',
-                    changes: [`Change ${field} from current to ${newType}`]
-                },
-                {
-                    program: 'TRANSACTION-PROCESSOR',
-                    section: 'PROCEDURE DIVISION',
-                    impact: 'INDIRECT',
-                    changes: ['Update calculations using this field']
-                },
-                {
-                    program: 'FRAUD-DETECTION',
-                    section: 'DATA VALIDATION',
-                    impact: 'INDIRECT',
-                    changes: ['Validate new data type constraints']
-                }
-            ],
+            dependencies: affectedPrograms.slice(0, 3).map((prog, idx) => ({
+                program: prog,
+                section: idx === 0 ? 'WORKING-STORAGE' : idx === 1 ? 'PROCEDURE DIVISION' : 'DATA VALIDATION',
+                impact: idx === 0 ? 'DIRECT' : 'INDIRECT',
+                changes: idx === 0 
+                    ? [`Change ${field} from current to ${newType}`]
+                    : idx === 1
+                    ? ['Update calculations using this field']
+                    : ['Validate new data type constraints']
+            })),
             testingRequired: [
                 'Unit tests for field validation',
                 'Integration tests for dependent modules',

@@ -1,44 +1,81 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import FileUploader from '../FileUploader';
 
-const ImpactView = () => {
-  const [field, setField] = useState('');
-  const [newType, setNewType] = useState('');
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [loadedModules, setLoadedModules] = useState([]);
-  const [showUploader, setShowUploader] = useState(false);
+const ImpactView = ({ impactState, setImpactState, loadedModules, setLoadedModules }) => {
+  // Destructure state for easier access
+  const { field, newType, result, loading, showUploader } = impactState;
+  
+  // Helper to update state
+  const updateState = (updates) => {
+    setImpactState(prev => ({ ...prev, ...updates }));
+  };
+
+  // Load modules from Knowledge Graph database on mount if empty
+  useEffect(() => {
+    if (loadedModules.length === 0) {
+      loadModulesFromDatabase();
+    }
+  }, []); // Only run on mount
+
+  const loadModulesFromDatabase = async () => {
+    try {
+      const response = await fetch('/api/graph');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.graph && data.graph.nodes.length > 0) {
+          // Convert graph nodes to module format
+          const modules = data.graph.nodes.map(node => ({
+            name: node.label,
+            program: node.label.replace(/\.(cob|cbl)$/i, '').toUpperCase(),
+            source: 'database'
+          }));
+          setLoadedModules(modules);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load modules from database:', error);
+    }
+  };
 
   const handleFilesUploaded = (results) => {
     const successful = results.filter(r => r.success);
     setLoadedModules(prev => [...prev, ...successful]);
-    setShowUploader(false);
+    updateState({ showUploader: false });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setResult(null);
+    updateState({ loading: true, result: null });
     
     try {
+      // Include loaded modules in the request
+      const requestBody = { 
+        field, 
+        newType,
+        loadedModules: loadedModules.map(m => ({
+          name: m.name,
+          program: m.name.replace(/\.(cob|cbl)$/i, '').toUpperCase()
+        }))
+      };
+      
       const response = await fetch('/api/impact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ field, newType })
+        body: JSON.stringify(requestBody)
       });
       
       const data = await response.json();
       
       if (!response.ok) {
-        setResult({ error: data.error || data.message || `HTTP ${response.status}` });
+        updateState({ result: { error: data.error || data.message || `HTTP ${response.status}` }, loading: false });
       } else {
-        setResult(data);
-        onImpactAnalysis(field, newType);
+        updateState({ result: data, loading: false });
       }
     } catch (error) {
-      setResult({ error: `Network error: ${error.message}. Check if Bridge service is running.` });
-    } finally {
-      setLoading(false);
+      updateState({ 
+        result: { error: `Network error: ${error.message}. Check if Bridge service is running.` },
+        loading: false 
+      });
     }
   };
 
@@ -54,7 +91,7 @@ const ImpactView = () => {
         <>
           <FileUploader onFilesUploaded={handleFilesUploaded} />
           <button 
-            onClick={() => setShowUploader(false)}
+            onClick={() => updateState({ showUploader: false })}
             className="submit-button"
             style={{ marginTop: '1rem', background: 'var(--mainframe-border)' }}
           >
@@ -63,18 +100,27 @@ const ImpactView = () => {
         </>
       ) : (
         <>
-          <button 
-            onClick={() => setShowUploader(true)}
-            className="submit-button"
-            style={{ marginBottom: '1rem' }}
-          >
-            📁 LOAD COBOL FILES FOR ANALYSIS
-          </button>
+          <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+            <button 
+              onClick={() => updateState({ showUploader: true })}
+              className="submit-button"
+              style={{ flex: 1 }}
+            >
+              📁 UPLOAD NEW FILES
+            </button>
+            <button 
+              onClick={loadModulesFromDatabase}
+              className="submit-button"
+              style={{ flex: 1, background: 'var(--info-blue)' }}
+            >
+              🔄 LOAD FROM DATABASE
+            </button>
+          </div>
 
           {loadedModules.length > 0 && (
             <div style={{ marginBottom: '1rem' }}>
               <div className="panel-header" style={{ fontSize: '0.9rem' }}>
-                LOADED MODULES ({loadedModules.length})
+                AVAILABLE MODULES ({loadedModules.length})
               </div>
               <div style={{ 
                 background: 'var(--mainframe-dark)', 
@@ -85,10 +131,22 @@ const ImpactView = () => {
               }}>
                 {loadedModules.map((module, idx) => (
                   <div key={idx} style={{ padding: '0.2rem 0', color: 'var(--success-green)' }}>
-                    ✓ {module.name}
+                    ✓ {module.name} {module.source === 'database' ? '(from DB)' : ''}
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {loadedModules.length === 0 && (
+            <div style={{ 
+              background: 'var(--mainframe-dark)', 
+              padding: '1rem', 
+              marginBottom: '1rem',
+              textAlign: 'center',
+              color: 'var(--warning-amber)'
+            }}>
+              No modules loaded. Upload files or load from database.
             </div>
           )}
         </>
@@ -101,7 +159,7 @@ const ImpactView = () => {
             type="text"
             className="form-input"
             value={field}
-            onChange={(e) => setField(e.target.value)}
+            onChange={(e) => updateState({ field: e.target.value })}
             placeholder="e.g., WS-ACCOUNT-BALANCE"
             required
           />
@@ -113,7 +171,7 @@ const ImpactView = () => {
             type="text"
             className="form-input"
             value={newType}
-            onChange={(e) => setNewType(e.target.value)}
+            onChange={(e) => updateState({ newType: e.target.value })}
             placeholder="e.g., PIC 9(15)V99"
             required
           />

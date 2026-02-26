@@ -9,12 +9,14 @@ const FILE_TYPES = [
   { value: 'COPYBOOK', label: 'Copybook', extensions: ['.cpy', '.copy'], color: '#00ff88' }
 ];
 
-const AnalyzeView = () => {
-  const [program, setProgram] = useState('');
-  const [code, setCode] = useState('');
-  const [fileType, setFileType] = useState('COBOL');
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
+const AnalyzeView = ({ analyzeState, setAnalyzeState }) => {
+  // Destructure state for easier access
+  const { program, code, fileType, result, loading } = analyzeState;
+  
+  // Helper to update state
+  const updateState = (updates) => {
+    setAnalyzeState(prev => ({ ...prev, ...updates }));
+  };
 
   // Auto-detect file type based on program name/extension
   useEffect(() => {
@@ -22,7 +24,7 @@ const AnalyzeView = () => {
       const lowerProgram = program.toLowerCase();
       for (const type of FILE_TYPES) {
         if (type.extensions.some(ext => lowerProgram.endsWith(ext))) {
-          setFileType(type.value);
+          updateState({ fileType: type.value });
           break;
         }
       }
@@ -31,8 +33,7 @@ const AnalyzeView = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setResult(null);
+    updateState({ loading: true, result: null });
     
     try {
       const response = await fetch('/api/analyze', {
@@ -44,14 +45,15 @@ const AnalyzeView = () => {
       const data = await response.json();
       
       if (!response.ok) {
-        setResult({ error: data.error || data.message || `HTTP ${response.status}` });
+        updateState({ result: { error: data.error || data.message || `HTTP ${response.status}` }, loading: false });
       } else {
-        setResult(data);
+        updateState({ result: data, loading: false });
       }
     } catch (error) {
-      setResult({ error: `Network error: ${error.message}. Check if Bridge service is running.` });
-    } finally {
-      setLoading(false);
+      updateState({ 
+        result: { error: `Network error: ${error.message}. Check if Bridge service is running.` },
+        loading: false 
+      });
     }
   };
 
@@ -68,7 +70,7 @@ const AnalyzeView = () => {
             type="text"
             className="form-input"
             value={program}
-            onChange={(e) => setProgram(e.target.value)}
+            onChange={(e) => updateState({ program: e.target.value })}
             placeholder="e.g., INVMAINT.cbl or JOB001.jcl"
             required
           />
@@ -79,7 +81,7 @@ const AnalyzeView = () => {
           <select
             className="form-input"
             value={fileType}
-            onChange={(e) => setFileType(e.target.value)}
+            onChange={(e) => updateState({ fileType: e.target.value })}
             style={{ 
               color: selectedType?.color || 'var(--primary-green)',
               fontWeight: 'bold'
@@ -113,7 +115,7 @@ const AnalyzeView = () => {
           <textarea
             className="form-textarea"
             value={code}
-            onChange={(e) => setCode(e.target.value)}
+            onChange={(e) => updateState({ code: e.target.value })}
             placeholder={`Paste your ${fileType} source code here...`}
             required
           />

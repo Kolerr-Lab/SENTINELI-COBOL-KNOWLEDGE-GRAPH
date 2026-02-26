@@ -39,40 +39,69 @@ router.get(
         let usedDemoData = false;
         
         try {
+            // Debug: Check pool connection
+            logger.info('=== GRAPH: Attempting database query ===');
+            logger.info({ poolExists: !!pool }, 'Pool status');
+            
             const result = await pool.query(
                 'SELECT file_name, analysis FROM knowledge_graph ORDER BY created_at DESC LIMIT 100'
             );
             
+            logger.info({ rowCount: result.rows.length, firstFile: result.rows[0]?.file_name }, 'Database query results');
+            
             if (result.rows.length > 0) {
                 // Build graph from analyzed modules
+                logger.info('Building nodes from database results');
+                let successCount = 0;
+                let failCount = 0;
+                
                 const nodes = result.rows.map((row, idx) => {
-                    const analysis = JSON.parse(row.analysis);
-                    const fileType = row.file_name.endsWith('.cob') || row.file_name.endsWith('.cbl') ? 'COBOL' :
-                                    row.file_name.endsWith('.jcl') ? 'JCL' :
-                                    row.file_name.endsWith('.asm') ? 'ASSEMBLER' :
-                                    row.file_name.endsWith('.rpg') || row.file_name.endsWith('.rpgle') ? 'RPG' :
-                                    row.file_name.endsWith('.rexx') ? 'REXX' :
-                                    row.file_name.endsWith('.pli') ? 'PL/I' : 'UNKNOWN';
-                    
-                    return {
-                        id: idx,
-                        label: row.file_name,
-                        type: 'PROGRAM',
-                        fileType: fileType,
-                        complexity: analysis.complexity_metrics?.cyclomatic_complexity || 0,
-                        metadata: {
-                            analyzed_at: row.created_at,
-                            logic_depth: analysis.complexity_metrics?.logic_depth || 0,
-                            variable_count: analysis.complexity_metrics?.variable_count || 0,
-                            decision_points: analysis.complexity_metrics?.decision_points || 0
+                    try {
+                        // row.analysis is already parsed (JSONB column)
+                        const analysis = row.analysis;
+                        
+                        // Check if analysis exists
+                        if (!analysis) {
+                            logger.warn({ file: row.file_name }, 'Analysis object is null/undefined');
+                            failCount++;
+                            return null;
                         }
-                    };
-                });
+                        
+                        const fileType = row.file_name.endsWith('.cob') || row.file_name.endsWith('.cbl') ? 'COBOL' :
+                                        row.file_name.endsWith('.jcl') ? 'JCL' :
+                                        row.file_name.endsWith('.asm') ? 'ASSEMBLER' :
+                                        row.file_name.endsWith('.rpg') || row.file_name.endsWith('.rpgle') ? 'RPG' :
+                                        row.file_name.endsWith('.rexx') ? 'REXX' :
+                                        row.file_name.endsWith('.pli') ? 'PL/I' : 'UNKNOWN';
+                        
+                        successCount++;
+                        return {
+                            id: idx,
+                            label: row.file_name,
+                            type: 'PROGRAM',
+                            fileType: fileType,
+                            complexity: analysis.complexity_metrics?.cyclomatic_complexity || 0,
+                            metadata: {
+                                analyzed_at: row.created_at,
+                                logic_depth: analysis.complexity_metrics?.logic_depth || 0,
+                                variable_count: analysis.complexity_metrics?.variable_count || 0,
+                                decision_points: analysis.complexity_metrics?.decision_points || 0
+                            }
+                        };
+                    } catch (parseError) {
+                        logger.error({ file: row.file_name, error: parseError.message, stack: parseError.stack }, 'Failed to parse analysis for node');
+                        failCount++;
+                        return null; // Return null for failed nodes
+                    }
+                }).filter(node => node !== null); // Filter out failed nodes
+                
+                logger.info({ totalNodes: nodes.length, successCount, failCount }, 'Nodes built');
                 
                 // Generate edges from analysis dataflows (new format) or edges (old format - backwards compatible)
                 const edges = [];
                 result.rows.forEach((row, fromIdx) => {
-                    const analysis = JSON.parse(row.analysis);
+                    // row.analysis is already parsed (JSONB column)
+                    const analysis = row.analysis;
                     const propagator = analysis.propagator_network;
                     
                     // Check for dataflows (new format) or edges (old format)
@@ -137,13 +166,15 @@ router.get(
                 });
                 
                 graphData = { nodes, edges };
+                logger.info({ nodeCount: nodes.length, edgeCount: edges.length, demoData: false }, 'Graph data built from database');
             } else {
                 // No data in database - use demo data
+                logger.warn('No rows in database - using demo data');
                 usedDemoData = true;
                 graphData = generateDemoGraph();
             }
         } catch (err) {
-            logger.warn({ error: err.message }, 'Database unavailable - using demo graph data');
+            logger.error({ error: err.message, stack: err.stack }, 'DATABASE ERROR - falling back to demo graph');
             // Return demo graph if database unavailable
             usedDemoData = true;
             graphData = generateDemoGraph();

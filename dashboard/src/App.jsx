@@ -12,9 +12,27 @@ function App() {
     connections: 0
   });
   
-  // Lift graph state to App level to persist across tab switches
+  // Lift state to App level to persist across tab switches
   const [loadedModules, setLoadedModules] = useState([]);
-  const [graphData, setGraphData] = useState(null);
+  const [graphData, setGraphData] = useState({ nodes: [], edges: [] });
+  
+  // Analyze view state
+  const [analyzeState, setAnalyzeState] = useState({
+    program: '',
+    code: '',
+    fileType: 'COBOL',
+    result: null,
+    loading: false
+  });
+  
+  // Impact view state (uses shared loadedModules)
+  const [impactState, setImpactState] = useState({
+    field: '',
+    newType: '',
+    result: null,
+    loading: false,
+    showUploader: false
+  });
 
   useEffect(() => {
     // Fetch health status immediately then every 5 seconds
@@ -59,6 +77,10 @@ function App() {
           setLoadedModules={setLoadedModules}
           graphData={graphData}
           setGraphData={setGraphData}
+          analyzeState={analyzeState}
+          setAnalyzeState={setAnalyzeState}
+          impactState={impactState}
+          setImpactState={setImpactState}
         />
         
         <ActivityPanel />

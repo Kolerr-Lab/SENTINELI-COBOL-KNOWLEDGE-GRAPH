@@ -70,16 +70,17 @@ const executionLimiter = rateLimit({
     }
 });
 
-/**- DEMONSTRATION MODE
- * Aligned with OpenAI paid tier: ~500 RPM
- * Set to 100/hour for stress testing while managing costs
+/**
+ * AI Analysis Rate Limiter - PRODUCTION MODE
+ * Aligned with OpenAI Tier 2: ~500 RPM
+ * Set to 500/hour for stable operation while managing costs
  */
 const aiAnalysisLimiter = rateLimit({
     windowMs: 60 * 60 * 1000, // 1 hour
-    max: 100, // 100 AI analyses per hour (~1.67 per minute)
+    max: 500, // 500 AI analyses per hour (~8.3 per minute)
     message: {
         error: 'AI analysis rate limit exceeded',
-        details: 'You have exceeded the 100 AI analyses per hour limit to protect OpenAI API quota.',
+        details: 'You have exceeded the 500 AI analyses per hour limit to protect OpenAI API quota.',
         retryAfter: '1 hour'
     },
     standardHeaders: true,
@@ -110,7 +111,7 @@ const aiAnalysisLimiter = rateLimit({
  */
 const publicLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 200, // Higher limit for public endpoints
+    max: 1000, // Higher limit for stable operation
     standardHeaders: true,
     legacyHeaders: false,
     handler: (req, res) => {

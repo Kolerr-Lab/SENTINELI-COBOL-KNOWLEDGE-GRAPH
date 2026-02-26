@@ -20,7 +20,30 @@ const GATEWAY_URL = process.env.GATEWAY_URL || 'http://localhost:8080';
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'dist')));
+
+// Serve static files with proper cache control and MIME types
+app.use(express.static(path.join(__dirname, 'dist'), {
+  setHeaders: (res, filePath) => {
+    // Force no-cache for HTML to always get fresh index
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+    // Cache JS/CSS for 1 hour (they have hashed names)
+    else if (filePath.endsWith('.js') || filePath.endsWith('.css')) {
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+      // Ensure correct MIME type for JS modules
+      if (filePath.endsWith('.js')) {
+        res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+      }
+    }
+    // Cache other assets for 1 week
+    else {
+      res.setHeader('Cache-Control', 'public, max-age=604800');
+    }
+  }
+}));
 
 // Store active connections
 const clients = new Set();
@@ -98,7 +121,7 @@ app.get('/api/system/status', async (req, res) => {
     console.error('Bridge /api/system/status error:', error.message);
     res.status(503).json({ 
       error: 'Bridge backend unavailable',
-      message: 'The Bridge service is not responding. Please ensure it is running on port 3000.',
+      message: 'The Bridge service is not responding. Please ensure Docker container is running on port 8766.',
       status: 'OFFLINE',
       bridgeUrl: BRIDGE_URL
     });
