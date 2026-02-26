@@ -84,74 +84,164 @@ const GraphView = ({ loadedModules, setLoadedModules, graphData, setGraphData })
     if (!mermaidRef.current || !graphData || graphData.nodes.length === 0) return;
 
     try {
+      const nodeCount = graphData.nodes.length;
+      const edgeCount = graphData.edges.length;
+      
       // File type color mapping
       const fileTypeColors = {
-        'COBOL': 'fill:#00ff00,stroke:#00cc00',
-        'JCL': 'fill:#00ffff,stroke:#00cccc',
-        'DB2': 'fill:#ffff00,stroke:#cccc00',
-        'VSAM': 'fill:#ff00ff,stroke:#cc00cc',
-        'CICS': 'fill:#ff8800,stroke:#cc6600',
-        'COPYBOOK': 'fill:#00ff88,stroke:#00cc66'
+        'COBOL': 'fill:#00ff00,stroke:#00cc00,stroke-width:3px',
+        'JCL': 'fill:#00ffff,stroke:#00cccc,stroke-width:3px',
+        'DB2': 'fill:#ffff00,stroke:#cccc00,stroke-width:3px',
+        'VSAM': 'fill:#ff00ff,stroke:#cc00cc,stroke-width:3px',
+        'CICS': 'fill:#ff8800,stroke:#cc6600,stroke-width:3px',
+        'COPYBOOK': 'fill:#00ff88,stroke:#00cc66,stroke-width:3px',
+        'UNKNOWN': 'fill:#888888,stroke:#666666,stroke-width:3px'
       };
 
-      // Generate Mermaid syntax from graph data
-      let mermaidCode = 'graph LR\n';
+      // Use flowchart for better layout with many nodes
+      let mermaidCode = 'flowchart TB\n';
       
-      // Add nodes with styling based on file type AND complexity
+      // Group nodes by file type for better organization
+      const nodesByType = {};
       graphData.nodes.forEach(node => {
-        const nodeId = `N${node.id}`;
-        const label = node.label.replace(/\.[a-z]+$/i, ''); // Remove file extension
-        
-        // Determine color based on file type (if available) or fallback to complexity
-        let nodeColor;
-        if (node.fileType && fileTypeColors[node.fileType]) {
-          nodeColor = fileTypeColors[node.fileType];
-        } else {
-          // Fallback to complexity-based coloring
-          nodeColor = node.complexity > 50 ? 'fill:#ff4444,stroke:#ff0000' :
-                      node.complexity > 20 ? 'fill:#ffaa00,stroke:#ff8800' :
-                      'fill:#00ff00,stroke:#00cc00';
-        }
-        
-        const icon = node.fileType === 'JCL' ? '⚙️' :
-                     node.fileType === 'DB2' ? '🗄️' :
-                     node.fileType === 'VSAM' ? '📁' :
-                     node.fileType === 'CICS' ? '🖥️' :
-                     node.fileType === 'COPYBOOK' ? '📋' :
-                     '📦'; // Default COBOL icon
-        
-        mermaidCode += `    ${nodeId}["${icon} ${label}<br/>`;
-        if (node.fileType) mermaidCode += `Type: ${node.fileType}<br/>`;
-        mermaidCode += `Complexity: ${node.complexity || 0}"]:::node${node.id}\n`;
-        mermaidCode += `    style ${nodeId} ${nodeColor},color:#000\n`;
+        const type = node.fileType || 'UNKNOWN';
+        if (!nodesByType[type]) nodesByType[type] = [];
+        nodesByType[type].push(node);
       });
       
-      // Add edges with color based on cross-language relationships
+      // Add subgraphs for each file type (creates visual clustering)
+      Object.keys(nodesByType).forEach(fileType => {
+        const nodes = nodesByType[fileType];
+        if (nodes.length > 0) {
+          mermaidCode += `    subgraph ${fileType}["${fileType} (${nodes.length})"]\n`;
+          
+          nodes.forEach(node => {
+            const nodeId = `N${node.id}`;
+            const label = node.label.replace(/\.[a-z]+$/i, ''); // Remove extension
+            
+            // Icon based on file type
+            const icon = fileType === 'JCL' ? '⚙️' :
+                         fileType === 'DB2' ? '🗄️' :
+                         fileType === 'VSAM' ? '📁' :
+                         fileType === 'CICS' ? '🖥️' :
+                         fileType === 'COPYBOOK' ? '📋' :
+                         fileType === 'COBOL' ? '📦' :
+                         '❓';
+            
+            // Complexity indicator
+            const complexity = node.complexity || 0;
+            const complexityBadge = complexity > 50 ? '🔴' :
+                                   complexity > 20 ? '🟡' :
+                                   '🟢';
+            
+            // Create rich node label
+            mermaidCode += `        ${nodeId}["${icon} ${label}<br/>${complexityBadge} C:${complexity}"]\n`;
+            
+            // Apply styling based on file type
+            const nodeColor = fileTypeColors[fileType] || fileTypeColors['UNKNOWN'];
+            mermaidCode += `        style ${nodeId} ${nodeColor},color:#000\n`;
+          });
+          
+          mermaidCode += `    end\n`;
+        }
+      });
+      
+      // Add edges with descriptive labels
       graphData.edges.forEach(edge => {
         const fromId = `N${edge.from}`;
         const toId = `N${edge.to}`;
         const fromNode = graphData.nodes.find(n => n.id === edge.from);
         const toNode = graphData.nodes.find(n => n.id === edge.to);
         
-        // Cross-language edges get special styling
-        const edgeType = edge.type || 'CALLS';
-        const isCrossLanguage = fromNode?.fileType && toNode?.fileType && 
-                                fromNode.fileType !== toNode.fileType;
+        if (!fromNode || !toNode) return; // Skip invalid edges
         
-        if (isCrossLanguage) {
-          mermaidCode += `    ${fromId} -.->|"${edgeType} (${toNode.fileType})"| ${toId}\n`;
+        const edgeType = edge.type || 'CALLS';
+        const isCrossLanguage = fromNode.fileType !== toNode.fileType;
+        
+        // Different arrow styles for different edge types
+        if (edgeType === 'INCLUDES') {
+          mermaidCode += `    ${fromId} -.->|"${edgeType}"| ${toId}\n`;
+        } else if (isCrossLanguage) {
+          mermaidCode += `    ${fromId} ==>|"${edgeType}"| ${toId}\n`;
         } else {
-          mermaidCode += `    ${fromId} -->|${edgeType}| ${toId}\n`;
+          mermaidCode += `    ${fromId} -->|"${edgeType}"| ${toId}\n`;
         }
       });
 
+      // Add click handlers for nodes (Mermaid supports this)
+      graphData.nodes.forEach(node => {
+        mermaidCode += `    click N${node.id} call handleNodeClick(${node.id})\n`;
+      });
+
+      console.log('Rendering Mermaid with', nodeCount, 'nodes and', edgeCount, 'edges');
+      
       // Render the diagram
       const { svg } = await mermaid.render('mermaid-graph', mermaidCode);
       mermaidRef.current.innerHTML = svg;
+      
+      // Add zoom/pan functionality
+      addZoomPan(mermaidRef.current);
+      
     } catch (error) {
       console.error('Mermaid rendering error:', error);
-      mermaidRef.current.innerHTML = `<div style="color: var(--warning-amber); padding: 1rem;">Failed to render diagram: ${error.message}</div>`;
+      mermaidRef.current.innerHTML = `
+        <div style="color: var(--error-red); padding: 2rem; text-align: center;">
+          <div style="font-size: 2rem; margin-bottom: 1rem;">⚠️</div>
+          <div style="font-weight: bold; margin-bottom: 0.5rem;">Failed to render diagram</div>
+          <div style="color: var(--mainframe-border); font-size: 0.85rem;">${error.message}</div>
+          <div style="margin-top: 1rem; color: var(--mainframe-border); font-size: 0.85rem;">
+            Try the "NODE LIST" or "JSON DATA" tabs to view graph data
+          </div>
+        </div>
+      `;
     }
+  };
+
+  // Add zoom and pan functionality to SVG
+  const addZoomPan = (container) => {
+    const svg = container.querySelector('svg');
+    if (!svg) return;
+    
+    let scale = 1;
+    let panning = false;
+    let pointX = 0;
+    let pointY = 0;
+    let start = { x: 0, y: 0 };
+    
+    svg.style.cursor = 'grab';
+    
+    // Mouse wheel zoom
+    svg.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? 0.9 : 1.1;
+      scale *= delta;
+      scale = Math.min(Math.max(scale, 0.1), 5); // Limit zoom
+      svg.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`;
+    });
+    
+    // Mouse drag pan
+    svg.addEventListener('mousedown', (e) => {
+      panning = true;
+      start = { x: e.clientX - pointX, y: e.clientY - pointY };
+      svg.style.cursor = 'grabbing';
+    });
+    
+    svg.addEventListener('mousemove', (e) => {
+      if (!panning) return;
+      pointX = e.clientX - start.x;
+      pointY = e.clientY - start.y;
+      svg.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`;
+    });
+    
+    svg.addEventListener('mouseup', () => {
+      panning = false;
+      svg.style.cursor = 'grab';
+    });
+    
+    svg.addEventListener('mouseleave', () => {
+      panning = false;
+      svg.style.cursor = 'grab';
+    });
   };
 
   const copyJsonToClipboard = () => {
@@ -299,8 +389,94 @@ const GraphView = ({ loadedModules, setLoadedModules, graphData, setGraphData })
             {/* VISUAL TAB - Mermaid Diagram */}
             {activeTab === 'visual' && (
               <div>
+                {/* Statistics Panel */}
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+                  gap: '1rem', 
+                  marginBottom: '1.5rem' 
+                }}>
+                  <div style={{ 
+                    background: 'var(--mainframe-dark)', 
+                    padding: '1rem', 
+                    borderLeft: '4px solid var(--success-green)' 
+                  }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--mainframe-border)', marginBottom: '0.3rem' }}>
+                      TOTAL NODES
+                    </div>
+                    <div style={{ fontSize: '1.8rem', fontWeight: 'bold', color: 'var(--success-green)' }}>
+                      {graphData.nodes.length}
+                    </div>
+                  </div>
+                  
+                  <div style={{ 
+                    background: 'var(--mainframe-dark)', 
+                    padding: '1rem', 
+                    borderLeft: '4px solid var(--info-blue)' 
+                  }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--mainframe-border)', marginBottom: '0.3rem' }}>
+                      TOTAL EDGES
+                    </div>
+                    <div style={{ fontSize: '1.8rem', fontWeight: 'bold', color: 'var(--info-blue)' }}>
+                      {graphData.edges.length}
+                    </div>
+                  </div>
+                  
+                  <div style={{ 
+                    background: 'var(--mainframe-dark)', 
+                    padding: '1rem', 
+                    borderLeft: '4px solid var(--warning-amber)' 
+                  }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--mainframe-border)', marginBottom: '0.3rem' }}>
+                      AVG COMPLEXITY
+                    </div>
+                    <div style={{ fontSize: '1.8rem', fontWeight: 'bold', color: 'var(--warning-amber)' }}>
+                      {Math.round(graphData.nodes.reduce((sum, n) => sum + (n.complexity || 0), 0) / graphData.nodes.length)}
+                    </div>
+                  </div>
+                  
+                  <div style={{ 
+                    background: 'var(--mainframe-dark)', 
+                    padding: '1rem', 
+                    borderLeft: '4px solid var(--modern-blue)' 
+                  }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--mainframe-border)', marginBottom: '0.3rem' }}>
+                      FILE TYPES
+                    </div>
+                    <div style={{ fontSize: '1.8rem', fontWeight: 'bold', color: 'var(--modern-blue)' }}>
+                      {new Set(graphData.nodes.map(n => n.fileType || 'UNKNOWN')).size}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Legend */}
+                <div style={{ 
+                  background: 'var(--mainframe-dark)', 
+                  padding: '1rem', 
+                  marginBottom: '1rem',
+                  borderLeft: '3px solid var(--modern-blue)'
+                }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: '0.7rem', color: 'var(--modern-blue)' }}>
+                    📊 LEGEND
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '0.5rem', fontSize: '0.8rem' }}>
+                    <div><span style={{ color: '#00ff00' }}>🟢</span> Simple (0-20)</div>
+                    <div><span style={{ color: '#ffaa00' }}>🟡</span> Moderate (21-50)</div>
+                    <div><span style={{ color: '#ff4444' }}>🔴</span> Complex (51+)</div>
+                    <div><span style={{ color: '#00ff00' }}>📦</span> COBOL</div>
+                    <div><span style={{ color: '#00ffff' }}>⚙️</span> JCL</div>
+                    <div><span style={{ color: '#ffff00' }}>🗄️</span> DB2</div>
+                    <div><span style={{ color: '#ff00ff' }}>📁</span> VSAM</div>
+                    <div><span style={{ color: '#ff8800' }}>🖥️</span> CICS</div>
+                    <div><span style={{ color: '#00ff88' }}>📋</span> COPYBOOK</div>
+                  </div>
+                  <div style={{ marginTop: '0.7rem', fontSize: '0.75rem', color: 'var(--mainframe-border)' }}>
+                    Arrow Types: → (same type) | ⇒ (cross-type) | ⋯→ (includes)
+                  </div>
+                </div>
+
                 <div className="panel-header" style={{ fontSize: '0.9rem', marginBottom: '1rem' }}>
-                  MERMAID GRAPH VISUALIZATION
+                  INTERACTIVE GRAPH VISUALIZATION
                 </div>
                 <div 
                   ref={mermaidRef}
@@ -308,26 +484,31 @@ const GraphView = ({ loadedModules, setLoadedModules, graphData, setGraphData })
                     background: '#000',
                     padding: '2rem',
                     borderRadius: '4px',
-                    border: '1px solid var(--mainframe-border)',
+                    border: '2px solid var(--mainframe-border)',
                     overflowX: 'auto',
                     overflowY: 'auto',
-                    maxHeight: '600px'
+                    maxHeight: '800px',
+                    minHeight: '600px',
+                    position: 'relative'
                   }}
                 >
                   {/* Mermaid diagram renders here */}
                 </div>
                 <div style={{ 
                   marginTop: '1rem', 
-                  padding: '0.7rem', 
+                  padding: '1rem', 
                   background: 'var(--mainframe-dark)', 
-                  fontSize: '0.8rem',
-                  color: 'var(--mainframe-border)',
-                  borderLeft: '3px solid var(--modern-blue)'
+                  fontSize: '0.85rem',
+                  color: 'var(--success-green)',
+                  borderLeft: '3px solid var(--success-green)'
                 }}>
-                  💡 Tip: Scroll horizontally/vertically to see the full graph. Color coding: 
-                  <span style={{ color: '#00ff00', marginLeft: '0.5rem' }}>Green = Simple (≤20)</span>
-                  <span style={{ color: '#ffaa00', marginLeft: '0.5rem' }}>Amber = Moderate (21-50)</span>
-                  <span style={{ color: '#ff4444', marginLeft: '0.5rem' }}>Red = Complex (&gt;50)</span>
+                  <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>🖱️ INTERACTIVE CONTROLS:</div>
+                  <div style={{ color: 'var(--mainframe-border)', lineHeight: '1.8' }}>
+                    • <strong>Mouse Wheel:</strong> Zoom in/out<br/>
+                    • <strong>Click + Drag:</strong> Pan around the graph<br/>
+                    • <strong>Scroll:</strong> Navigate large graphs<br/>
+                    • <strong>Grouped by File Type:</strong> Each cluster represents a different mainframe language
+                  </div>
                 </div>
               </div>
             )}
@@ -336,67 +517,135 @@ const GraphView = ({ loadedModules, setLoadedModules, graphData, setGraphData })
             {activeTab === 'nodes' && (
               <div>
                 <div className="panel-header" style={{ fontSize: '0.9rem', marginBottom: '1rem' }}>
-                  GRAPH NODES ({graphData.nodes.length})
+                  ALL NODES ({graphData.nodes.length}) - GROUPED BY FILE TYPE
                 </div>
-                {graphData.nodes.map((node) => (
-                  <div 
-                    key={node.id} 
-                    style={{ 
-                      background: 'var(--mainframe-dark)', 
-                      padding: '0.8rem', 
-                      marginBottom: '0.5rem',
-                      borderLeft: '3px solid var(--modern-blue)',
-                      position: 'relative',
-                      cursor: 'pointer'
-                    }}
-                    onMouseEnter={() => setHoveredNode(node)}
-                    onMouseLeave={() => setHoveredNode(null)}
-                  >
-                    <div style={{ color: 'var(--mainframe-green)', fontWeight: 'bold' }}>
-                      📦 {node.label}
-                    </div>
-                    <div style={{ fontSize: '0.85rem', color: 'var(--mainframe-border)', marginTop: '0.3rem' }}>
-                      Type: {node.type} | Complexity: {node.complexity || 0} | ID: {node.id}
-                    </div>
-                    
-                    {/* Tooltip with full JSON on hover */}
-                    {hoveredNode && hoveredNode.id === node.id && (
-                      <div style={{
-                        position: 'absolute',
-                        top: '100%',
-                        left: '0',
-                        zIndex: 1000,
-                        background: '#000',
-                        border: '2px solid var(--modern-blue)',
-                        padding: '1rem',
-                        borderRadius: '4px',
-                        minWidth: '400px',
-                        maxWidth: '600px',
-                        marginTop: '0.5rem',
-                        boxShadow: '0 4px 6px rgba(0,0,0,0.5)',
-                        overflowX: 'auto'
+                
+                {/* Group nodes by file type */}
+                {(() => {
+                  const nodesByType = {};
+                  graphData.nodes.forEach(node => {
+                    const type = node.fileType || 'UNKNOWN';
+                    if (!nodesByType[type]) nodesByType[type] = [];
+                    nodesByType[type].push(node);
+                  });
+                  
+                  return Object.keys(nodesByType).sort().map(fileType => (
+                    <div key={fileType} style={{ marginBottom: '1.5rem' }}>
+                      {/* File Type Header */}
+                      <div style={{ 
+                        background: 'var(--mainframe-dark)', 
+                        padding: '0.7rem 1rem', 
+                        marginBottom: '0.5rem',
+                        borderLeft: '4px solid var(--success-green)',
+                        fontWeight: 'bold',
+                        fontSize: '0.95rem'
                       }}>
-                        <div style={{ 
-                          color: 'var(--modern-blue)', 
-                          fontWeight: 'bold', 
-                          marginBottom: '0.5rem',
-                          fontSize: '0.85rem'
-                        }}>
-                          📋 NODE JSON DATA
-                        </div>
-                        <pre style={{ 
-                          fontSize: '0.75rem', 
-                          color: 'var(--mainframe-green)',
-                          margin: 0,
-                          whiteSpace: 'pre-wrap',
-                          wordBreak: 'break-all'
-                        }}>
-                          {JSON.stringify(node, null, 2)}
-                        </pre>
+                        {fileType === 'COBOL' && '📦'} 
+                        {fileType === 'JCL' && '⚙️'} 
+                        {fileType === 'DB2' && '🗄️'} 
+                        {fileType === 'VSAM' && '📁'} 
+                        {fileType === 'CICS' && '🖥️'} 
+                        {fileType === 'COPYBOOK' && '📋'} 
+                        {fileType === 'UNKNOWN' && '❓'} 
+                        {' '}{fileType} ({nodesByType[fileType].length} files)
                       </div>
-                    )}
-                  </div>
-                ))}
+                      
+                      {/* Nodes of this type */}
+                      {nodesByType[fileType].map((node) => (
+                        <div 
+                          key={node.id} 
+                          style={{ 
+                            background: 'var(--mainframe-dark)', 
+                            padding: '0.8rem', 
+                            marginBottom: '0.5rem',
+                            marginLeft: '1rem',
+                            borderLeft: '3px solid var(--info-blue)',
+                            position: 'relative',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseEnter={(e) => {
+                            setHoveredNode(node);
+                            e.currentTarget.style.borderLeft = '3px solid var(--success-green)';
+                            e.currentTarget.style.background = 'rgba(0, 255, 0, 0.1)';
+                          }}
+                          onMouseLeave={(e) => {
+                            setHoveredNode(null);
+                            e.currentTarget.style.borderLeft = '3px solid var(--info-blue)';
+                            e.currentTarget.style.background = 'var(--mainframe-dark)';
+                          }}
+                        >
+                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <div>
+                              <div style={{ color: 'var(--mainframe-green)', fontWeight: 'bold', marginBottom: '0.3rem' }}>
+                                {node.label}
+                              </div>
+                              <div style={{ fontSize: '0.8rem', color: 'var(--mainframe-border)' }}>
+                                ID: {node.id} | Type: {node.type} | Complexity: {node.complexity || 0}
+                              </div>
+                              {node.metadata && (
+                                <div style={{ fontSize: '0.75rem', color: 'var(--mainframe-border)', marginTop: '0.3rem' }}>
+                                  Depth: {node.metadata.logic_depth || 0} | 
+                                  Variables: {node.metadata.variable_count || 0} | 
+                                  Decisions: {node.metadata.decision_points || 0}
+                                </div>
+                              )}
+                            </div>
+                            <div style={{ 
+                              padding: '0.3rem 0.6rem', 
+                              background: node.complexity > 50 ? 'var(--error-red)' : 
+                                         node.complexity > 20 ? 'var(--warning-amber)' : 
+                                         'var(--success-green)',
+                              color: '#000',
+                              borderRadius: '3px',
+                              fontSize: '0.75rem',
+                              fontWeight: 'bold'
+                            }}>
+                              {node.complexity > 50 ? '🔴' : node.complexity > 20 ? '🟡' : '🟢'} {node.complexity}
+                            </div>
+                          </div>
+                          
+                          {/* Tooltip with full JSON on hover */}
+                          {hoveredNode && hoveredNode.id === node.id && (
+                            <div style={{
+                              position: 'absolute',
+                              top: '100%',
+                              left: '0',
+                              zIndex: 1000,
+                              background: '#000',
+                              border: '2px solid var(--success-green)',
+                              padding: '1rem',
+                              borderRadius: '4px',
+                              minWidth: '400px',
+                              maxWidth: '600px',
+                              marginTop: '0.5rem',
+                              boxShadow: '0 4px 6px rgba(0,255,0,0.3)',
+                              overflowX: 'auto'
+                            }}>
+                              <div style={{ 
+                                color: 'var(--success-green)', 
+                                fontWeight: 'bold', 
+                                marginBottom: '0.5rem',
+                                fontSize: '0.85rem'
+                              }}>
+                                📋 FULL NODE DATA
+                              </div>
+                              <pre style={{ 
+                                fontSize: '0.75rem', 
+                                color: 'var(--mainframe-green)',
+                                margin: 0,
+                                whiteSpace: 'pre-wrap',
+                                wordBreak: 'break-all'
+                              }}>
+                                {JSON.stringify(node, null, 2)}
+                              </pre>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ));
+                })()}
                 
                 {graphData.edges.length > 0 && (
                   <>
