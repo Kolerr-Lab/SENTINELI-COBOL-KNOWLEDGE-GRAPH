@@ -24,7 +24,8 @@ WORKDIR /app
 COPY --chown=appuser:appuser package*.json ./
 
 # Install Node.js dependencies (including dev dependencies for development)
-RUN npm ci && \
+# Note: Using npm install instead of npm ci because pm2 is installed from GitHub
+RUN npm install && \
     npm cache clean --force
 
 # Copy application files
