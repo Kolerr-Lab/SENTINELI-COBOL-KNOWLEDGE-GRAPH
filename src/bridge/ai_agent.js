@@ -140,7 +140,7 @@ async function createChatCompletion(messages, options = {}) {
     } else if (AI_PROVIDER === 'ollama') {
         return await callOllamaAPI(messages, options);
     } else {
-        throw new Error(`Invalid AI provider: ${AI_PROVIDER}. Must be \"openai\" or \"ollama\"`);
+        throw new Error(`Invalid AI provider: ${AI_PROVIDER}. Must be "openai" or "ollama"`);
     }
 }
 

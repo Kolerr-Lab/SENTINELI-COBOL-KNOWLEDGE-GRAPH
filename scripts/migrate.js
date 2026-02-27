@@ -14,16 +14,25 @@ async function runMigrations() {
     try {
         console.log('Running database migrations...\n');
 
-        // Migration 1: Create knowledge_graph table
+        // Migration 1: Create knowledge_graph table (with metrics support)
         console.log('Creating knowledge_graph table...');
         await pool.query(`
             CREATE TABLE IF NOT EXISTS knowledge_graph (
                 id SERIAL PRIMARY KEY,
-                file_name TEXT UNIQUE NOT NULL,
+                file_name VARCHAR(255) NOT NULL,
+                file_type VARCHAR(50),
                 analysis JSONB NOT NULL,
-                user_id TEXT,
                 created_at TIMESTAMP DEFAULT NOW(),
-                updated_at TIMESTAMP DEFAULT NOW()
+                
+                -- Extracted fields for faster queries
+                cyclomatic_complexity INTEGER,
+                logic_depth INTEGER,
+                variable_count INTEGER,
+                decision_points INTEGER,
+                cost_usd DECIMAL(10, 8),
+                tokens_used INTEGER,
+                duration_ms INTEGER,
+                ai_model VARCHAR(100)
             )
         `);
         console.log('✓ knowledge_graph table created\n');
@@ -46,6 +55,18 @@ async function runMigrations() {
         // Migration 3: Create indexes
         console.log('Creating indexes...');
         await pool.query(`
+            CREATE INDEX IF NOT EXISTS idx_created_at 
+            ON knowledge_graph(created_at)
+        `);
+        await pool.query(`
+            CREATE INDEX IF NOT EXISTS idx_file_name 
+            ON knowledge_graph(file_name)
+        `);
+        await pool.query(`
+            CREATE INDEX IF NOT EXISTS idx_file_type 
+            ON knowledge_graph(file_type)
+        `);
+        await pool.query(`
             CREATE INDEX IF NOT EXISTS idx_executions_user_id 
             ON executions(user_id)
         `);
@@ -56,10 +77,6 @@ async function runMigrations() {
         await pool.query(`
             CREATE INDEX IF NOT EXISTS idx_executions_executed_at 
             ON executions(executed_at DESC)
-        `);
-        await pool.query(`
-            CREATE INDEX IF NOT EXISTS idx_knowledge_graph_user_id 
-            ON knowledge_graph(user_id)
         `);
         console.log('✓ Indexes created\n');
 

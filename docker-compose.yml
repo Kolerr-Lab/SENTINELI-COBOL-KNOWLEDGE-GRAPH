@@ -2,21 +2,20 @@ version: '3.8'
 
 services:
   # --- 1. Rust Gateway (Ultra-High Performance Entry Point) ---
-  # Temporarily disabled due to Rust edition2024 dependency issue
-  # sentineli-gateway:
-  #   build: ./gateway
-  #   container_name: sentineli_gateway
-  #  ports:
-  #     - "8765:3000"
-  #   environment:
-  #     - RUST_LOG=info
-  #     - GATEWAY_PORT=3000
-  #     - BACKEND_URL=http://kg-ai-cobol-modernize:3050
-  #   depends_on:
-  #     - kg-ai-cobol-modernize
-  #   networks:
-  #     - modernist-net
-  #   restart: unless-stopped
+  sentineli-gateway:
+    build: ./gateway
+    container_name: sentineli_gateway
+    ports:
+      - "8765:8080"
+    environment:
+      - RUST_LOG=info
+      - GATEWAY_PORT=8080
+      - BACKEND_URL=http://kg-ai-cobol-modernize:3050
+    depends_on:
+      - kg-ai-cobol-modernize
+    networks:
+      - modernist-net
+    restart: unless-stopped
 
   # --- 2. Knowledge Graph-AI/ML Cobol Modernize Engine ---
   kg-ai-cobol-modernize:
@@ -83,6 +82,24 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  # --- 5. Dashboard UI (React + Vite) ---
+  dashboard:
+    build: ./dashboard
+    container_name: sentineli_dashboard
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./dashboard:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://kg-ai-cobol-modernize:3050
+    depends_on:
+      - kg-ai-cobol-modernize
+    networks:
+      - modernist-net
+    command: npm run dev -- --host 0.0.0.0
 
 # --- Networks & Volumes ---
 networks:
