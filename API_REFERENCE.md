@@ -52,7 +52,12 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 | `/api/analyze/:file` | POST | ✅ Yes | File-based analysis |
 | `/api/run/:program` | POST | ✅ Yes | Execute COBOL program |
 | `/api/impact` | POST | ✅ Yes | Impact analysis |
+| `/api/impact/blast-radius/:identifier` | GET | ❌ No | Blast radius visualization |
 | `/api/graph` | GET | ❌ No | Knowledge graph data |
+| `/api/translate` | POST | ✅ Yes | Translate COBOL to modern languages |
+| `/api/translate/languages` | GET | ❌ No | Get supported target languages |
+| `/api/reports/compliance/:type` | POST | ✅ Yes | Generate compliance report |
+| `/api/reports/types` | GET | ❌ No | Get available report types |
 | `/api/system/status` | GET | ❌ No | System status (Dashboard) |
 
 ---
@@ -431,6 +436,111 @@ curl -X POST http://localhost:3000/api/impact \
 
 ---
 
+### 7a. Blast Radius Visualization
+
+**Analyze change impact with recursive dependency tracking and cost analysis**
+
+```http
+GET /api/impact/blast-radius/:identifier?maxDepth=3
+```
+
+**No authentication required**
+
+**Path Parameters:**
+- `identifier` (string, required): Program, function, or data structure name
+
+**Query Parameters:**
+- `maxDepth` (number, optional): Maximum recursion depth (default: 3, max: 10)
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "found": true,
+  "identifier": "CALCULATE-INTEREST",
+  "impact": {
+    "totalNodes": 12,
+    "totalEdges": 15,
+    "maxDepth": 3,
+    "riskLevel": "HIGH",
+    "riskScore": "6.38"
+  },
+  "cost": {
+    "totalMIPS": 10750,
+    "monthlyCostUSD": "43000.00",
+    "annualCostUSD": "516000.00",
+    "impactedMIPSPercentage": "100.00"
+  },
+  "breakdown": {
+    "byLanguage": {
+      "COBOL": {"count": 8, "mips": 6600},
+      "DB2": {"count": 1, "mips": 450},
+      "VSAM": {"count": 1, "mips": 300},
+      "JCL": {"count": 1, "mips": 2500},
+      "CICS": {"count": 1, "mips": 900}
+    },
+    "byDepth": [
+      {"depth": 0, "nodeCount": 1},
+      {"depth": 1, "nodeCount": 4},
+      {"depth": 2, "nodeCount": 5},
+      {"depth": 3, "nodeCount": 2}
+    ]
+  },
+  "nodes": [
+    {
+      "id": "CALCULATE-INTEREST",
+      "type": "COBOL",
+      "mips": 800,
+      "depth": 0,
+      "riskScore": 10,
+      "description": "Interest calculation procedure"
+    }
+  ],
+  "edges": [
+    {
+      "from": "CALCULATE-INTEREST",
+      "to": "INTEREST-RATE-TABLE",
+      "type": "reads",
+      "weight": 1
+    }
+  ],
+  "graph": {
+    "nodes": [...],
+    "edges": [...],
+    "layout": "3d-force-directed"
+  },
+  "metadata": {
+    "timestamp": "2026-02-28T10:30:00.000Z",
+    "depth": 3,
+    "traversalTimeMs": 45
+  }
+}
+```
+
+**Example:**
+```bash
+curl "http://localhost:3000/api/impact/blast-radius/CALCULATE-INTEREST?maxDepth=3"
+```
+
+**Error (404 Not Found):**
+```json
+{
+  "success": true,
+  "found": false,
+  "identifier": "NONEXISTENT",
+  "message": "Identifier not found in knowledge graph"
+}
+```
+
+**Use Cases:**
+- Visualize change impact before modifying code
+- Quantify MIPS cost of touching a component
+- Identify all systems affected by a change
+- Generate 3D force-directed graphs for stakeholder presentations
+- Risk assessment for change management
+
+---
+
 ### 8. Knowledge Graph
 
 **Get program dependency graph data**
@@ -483,7 +593,221 @@ curl http://localhost:3000/api/graph
 
 ---
 
-### 9. System Status (Dashboard)
+### 9. Code Translation
+
+**Translate COBOL code to modern languages with Z3 verification**
+
+```http
+POST /api/translate
+Content-Type: application/json
+```
+
+**🔒 Authentication required**
+
+**Request Body:**
+```json
+{
+  "code": "IDENTIFICATION DIVISION.\nPROGRAM-ID. HELLO.\nPROCEDURE DIVISION.\n    DISPLAY 'HELLO WORLD'.\n    STOP RUN.",
+  "targetLanguage": "python",
+  "verify": true
+}
+```
+
+**Parameters:**
+- `code` (string, required): COBOL source code
+- `targetLanguage` (string, required): Target language (`python`, `java`, `typescript`, `javascript`, `csharp`, `go`)
+- `verify` (boolean, optional): Enable Z3 formal verification (default: true)
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "translation": {
+    "language": "python",
+    "code": "def main():\n    print('HELLO WORLD')\n\nif __name__ == '__main__':\n    main()",
+    "verified": true
+  },
+  "verification": {
+    "status": "VERIFIED",
+    "confidence": 0.95,
+    "proofGenerated": true,
+    "details": "Z3 proof: behavioral equivalence verified"
+  },
+  "cost": {
+    "inputTokens": 150,
+    "outputTokens": 85,
+    "totalCostUSD": "0.0021"
+  }
+}
+```
+
+**Example:**
+```bash
+curl -X POST http://localhost:3000/api/translate \
+  -H "X-API-Key: your-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "code": "COMPUTE TOTAL = PRICE * QUANTITY.",
+    "targetLanguage": "python",
+    "verify": true
+  }'
+```
+
+---
+
+### 10. Get Supported Languages
+
+**List all supported target languages for translation**
+
+```http
+GET /api/translate/languages
+```
+
+**No authentication required**
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "languages": [
+    {"id": "python", "name": "Python", "maturity": "production"},
+    {"id": "java", "name": "Java", "maturity": "production"},
+    {"id": "typescript", "name": "TypeScript", "maturity": "stable"},
+    {"id": "javascript", "name": "JavaScript", "maturity": "stable"},
+    {"id": "csharp", "name": "C#", "maturity": "beta"},
+    {"id": "go", "name": "Go", "maturity": "beta"}
+  ]
+}
+```
+
+---
+
+### 11. Generate Compliance Report
+
+**Generate regulatory compliance report with Z3 proofs**
+
+```http
+POST /api/reports/compliance/:type
+Content-Type: application/json
+```
+
+**🔒 Authentication required**
+
+**Path Parameters:**
+- `type` (string, required): Report type (`sox`, `basel`, `occ`, `sec`, `banking`)
+
+**Request Body:**
+```json
+{
+  "program": "loan_approval",
+  "options": {
+    "includeProofs": true,
+    "format": "html"
+  }
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "report": {
+    "type": "sox",
+    "title": "SOX 404 - Internal Controls Assessment",
+    "program": "loan_approval",
+    "generatedAt": "2026-02-28T10:30:00.000Z",
+    "sections": {
+      "executiveSummary": "...",
+      "formalVerification": "100% of business rules formally verified",
+      "complianceStatus": "COMPLIANT",
+      "riskAssessment": "LOW (Z3 proof confirms correctness)",
+      "auditTrail": [...],
+      "recommendations": [...]
+    },
+    "html": "<!DOCTYPE html>...",
+    "proofsIncluded": true,
+    "z3Proofs": [
+      {
+        "rule": "interest_calculation",
+        "status": "verified",
+        "smtlib": "(declare-const rate Real)..."
+      }
+    ]
+  },
+  "metadata": {
+    "reportId": "sox-loan_approval-20260228",
+    "version": "1.0",
+    "generationTimeMs": 2340
+  }
+}
+```
+
+**Example:**
+```bash
+curl -X POST http://localhost:3000/api/reports/compliance/sox \
+  -H "X-API-Key: your-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "program": "loan_approval",
+    "options": {"includeProofs": true, "format": "html"}
+  }'
+```
+
+---
+
+### 12. Get Report Types
+
+**List all available compliance report types**
+
+```http
+GET /api/reports/types
+```
+
+**No authentication required**
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "count": 5,
+  "reportTypes": [
+    {
+      "id": "sox",
+      "name": "SOX 404 - Internal Controls Assessment",
+      "authority": "SEC (U.S. Securities and Exchange Commission)",
+      "focus": "Financial reporting controls and IT general controls"
+    },
+    {
+      "id": "basel",
+      "name": "Basel III - Capital & Risk Management",
+      "authority": "Basel Committee on Banking Supervision",
+      "focus": "Credit risk, operational risk, model validation"
+    },
+    {
+      "id": "occ",
+      "name": "OCC - Federal Banking Examination",
+      "authority": "Office of the Comptroller of the Currency",
+      "focus": "Safety and soundness, IT risk management"
+    },
+    {
+      "id": "sec",
+      "name": "SEC - Financial Reporting Controls",
+      "authority": "Securities and Exchange Commission",
+      "focus": "Accuracy of financial data processing"
+    },
+    {
+      "id": "banking",
+      "name": "General Banking Regulatory Compliance",
+      "authority": "Multiple (Fed, ECB, FSA, etc.)",
+      "focus": "Comprehensive banking system verification"
+    }
+  ]
+}
+```
+
+---
+
+### 13. System Status (Dashboard)
 
 **Get comprehensive system status for dashboard**
 

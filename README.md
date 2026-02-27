@@ -77,7 +77,7 @@ While recent AI breakthroughs show LLMs translating COBOL to modern languages, *
 
 Sentineli is **NOT** a COBOL translator. It's the **prerequisite verification layer** that makes AI modernization safe for regulated industries.
 
-**The Three Pillars of Safe Modernization:**
+**The Five Pillars of Safe Modernization:**
 
 ### 1. 🔬 Formal Verification (Z3 Theorem Prover)
 - **Mathematical proofs** that AI analysis matches COBOL behavior
@@ -97,11 +97,27 @@ Sentineli is **NOT** a COBOL translator. It's the **prerequisite verification la
 - **Dependency tracing** - find all programs affected by a change
 - **Testing checklist generation** - comprehensive test scenarios
 
+### 4. 🎯 Blast Radius Visualization (NEW!)
+- **3D visual change impact** - see exactly what breaks when you change code
+- **MIPS cost quantification** - calculate monthly/annual infrastructure cost at risk
+- **Risk scoring (1-10)** - algorithmic assessment of change danger level
+- **Cross-language tracking** - COBOL, JCL, DB2, VSAM, CICS, Copybook dependencies
+- **Force-directed graphs** - D3.js visualization data for stakeholder presentations
+
+### 5. 📊 One-Click Compliance Reports (NEW!)
+- **Regulatory audit automation** - SOX 404, Basel III, OCC, SEC, General Banking
+- **Z3 proof embedding** - mathematical verification in audit documents
+- **HTML/PDF ready** - professional reports for auditors and regulators
+- **Control testing analysis** - automated compliance status assessment
+- **Audit trail generation** - complete chain of verification evidence
+
 **What This Means:**
 - ✅ **Regulatory Compliance** - Mathematical proofs pass audits (SEC, OCC, FINRA, ECB)
 - ✅ **Zero AI Hallucinations** - Every AI claim is formally verified before acceptance
 - ✅ **Safe Modernization** - Understand your system BEFORE changing it
 - ✅ **Enterprise Trust** - Replace "black box explains black box" with transparent proofs
+- ✅ **Visual Change Impact** - See the blast radius with cost quantification (competitors can't do this)
+- ✅ **Automated Compliance** - Generate audit reports with embedded proofs (unique to Sentineli)
 
 ---
 

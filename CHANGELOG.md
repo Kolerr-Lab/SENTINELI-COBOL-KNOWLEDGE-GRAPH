@@ -11,6 +11,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🎯 Preparing for v1.0.0 Open Source Release
 
+#### Added (2026-02-28)
+- **🎯 Blast Radius Visualization**: Revolutionary change impact analysis with 3D graph visualization
+  - Recursive dependency tracking with configurable depth (supports 12+ node types)
+  - MIPS cost impact calculation (total, monthly, annual projections)
+  - Risk scoring algorithm (1-10 scale with depth penalties and language-specific weights)
+  - Cross-language dependency support (COBOL, JCL, DB2, VSAM, CICS, COPYBOOK)
+  - 3D force-directed graph data generation (D3.js/vis.js ready)
+  - Node coloring by language and risk level
+  - Node sizing by MIPS weight
+  - GET `/api/impact/blast-radius/:identifier` endpoint
+- **📊 Compliance Report Generator**: One-click regulatory audit reports with formal proofs
+  - 5 regulatory report types: SOX 404, Basel III, OCC, SEC, General Banking
+  - Comprehensive sections: Executive Summary, Formal Verification, Compliance Status, Risk Assessment, Audit Trail, Recommendations, Certifications, Appendices
+  - Z3 proof embedding with SMT-LIB format for mathematical verification
+  - HTML report generation with professional styling (PDF-ready architecture)
+  - Automated control testing analysis and risk quantification
+  - POST `/api/reports/compliance/:type` endpoint
+  - GET `/api/reports/types` endpoint
+- **🏆 Competitive Advantages**: Three unique capabilities that competitors (IBM, Anthropic) don't offer:
+  1. Translation + Formal Verification (we prove correctness, they don't)
+  2. Visual Blast Radius with Cost Quantification (we show change impact, they don't)
+  3. Automated Compliance Reports with Embedded Proofs (we generate audit documents, they don't)
+
 #### Added (2026-02-25)
 - **PM2 Process Management**: Production-ready process manager with auto-restart
   - `ecosystem.config.js` - PM2 configuration for Bridge and Dashboard
