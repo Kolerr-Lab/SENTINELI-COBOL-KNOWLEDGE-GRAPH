@@ -108,7 +108,7 @@ router.get(
                     const dataflows = propagator?.dataflows || propagator?.edges || [];
                     
                     // Build internal dataflow edges
-                    dataflows.forEach((flow, flowIdx) => {
+                    dataflows.forEach((flow) => {
                         const source = flow.source || flow.from;
                         const target = flow.target || flow.to;
                         const operation = flow.operation || flow.type || 'DATAFLOW';

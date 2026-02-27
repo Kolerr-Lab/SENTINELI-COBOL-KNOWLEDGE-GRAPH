@@ -3,6 +3,8 @@
  * Uses GPT-4o for intelligent analysis + Z3 for formal verification
  */
 
+const mipsEstimator = require('./mips_estimator');
+
 /**
  * Analyze COBOL source code
  * @param {string} code - COBOL source code
@@ -87,8 +89,21 @@ Return JSON with this exact schema:
       }, 'COBOL analysis completed');
     }
 
+    // Perform static MIPS estimation
+    const mipsEstimation = mipsEstimator.estimateMIPS(code);
+    
+    if (logger) {
+      logger.info({
+        program,
+        mips_score: mipsEstimation.mips_score,
+        estimated_mips: mipsEstimation.estimated_mips,
+        monthly_cost: mipsEstimation.estimated_cost.monthly_usd
+      }, 'MIPS estimation completed');
+    }
+
     return {
       ...analysis,
+      mips_estimation: mipsEstimation,
       metadata: {
         model: 'gpt-4o',
         input_tokens: tokens.prompt_tokens,

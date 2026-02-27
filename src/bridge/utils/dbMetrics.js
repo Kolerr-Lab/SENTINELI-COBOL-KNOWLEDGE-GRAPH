@@ -4,6 +4,8 @@
  * Replaces in-memory metrics tracking
  */
 
+const logger = require('./logger');
+
 /**
  * Get metrics from database (replaces in-memory metrics)
  * @param {Pool} pool - PostgreSQL pool
@@ -47,7 +49,7 @@ async function getMetricsFromDB(pool) {
             lastAnalysis: row.last_analysis
         };
     } catch (error) {
-        console.error('Error calculating metrics from DB:', error);
+        logger.error({ error: error.message, stack: error.stack }, 'Error calculating metrics from DB');
         // Return zero metrics on error
         return {
             totalCalls: 0,
@@ -103,7 +105,7 @@ async function storeAnalysis(pool, fileName, fileType, analysis) {
 
         return result.rows[0].id;
     } catch (error) {
-        console.error('[dbMetrics] Error storing analysis:', error.message, error.stack);
+        logger.error({ error: error.message, stack: error.stack }, '[dbMetrics] Error storing analysis');
         throw error;
     }
 }
@@ -117,7 +119,7 @@ async function resetAllMetrics(pool) {
         await pool.query('TRUNCATE knowledge_graph RESTART IDENTITY');
         return { success: true, message: 'All metrics and analyses cleared' };
     } catch (error) {
-        console.error('Error resetting metrics:', error);
+        logger.error({ error: error.message, stack: error.stack }, 'Error resetting metrics');
         throw error;
     }
 }

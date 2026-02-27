@@ -1,5 +1,10 @@
 # Sentineli Rust Gateway - Multi-stage build for minimal image
-FROM rust:1.83-slim as builder
+FROM rustlang/rust:nightly-slim as builder
+
+# Install OpenSSL and pkg-config for building
+RUN apt-get update && \
+    apt-get install -y pkg-config libssl-dev && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
 
@@ -9,20 +14,21 @@ COPY Cargo.toml Cargo.lock* ./
 # Create dummy main to cache dependencies
 RUN mkdir src && \
     echo "fn main() {}" > src/main.rs && \
-    cargo build --release || true && \
+    cargo build --release && \
     rm -rf src
 
-# Now copy actual source
+# Now copy actual source and force rebuild
 COPY src ./src
 
-# Build for release
-RUN cargo build --release
+# Force clean rebuild of binary
+RUN rm -rf target/release/.fingerprint/sentineli-gateway* target/release/sentineli-gateway target/release/sentineli-gateway.d && \
+    cargo build --release
 
 # Runtime stage - minimal Debian
 FROM debian:bookworm-slim
 
 RUN apt-get update && \
-    apt-get install -y ca-certificates && \
+    apt-get install -y ca-certificates libssl3 && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

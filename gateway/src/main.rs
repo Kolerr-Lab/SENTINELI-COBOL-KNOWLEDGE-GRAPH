@@ -21,13 +21,13 @@ use log::{info, warn, error};
 use prometheus::{Encoder, TextEncoder, register_counter, register_histogram};
 use serde::Serialize;
 use std::time::Duration;
+use std::env;
 
 // ============================================================================
 // CONFIGURATION
 // ============================================================================
 
 const GATEWAY_PORT: u16 = 8080;
-const BACKEND_URL: &str = "http://localhost:3000";
 
 // ============================================================================
 // METRICS
@@ -77,6 +77,8 @@ struct ErrorResponse {
 async fn index() -> HttpResponse {
     HTTP_REQUESTS_TOTAL.inc();
     
+    let backend_url = env::var("BACKEND_URL").unwrap_or_else(|_| "http://localhost:3000".to_string());
+    
     let info = GatewayInfo {
         service: "Sentineli Rust Gateway".to_string(),
         version: "1.0.0".to_string(),
@@ -87,7 +89,7 @@ async fn index() -> HttpResponse {
             architecture: "Zero-copy proxy".to_string(),
             language: "Rust (blazingly fast)".to_string(),
         },
-        backend: BACKEND_URL.to_string(),
+        backend: backend_url,
     };
     
     HttpResponse::Ok().json(info)
@@ -136,13 +138,16 @@ async fn proxy_handler(
     // Rate limiting removed for demo - add back in production
     info!("Request from IP: {}", client_ip);
     
+    // Get backend URL from environment or use default
+    let backend_url_base = env::var("BACKEND_URL").unwrap_or_else(|_| "http://localhost:3000".to_string());
+    
     // Build backend URL
     let path = req.uri().path();
     let query = req.uri().query().unwrap_or("");
     let backend_url = if query.is_empty() {
-        format!("{}{}", BACKEND_URL, path)
+        format!("{}{}", backend_url_base, path)
     } else {
-        format!("{}{}?{}", BACKEND_URL, path, query)
+        format!("{}{}?{}", backend_url_base, path, query)
     };
     
     info!("Proxying {} to {}", path, backend_url);
@@ -211,11 +216,13 @@ async fn main() -> std::io::Result<()> {
     // Initialize logger
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
     
+    let backend_url = env::var("BACKEND_URL").unwrap_or_else(|_| "http://localhost:3000".to_string());
+    
     info!("🦀 Sentineli Rust Gateway v1.0.0");
     info!("⚡ By Ricky Anh Nguyen | OrchesityAI & Kolerr Lab");
     info!("🔥 Ultra-high-performance mode: ENABLED");
     info!("📊 Rate limit: DISABLED (demo mode)");
-    info!("🎯 Backend: {}", BACKEND_URL);
+    info!("🎯 Backend: {}", backend_url);
     info!("🚀 Starting gateway on 0.0.0.0:{}", GATEWAY_PORT);
     
     // Create HTTP client for proxying

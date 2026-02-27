@@ -38,16 +38,34 @@ function App() {
     // Fetch health status immediately then every 5 seconds
     const checkHealth = async () => {
       try {
-        const response = await fetch('/api/health');
-        const data = await response.json();
+        // Check bridge health
+        const bridgeResponse = await fetch('/health');
+        const bridgeData = await bridgeResponse.json();
+        const bridgeStatus = bridgeData.status === 'ok' ? 'UP' : 'DOWN';
+        
+        // Check gateway health
+        let gatewayStatus = 'DOWN';
+        try {
+          const gatewayResponse = await fetch('/gateway/health');
+          const gatewayData = await gatewayResponse.json();
+          gatewayStatus = gatewayData.status === 'ok' ? 'UP' : 'DOWN';
+        } catch (gatewayError) {
+          console.warn('Gateway health check failed:', gatewayError);
+          gatewayStatus = 'DOWN';
+        }
+        
         setSystemStatus({
-          bridge: (data.bridge && data.bridge !== 'DOWN') || data.status === 'ok' ? 'UP' : 'DOWN',
-          gateway: (data.gateway && data.gateway !== 'DOWN') || data.gateway === 'UP' ? 'UP' : 'UNKNOWN',
+          bridge: bridgeStatus,
+          gateway: gatewayStatus,
           connections: 0
         });
       } catch (error) {
         console.error('Failed to fetch health:', error);
-        setSystemStatus(prev => ({ ...prev, bridge: 'DOWN' }));
+        setSystemStatus({
+          bridge: 'DOWN',
+          gateway: 'DOWN',
+          connections: 0
+        });
       }
     };
 
