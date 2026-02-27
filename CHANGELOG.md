@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🎯 Preparing for v1.0.0 Open Source Release
 
+#### Fixed (2026-02-28)
+- **Database Migration**: Automatic schema initialization
+  - Added database migration to `predev` and `prestart` hooks
+  - Migration now runs automatically when starting the server
+  - Fixes "relation 'knowledge_graph' does not exist" error on fresh installs
+  - Documented manual migration command in README for Docker users
+  - Database tables created: knowledge_graph, executions, users, indexes
+
 #### Added (2026-02-28)
 - **🎯 Blast Radius Visualization**: Revolutionary change impact analysis with 3D graph visualization
   - Recursive dependency tracking with configurable depth (supports 12+ node types)

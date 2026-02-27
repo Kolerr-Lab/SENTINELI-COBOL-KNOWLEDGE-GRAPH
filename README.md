@@ -852,6 +852,13 @@ docker-compose up --build
 
 Builds: Rust gateway, GnuCOBOL compiler, Node.js bridge, PostgreSQL, Redis
 
+**Run database migrations (first time or after updates):**
+```bash
+docker compose exec kg-ai-cobol-modernize npm run db:migrate
+```
+
+Or the migration will run automatically when you start the dev server (`npm run dev`).
+
 ### Access Points
 
 | Service | URL | Purpose |
