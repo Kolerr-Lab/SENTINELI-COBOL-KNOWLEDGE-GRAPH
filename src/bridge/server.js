@@ -44,6 +44,9 @@ const { getProviderInfo, openai } = require('./ai_agent');
 const { router: cobolRouter, initCobolRoutes } = require('./routes/cobol');
 const impactRouter = require('./routes/impact');
 const { router: graphRouter, initGraphRoutes } = require('./routes/graph');
+const translateRouter = require('./routes/translate');
+const { initTranslateRoutes } = require('./routes/translate');
+const reportsRouter = require('./routes/reports');
 
 // Initialize Express app
 const app = express();
@@ -296,11 +299,14 @@ app.get('/', publicLimiter, (req, res) => {
 // Initialize route dependencies
 initCobolRoutes({ pool, redisClient, redisConnected, openai });
 initGraphRoutes({ pool });
+initTranslateRoutes({ redisClient, redisConnected });
 
 // Mount route modules
 app.use('/api', cobolRouter);  // /api/run/:program, /api/analyze, /api/analyze/:file
-app.use('/api', impactRouter);  // /api/impact
+app.use('/api', impactRouter);  // /api/impact, /api/impact/blast-radius/:identifier
 app.use('/api', graphRouter);   // /api/graph
+app.use('/api/translate', translateRouter);  // /api/translate, /api/translate/batch, /api/translate/languages
+app.use('/api/reports', reportsRouter);  // /api/reports/compliance/:type, /api/reports/types
 
 // ============================================================================
 // PROTECTED API ROUTES (Authentication required)

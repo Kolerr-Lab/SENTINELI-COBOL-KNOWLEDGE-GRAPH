@@ -9,6 +9,7 @@ const router = express.Router();
 const logger = require('../utils/logger');
 const { generalLimiter } = require('../middleware/rateLimiting');
 const { AppError, asyncHandler } = require('../middleware/errorHandler');
+const { calculateBlastRadius } = require('../analyzers/blast_radius');
 
 /**
  * Impact Analysis Endpoint
@@ -100,5 +101,169 @@ router.post(
         });
     })
 );
+
+/**
+ * Blast Radius Analysis Endpoint
+ * GET /api/impact/blast-radius/:identifier
+ * 
+ * Analyzes the "blast radius" of changes to a specific function, variable, or data structure.
+ * Shows all downstream dependencies, MIPS impact, cost implications, and risk assessment.
+ * 
+ * Params: identifier - Function name, variable, or data structure
+ * Query: maxDepth (optional, default 5), includeCrossLanguage (optional, default true)
+ * Auth: Optional (public endpoint for demo)
+ * Rate Limit: 20/hour
+ */
+router.get(
+    '/impact/blast-radius/:identifier',
+    generalLimiter,
+    asyncHandler(async (req, res) => {
+        const { identifier } = req.params;
+        const maxDepth = parseInt(req.query.maxDepth) || 5;
+        const includeCrossLanguage = req.query.includeCrossLanguage !== 'false';
+        
+        if (!identifier) {
+            throw new AppError('Missing required parameter: identifier', 400);
+        }
+        
+        logger.info({ identifier, maxDepth, includeCrossLanguage }, 'Blast radius analysis requested');
+        
+        // For demo purposes, create a sample knowledge graph
+        // In production, this would come from the actual database
+        const sampleKnowledgeGraph = buildSampleKnowledgeGraph();
+        
+        // Calculate blast radius
+        const result = calculateBlastRadius(identifier, sampleKnowledgeGraph, {
+            maxDepth,
+            includeCrossLanguage
+        });
+        
+        if (!result.found) {
+            return res.status(404).json({
+                success: false,
+                error: 'NOT_FOUND',
+                message: result.message,
+                availableIdentifiers: Object.keys(sampleKnowledgeGraph.nodes).slice(0, 20),
+                timestamp: result.timestamp
+            });
+        }
+        
+        res.json({
+            success: true,
+            ...result
+        });
+    })
+);
+
+/**
+ * Build sample knowledge graph for demonstration
+ * In production, this would be fetched from PostgreSQL knowledge_graph table
+ */
+function buildSampleKnowledgeGraph() {
+    return {
+        nodes: {
+            'CALCULATE-INTEREST': {
+                name: 'CALCULATE-INTEREST',
+                type: 'procedure',
+                language: 'COBOL',
+                mips: 850
+            },
+            'PROCESS-LOAN': {
+                name: 'PROCESS-LOAN',
+                type: 'procedure',
+                language: 'COBOL',
+                mips: 1200
+            },
+            'UPDATE-ACCOUNT': {
+                name: 'UPDATE-ACCOUNT',
+                type: 'procedure',
+                language: 'COBOL',
+                mips: 600
+            },
+            'LOAN-BATCH-JOB': {
+                name: 'LOAN-BATCH-JOB',
+                type: 'job',
+                language: 'JCL',
+                mips: 2500
+            },
+            'ACCOUNT-TABLE': {
+                name: 'ACCOUNT-TABLE',
+                type: 'database-table',
+                language: 'DB2',
+                mips: 450
+            },
+            'TRANSACTION-FILE': {
+                name: 'TRANSACTION-FILE',
+                type: 'file',
+                language: 'VSAM',
+                mips: 300
+            },
+            'CALCULATE-DTI': {
+                name: 'CALCULATE-DTI',
+                type: 'procedure',
+                language: 'COBOL',
+                mips: 400
+            },
+            'VALIDATE-INPUT': {
+                name: 'VALIDATE-INPUT',
+                type: 'procedure',
+                language: 'COBOL',
+                mips: 200
+            },
+            'FRAUD-CHECK': {
+                name: 'FRAUD-CHECK',
+                type: 'transaction',
+                language: 'CICS',
+                mips: 900
+            },
+            'CREDIT-SCORE-SERVICE': {
+                name: 'CREDIT-SCORE-SERVICE',
+                type: 'service',
+                language: 'COBOL',
+                mips: 1500
+            },
+            'RISK-ASSESSMENT': {
+                name: 'RISK-ASSESSMENT',
+                type: 'procedure',
+                language: 'COBOL',
+                mips: 1100
+            },
+            'APPROVAL-WORKFLOW': {
+                name: 'APPROVAL-WORKFLOW',
+                type: 'procedure',
+                language: 'COBOL',
+                mips: 750
+            }
+        },
+        edges: [
+            // CALCULATE-INTEREST dependencies
+            { source: 'CALCULATE-INTEREST', target: 'PROCESS-LOAN', type: 'called-by' },
+            { source: 'CALCULATE-INTEREST', target: 'LOAN-BATCH-JOB', type: 'called-by' },
+            { source: 'CALCULATE-INTEREST', target: 'CALCULATE-DTI', type: 'calls' },
+            
+            // PROCESS-LOAN dependencies
+            { source: 'PROCESS-LOAN', target: 'UPDATE-ACCOUNT', type: 'calls' },
+            { source: 'PROCESS-LOAN', target: 'VALIDATE-INPUT', type: 'calls' },
+            { source: 'PROCESS-LOAN', target: 'ACCOUNT-TABLE', type: 'reads' },
+            { source: 'PROCESS-LOAN', target: 'RISK-ASSESSMENT', type: 'calls' },
+            
+            // UPDATE-ACCOUNT dependencies
+            { source: 'UPDATE-ACCOUNT', target: 'ACCOUNT-TABLE', type: 'writes' },
+            { source: 'UPDATE-ACCOUNT', target: 'TRANSACTION-FILE', type: 'writes' },
+            
+            // LOAN-BATCH-JOB dependencies
+            { source: 'LOAN-BATCH-JOB', target: 'FRAUD-CHECK', type: 'calls' },
+            { source: 'LOAN-BATCH-JOB', target: 'CREDIT-SCORE-SERVICE', type: 'calls' },
+            
+            // RISK-ASSESSMENT dependencies
+            { source: 'RISK-ASSESSMENT', target: 'CREDIT-SCORE-SERVICE', type: 'calls' },
+            { source: 'RISK-ASSESSMENT', target: 'APPROVAL-WORKFLOW', type: 'triggers' },
+            
+            // APPROVAL-WORKFLOW dependencies
+            { source: 'APPROVAL-WORKFLOW', target: 'UPDATE-ACCOUNT', type: 'calls' },
+            { source: 'APPROVAL-WORKFLOW', target: 'FRAUD-CHECK', type: 'calls' }
+        ]
+    };
+}
 
 module.exports = router;
