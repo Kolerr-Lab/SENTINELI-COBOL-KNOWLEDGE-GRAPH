@@ -2,48 +2,48 @@
 
 ## Current Known Vulnerabilities
 
-### pm2 Regular Expression Denial of Service (CVE-2025-5891)
+### pm2 Regular Expression Denial of Service (CVE-2025-5891) ✅
 
-**Status:** ACCEPTED RISK - Monitoring for upstream fix  
+**Status:** RESOLVED - Applied fix from PR #6079  
 **Severity:** Low (CVSS 2.1/10)  
 **Date Identified:** February 27, 2026  
-**Affected Versions:** pm2 <= 6.0.14 (all currently released versions)  
+**Date Resolved:** February 27, 2026  
 **GitHub Advisory:** [GHSA-x5gf-qvw8-r2rm](https://github.com/advisories/GHSA-x5gf-qvw8-r2rm)
 
 #### Description
-A Regular Expression Denial of Service (ReDoS) vulnerability exists in pm2's `/lib/tools/Config.js` file. The vulnerability affects inefficient regex parsing in the configuration system.
+A Regular Expression Denial of Service (ReDoS) vulnerability existed in pm2's `/lib/tools/Config.js` file due to inefficient regex parsing in the configuration system.
 
-#### Impact Assessment
-- **Attack Vector:** Network-based, requires authenticated access (low privileges)
-- **Attack Complexity:** Low
-- **Real-World Impact:** Minimal - pm2 is used for process management in controlled environments, not exposed to untrusted input
-- **Availability Impact:** Low - potential for minor performance degradation under specific attack conditions
-- **Confidentiality/Integrity:** None affected
+#### Resolution
+**Applied Fix:** Installed pm2 directly from GitHub branch with tokenizer-based parsing instead of regex.
 
-#### Risk Acceptance Rationale
-1. **Low Severity:** CVSS score of 2.1/10 represents minimal security impact
-2. **Limited Exposure:** pm2 is used internally for process management, not exposed to public APIs
-3. **Authentication Required:** Attack requires authenticated access with privileges
-4. **No Fix Available:** pm2 maintainers have not released a patched version (as of v6.0.14)
-5. **Upstream PR Exists:** [Unitech/pm2#5971](https://github.com/Unitech/pm2/pull/5971) is addressing the issue
+- **Source:** `github:dbankier/pm2#master` (commit 3c58b3aa)
+- **Pull Request:** [Unitech/pm2#6079](https://github.com/Unitech/pm2/pull/6079)
+- **Fix Method:** Replaced regex-based parser with tokenizer in `lib/tools/Config.js`
+- **Function:** `tokenizePm2ConfigArrayString()` replaces vulnerable regex pattern
+- **Verification:** Code inspection confirms tokenizer implementation present
 
-#### Mitigation Measures
-- **Access Control:** Ensure pm2 commands are only accessible to trusted administrators
-- **Network Isolation:** pm2 management interfaces are not exposed to public networks
-- **Monitoring:** Track [pm2 releases](https://github.com/Unitech/pm2/releases) for security patches
-- **Update Policy:** Will upgrade to patched version immediately upon release
+#### Why npm audit Still Shows Vulnerability
+npm audit reports vulnerabilities based on package version numbers. Since no official pm2 release contains the fix yet (latest is 6.0.14), npm audit will continue showing the vulnerability even though our code has the patch applied.
 
-#### Review Schedule
-This advisory will be reviewed:
-- **Weekly:** Check for new pm2 releases
-- **Upon Notification:** When GitHub Dependabot detects a fix is available
-- **Before Major Releases:** Re-assess risk tolerance
+**Evidence the fix is applied:**
+```bash
+$ grep tokenizePm2ConfigArrayString node_modules/pm2/lib/tools/Config.js
+function tokenizePm2ConfigArrayString(input) {
+  value = tokenizePm2ConfigArrayString(value);
+```
+
+#### Status Notes
+- ✅ Fix applied and verified in codebase
+- ⚠️ npm audit still reports issue (version-based detection)
+- ⏳ Waiting for official pm2 release to clear Dependabot alert
+- 📝 Will switch to official version when released
 
 #### References
 - CVE-2025-5891: https://nvd.nist.gov/vuln/detail/CVE-2025-5891
 - GitHub Advisory: https://github.com/advisories/GHSA-x5gf-qvw8-r2rm
+- Applied Fix PR: https://github.com/Unitech/pm2/pull/6079
+- Original PR #5971: https://github.com/Unitech/pm2/pull/5971 (had issues, fixed by #6079)
 - pm2 Repository: https://github.com/Unitech/pm2
-- Security PR: https://github.com/Unitech/pm2/pull/5971
 
 ---
 
