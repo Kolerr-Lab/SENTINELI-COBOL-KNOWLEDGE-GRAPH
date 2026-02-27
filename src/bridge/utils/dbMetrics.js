@@ -193,18 +193,22 @@ function normalizeBranches(branches) {
  * Check dependencies and add warnings
  * @param {Object} analysis - Analysis result
  * @param {string} fileType - File type (COBOL, JCL, etc.)
+ * @param {string} code - Source code (optional, for validation)
  * @returns {Object} - Analysis with warnings added
  */
-function checkDependencies(analysis, fileType) {
+function checkDependencies(analysis, fileType, code = '') {
     const warnings = [];
 
     // Check for missing embedded SQL detection in COBOL files 
-    if (fileType === 'COBOL') {
+    if (fileType === 'COBOL' && code) {
+        // Only warn if code contains EXEC SQL but no databases detected
+        const hasExecSQL = code.includes('EXEC SQL') || code.includes('EXEC-SQL');
         const deps = analysis.dependencies || {};
-        if (!deps.databases || deps.databases.length === 0) {
+        
+        if (hasExecSQL && (!deps.databases || deps.databases.length === 0)) {
             warnings.push({
                 type: 'MISSING_DB_DETECTION',
-                message: 'Embedded SQL may not be detected - dependencies.databases is empty',
+                message: 'Embedded SQL found but no database tables detected - may need manual review',
                 severity: 'warning'
             });
         }

@@ -6,6 +6,63 @@
 const mipsEstimator = require('./mips_estimator');
 
 /**
+ * Extract database tables and SQL operations from EXEC SQL statements
+ * @param {string} code - COBOL source code
+ * @returns {Array<string>} - Array of table names and database operations
+ */
+function extractSQLDependencies(code) {
+  const databases = new Set();
+  const lines = code.split('\n');
+  let inExecSQL = false;
+  let sqlBlock = '';
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    
+    // Detect start of EXEC SQL block
+    if (line.includes('EXEC SQL') || line.includes('EXEC-SQL')) {
+      inExecSQL = true;
+      sqlBlock = line;
+    }
+    // Continue collecting SQL block
+    else if (inExecSQL) {
+      sqlBlock += ' ' + line;
+      
+      // Check for end of SQL block
+      if (line.includes('END-EXEC') || line.includes('END EXEC')) {
+        inExecSQL = false;
+        
+        // Extract table names from SQL statements
+        const tableMatches = [
+          // FROM clause
+          ...sqlBlock.matchAll(/FROM\s+([A-Z0-9_]+)/gi),
+          // INTO clause  
+          ...sqlBlock.matchAll(/INTO\s+([A-Z0-9_]+)/gi),
+          // UPDATE
+          ...sqlBlock.matchAll(/UPDATE\s+([A-Z0-9_]+)/gi),
+          // INSERT INTO
+          ...sqlBlock.matchAll(/INSERT\s+INTO\s+([A-Z0-9_]+)/gi),
+          // DELETE FROM
+          ...sqlBlock.matchAll(/DELETE\s+FROM\s+([A-Z0-9_]+)/gi),
+          // JOIN
+          ...sqlBlock.matchAll(/JOIN\s+([A-Z0-9_]+)/gi)
+        ];
+        
+        tableMatches.forEach(match => {
+          if (match[1] && match[1].length > 0) {
+            databases.add(match[1]);
+          }
+        });
+        
+        sqlBlock = '';
+      }
+    }
+  }
+  
+  return Array.from(databases);
+}
+
+/**
  * Analyze COBOL source code
  * @param {string} code - COBOL source code
  * @param {string} program - Program name
@@ -92,13 +149,29 @@ Return JSON with this exact schema:
     // Perform static MIPS estimation
     const mipsEstimation = mipsEstimator.estimateMIPS(code);
     
+    // Perform static SQL dependency detection (fallback if GPT-4o misses it)
+    const staticSQLDeps = extractSQLDependencies(code);
+    
+    // Merge static SQL detection with GPT-4o results
+    if (!analysis.dependencies) {
+      analysis.dependencies = {};
+    }
+    if (!analysis.dependencies.databases) {
+      analysis.dependencies.databases = [];
+    }
+    
+    // Merge and deduplicate
+    const allDatabases = [...new Set([...analysis.dependencies.databases, ...staticSQLDeps])];
+    analysis.dependencies.databases = allDatabases;
+    
     if (logger) {
       logger.info({
         program,
         mips_score: mipsEstimation.mips_score,
         estimated_mips: mipsEstimation.estimated_mips,
-        monthly_cost: mipsEstimation.estimated_cost.monthly_usd
-      }, 'MIPS estimation completed');
+        monthly_cost: mipsEstimation.estimated_cost.monthly_usd,
+        sql_tables_detected: allDatabases.length
+      }, 'MIPS estimation and SQL detection completed');
     }
 
     return {

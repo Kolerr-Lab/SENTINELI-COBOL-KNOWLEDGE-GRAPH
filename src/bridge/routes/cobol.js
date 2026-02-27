@@ -185,7 +185,7 @@ router.post(
             // Normalize schema and check dependencies
             const { normalizeSchema, checkDependencies, storeAnalysis } = require('../utils/dbMetrics');
             let normalizedAnalysis = normalizeSchema(analysis);
-            normalizedAnalysis = checkDependencies(normalizedAnalysis, fileType);
+            normalizedAnalysis = checkDependencies(normalizedAnalysis, fileType, code);
 
             // Store in knowledge graph database
             try {
@@ -307,7 +307,7 @@ router.post(
                         file.endsWith('.rexx') ? 'REXX' :
                         file.endsWith('.pli') ? 'PL/I' : 'UNKNOWN';
         
-        normalizedAnalysis = checkDependencies(normalizedAnalysis, fileType);
+        normalizedAnalysis = checkDependencies(normalizedAnalysis, fileType, code);
 
         // Store in knowledge graph database (never overwrites - always inserts new row)
         try {
