@@ -44,7 +44,10 @@ router.get(
             logger.info({ poolExists: !!pool }, 'Pool status');
             
             const result = await pool.query(
-                'SELECT file_name, analysis FROM knowledge_graph ORDER BY created_at DESC LIMIT 100'
+                `SELECT file_name, latest_analysis as analysis, last_analyzed_at as created_at 
+                 FROM knowledge_graph 
+                 ORDER BY last_analyzed_at DESC 
+                 LIMIT 100`
             );
             
             logger.info({ rowCount: result.rows.length, firstFile: result.rows[0]?.file_name }, 'Database query results');

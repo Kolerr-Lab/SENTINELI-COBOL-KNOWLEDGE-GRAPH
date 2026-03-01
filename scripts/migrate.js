@@ -14,17 +14,44 @@ async function runMigrations() {
     try {
         console.log('Running database migrations...\n');
 
-        // Migration 1: Create knowledge_graph table (with metrics support)
+        // Migration 1: Create knowledge_graph table (current state - hybrid schema)
         console.log('Creating knowledge_graph table...');
         await pool.query(`
             CREATE TABLE IF NOT EXISTS knowledge_graph (
                 id SERIAL PRIMARY KEY,
+                file_name VARCHAR(255) UNIQUE NOT NULL,
+                file_type VARCHAR(50),
+                latest_analysis JSONB NOT NULL,
+                first_analyzed_at TIMESTAMP DEFAULT NOW(),
+                last_analyzed_at TIMESTAMP DEFAULT NOW(),
+                
+                -- Aggregated metrics (cumulative)
+                analysis_count INTEGER DEFAULT 1,
+                total_cost_usd DECIMAL(10, 8) DEFAULT 0,
+                
+                -- Latest analysis metrics
+                cyclomatic_complexity INTEGER,
+                logic_depth INTEGER,
+                variable_count INTEGER,
+                decision_points INTEGER,
+                latest_tokens_used INTEGER,
+                latest_duration_ms INTEGER,
+                latest_ai_model VARCHAR(100)
+            )
+        `);
+        console.log('✓ knowledge_graph table created\n');
+
+        // Migration 1b: Create analysis_history table (audit trail - hybrid schema)
+        console.log('Creating analysis_history table...');
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS analysis_history (
+                id SERIAL PRIMARY KEY,
                 file_name VARCHAR(255) NOT NULL,
                 file_type VARCHAR(50),
                 analysis JSONB NOT NULL,
-                created_at TIMESTAMP DEFAULT NOW(),
+                analyzed_at TIMESTAMP DEFAULT NOW(),
                 
-                -- Extracted fields for faster queries
+                -- Per-analysis metrics
                 cyclomatic_complexity INTEGER,
                 logic_depth INTEGER,
                 variable_count INTEGER,
@@ -35,7 +62,7 @@ async function runMigrations() {
                 ai_model VARCHAR(100)
             )
         `);
-        console.log('✓ knowledge_graph table created\n');
+        console.log('✓ analysis_history table created\n');
 
         // Migration 2: Create executions table
         console.log('Creating executions table...');
@@ -55,16 +82,20 @@ async function runMigrations() {
         // Migration 3: Create indexes
         console.log('Creating indexes...');
         await pool.query(`
-            CREATE INDEX IF NOT EXISTS idx_created_at 
-            ON knowledge_graph(created_at)
+            CREATE INDEX IF NOT EXISTS idx_kg_last_analyzed_at 
+            ON knowledge_graph(last_analyzed_at DESC)
         `);
         await pool.query(`
-            CREATE INDEX IF NOT EXISTS idx_file_name 
-            ON knowledge_graph(file_name)
-        `);
-        await pool.query(`
-            CREATE INDEX IF NOT EXISTS idx_file_type 
+            CREATE INDEX IF NOT EXISTS idx_kg_file_type 
             ON knowledge_graph(file_type)
+        `);
+        await pool.query(`
+            CREATE INDEX IF NOT EXISTS idx_ah_file_name 
+            ON analysis_history(file_name)
+        `);
+        await pool.query(`
+            CREATE INDEX IF NOT EXISTS idx_ah_analyzed_at 
+            ON analysis_history(analyzed_at DESC)
         `);
         await pool.query(`
             CREATE INDEX IF NOT EXISTS idx_executions_user_id 

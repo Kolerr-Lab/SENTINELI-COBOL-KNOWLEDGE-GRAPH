@@ -13,21 +13,22 @@ const logger = require('./logger');
  */
 async function getMetricsFromDB(pool) {
     try {
+        // Query both knowledge_graph (for aggregated data) and analysis_history (for total analyses)
         const result = await pool.query(`
             SELECT
-                COUNT(*) as total_calls,
-                COALESCE(SUM((analysis->'metadata'->>'duration_ms')::int), 0) as total_processing_time_ms,
-                COALESCE(AVG((analysis->'metadata'->>'duration_ms')::int), 0) as average_processing_time_ms,
-                COALESCE(SUM((analysis->'metadata'->>'tokens_used')::int), 0) as total_tokens,
-                COALESCE(SUM((analysis->'metadata'->>'cost_usd')::numeric), 0) as total_cost_usd,
-                COALESCE(AVG((analysis->'metadata'->>'cost_usd')::numeric), 0) as average_cost_per_call,
-                COALESCE(SUM((analysis->'complexity_metrics'->>'cyclomatic_complexity')::int), 0) as total_cyclomatic_complexity,
-                COALESCE(AVG((analysis->'complexity_metrics'->>'cyclomatic_complexity')::numeric), 0) as average_cyclomatic_complexity,
-                COALESCE(AVG((analysis->'complexity_metrics'->>'logic_depth')::numeric), 0) as average_logic_depth,
-                COALESCE(AVG((analysis->'complexity_metrics'->>'variable_count')::numeric), 0) as average_variable_count,
-                COALESCE(AVG((analysis->'complexity_metrics'->>'decision_points')::numeric), 0) as average_decision_points,
-                MIN(created_at) as first_analysis,
-                MAX(created_at) as last_analysis
+                (SELECT COUNT(*) FROM analysis_history) as total_calls,
+                COALESCE(SUM((latest_analysis->'metadata'->>'duration_ms')::int), 0) as total_processing_time_ms,
+                COALESCE(AVG((latest_analysis->'metadata'->>'duration_ms')::int), 0) as average_processing_time_ms,
+                COALESCE(SUM(latest_tokens_used), 0) as total_tokens,
+                COALESCE(SUM(total_cost_usd), 0) as total_cost_usd,
+                COALESCE(AVG(total_cost_usd / NULLIF(analysis_count, 0)), 0) as average_cost_per_call,
+                COALESCE(SUM(cyclomatic_complexity), 0) as total_cyclomatic_complexity,
+                COALESCE(AVG(cyclomatic_complexity), 0) as average_cyclomatic_complexity,
+                COALESCE(AVG(logic_depth), 0) as average_logic_depth,
+                COALESCE(AVG(variable_count), 0) as average_variable_count,
+                COALESCE(AVG(decision_points), 0) as average_decision_points,
+                MIN(first_analyzed_at) as first_analysis,
+                MAX(last_analyzed_at) as last_analysis
             FROM knowledge_graph
         `);
 
@@ -70,23 +71,73 @@ async function getMetricsFromDB(pool) {
 }
 
 /**
- * Store analysis result in database (never overwrites, always inserts)
+ * Store analysis result in hybrid schema (knowledge_graph + analysis_history)
+ * 
+ * DESIGN: Hybrid Schema Pattern
+ * 1. knowledge_graph: UPSERT - maintains current state (1 row per file)
+ * 2. analysis_history: INSERT - preserves complete audit trail
+ * 
+ * Benefits:
+ * - Fast graph queries (deduplicated automatically)
+ * - Full audit trail for compliance and cost tracking
+ * - No data loss, enterprise-grade
+ * 
  * @param {Pool} pool - PostgreSQL pool
  * @param {string} fileName - Name of analyzed file
  * @param {string} fileType - Type (COBOL, JCL, etc.)  
  * @param {Object} analysis - Full analysis result
- * @returns {Promise<number>} - ID of inserted row
+ * @returns {Promise<number>} - ID from knowledge_graph table
  */
 async function storeAnalysis(pool, fileName, fileType, analysis) {
+    const client = await pool.connect();
+    
     try {
         const complexity = analysis.complexity_metrics || {};
         const metadata = analysis.metadata || {};
+        const currentCost = metadata.cost_usd || 0;
 
-        const result = await pool.query(
-            `INSERT INTO knowledge_graph 
+        await client.query('BEGIN');
+
+        // Step 1: Insert into analysis_history (audit trail - always inserts)
+        await client.query(
+            `INSERT INTO analysis_history 
             (file_name, file_type, analysis, cyclomatic_complexity, logic_depth, 
              variable_count, decision_points, cost_usd, tokens_used, duration_ms, ai_model)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+            [
+                fileName,
+                fileType,
+                JSON.stringify(analysis),
+                complexity.cyclomatic_complexity || 0,
+                complexity.logic_depth || 0,
+                complexity.variable_count || 0,
+                complexity.decision_points || 0,
+                currentCost,
+                metadata.tokens_used || 0,
+                metadata.duration_ms || 0,
+                metadata.model || 'unknown'
+            ]
+        );
+
+        // Step 2: UPSERT into knowledge_graph (current state)
+        const result = await client.query(
+            `INSERT INTO knowledge_graph 
+            (file_name, file_type, latest_analysis, cyclomatic_complexity, logic_depth, 
+             variable_count, decision_points, first_analyzed_at, last_analyzed_at, 
+             analysis_count, total_cost_usd, latest_ai_model)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW(), 1, $8, $9)
+            ON CONFLICT (file_name) 
+            DO UPDATE SET
+                file_type = EXCLUDED.file_type,
+                latest_analysis = EXCLUDED.latest_analysis,
+                cyclomatic_complexity = EXCLUDED.cyclomatic_complexity,
+                logic_depth = EXCLUDED.logic_depth,
+                variable_count = EXCLUDED.variable_count,
+                decision_points = EXCLUDED.decision_points,
+                last_analyzed_at = NOW(),
+                analysis_count = knowledge_graph.analysis_count + 1,
+                total_cost_usd = knowledge_graph.total_cost_usd + EXCLUDED.total_cost_usd,
+                latest_ai_model = EXCLUDED.latest_ai_model
             RETURNING id`,
             [
                 fileName,
@@ -96,28 +147,31 @@ async function storeAnalysis(pool, fileName, fileType, analysis) {
                 complexity.logic_depth || 0,
                 complexity.variable_count || 0,
                 complexity.decision_points || 0,
-                metadata.cost_usd || 0,
-                metadata.tokens_used || 0,
-                metadata.duration_ms || 0,
+                currentCost,
                 metadata.model || 'unknown'
             ]
         );
 
+        await client.query('COMMIT');
         return result.rows[0].id;
+        
     } catch (error) {
-        logger.error({ error: error.message, stack: error.stack }, '[dbMetrics] Error storing analysis');
+        await client.query('ROLLBACK');
+        logger.error({ error: error.message, stack: error.stack }, '[dbMetrics] Error storing analysis in hybrid schema');
         throw error;
+    } finally {
+        client.release();
     }
 }
 
 /**
- * Reset all metrics by truncating the knowledge_graph table
+ * Reset all metrics by truncating both knowledge_graph and analysis_history tables
  * @param {Pool} pool - PostgreSQL pool
  */
 async function resetAllMetrics(pool) {
     try {
-        await pool.query('TRUNCATE knowledge_graph RESTART IDENTITY');
-        return { success: true, message: 'All metrics and analyses cleared' };
+        await pool.query('TRUNCATE knowledge_graph, analysis_history RESTART IDENTITY');
+        return { success: true, message: 'All metrics and analyses cleared from both tables' };
     } catch (error) {
         logger.error({ error: error.message, stack: error.stack }, 'Error resetting metrics');
         throw error;
