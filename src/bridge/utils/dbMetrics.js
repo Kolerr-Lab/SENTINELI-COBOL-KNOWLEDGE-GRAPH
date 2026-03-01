@@ -221,10 +221,71 @@ function checkDependencies(analysis, fileType, code = '') {
     return analysis;
 }
 
+/**
+ * Simplify analysis for clean visualization (Mermaid diagrams)
+ * Removes verbose metadata while preserving core structure
+ * 
+ * @param {Object} analysis - Full analysis with rich metadata
+ * @returns {Object} - Simplified analysis optimized for visualization
+ */
+function simplifyForVisualization(analysis) {
+    const simplified = { ...analysis };
+
+    // Simplify propagator_network: strip nodes array and detailed edge metadata
+    if (simplified.propagator_network) {
+        const pn = simplified.propagator_network;
+        
+        // Convert rich edges/dataflows to simple format
+        const simpleFlows = [];
+        const flows = pn.dataflows || pn.edges || [];
+        
+        flows.forEach(flow => {
+            simpleFlows.push({
+                source: flow.source || flow.from,
+                target: flow.target || flow.to,
+                operation: flow.operation || flow.effect || 'COMPUTE'
+            });
+        });
+        
+        simplified.propagator_network = {
+            dataflows: simpleFlows,
+            edges: simpleFlows // backwards compatible alias
+        };
+    }
+
+    // Simplify decision_tree: keep structure but remove verbose descriptions
+    if (simplified.decision_tree && simplified.decision_tree.branches) {
+        simplified.decision_tree.branches = simplifyBranches(simplified.decision_tree.branches);
+    }
+
+    return simplified;
+}
+
+/**
+ * Recursively simplify decision tree branches
+ */
+function simplifyBranches(branches) {
+    return branches.map(branch => {
+        const simple = {
+            condition: branch.condition,
+            action: branch.action || branch.result || ''
+        };
+        
+        if (branch.branches && branch.branches.length > 0) {
+            simple.branches = simplifyBranches(branch.branches);
+        } else {
+            simple.branches = [];
+        }
+        
+        return simple;
+    });
+}
+
 module.exports = {
     getMetricsFromDB,
     storeAnalysis,
     resetAllMetrics,
     normalizeSchema,
-    checkDependencies
+    checkDependencies,
+    simplifyForVisualization
 };

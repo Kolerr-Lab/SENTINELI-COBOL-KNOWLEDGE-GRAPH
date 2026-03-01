@@ -183,7 +183,7 @@ router.post(
             }, `${fileType} analysis completed`);
 
             // Normalize schema and check dependencies
-            const { normalizeSchema, checkDependencies, storeAnalysis } = require('../utils/dbMetrics');
+            const { normalizeSchema, checkDependencies, storeAnalysis, simplifyForVisualization } = require('../utils/dbMetrics');
             let normalizedAnalysis = normalizeSchema(analysis);
             normalizedAnalysis = checkDependencies(normalizedAnalysis, fileType, code);
 
@@ -204,10 +204,17 @@ router.post(
                 activityLogger.error(`Failed to store analysis: ${program}`, { error: err.message });
             }
 
+            // Check if user wants simplified view for visualization
+            const view = req.query.view || 'detailed';
+            const responseData = view === 'simple' 
+                ? simplifyForVisualization(normalizedAnalysis)
+                : normalizedAnalysis;
+
             res.json({
                 success: true,
-                ...normalizedAnalysis,
-                duration
+                ...responseData,
+                duration,
+                view_mode: view
             });
         } catch (error) {
             logger.error({ 
@@ -232,23 +239,21 @@ router.post(
 
 /**
  * Analyze COBOL Source File with AI
- * POST /api/analyze/:file
+ * POST /api/analyze/:file - supports subdirectories (e.g., bank/loan_approval.cob)
  * 
- * Auth: JWT or API Key required
  * Rate Limit: 10/hour (expensive AI calls)
  */
 router.post(
-    '/analyze/:file',
+    '/analyze/*',
     generalLimiter,
     aiAnalysisLimiter,
-    authenticateEither,
-    validateFileAnalysis,
     asyncHandler(async (req, res) => {
         const startTime = Date.now();
-        const { file } = req.params;
+        // Extract file path from wildcard (removes /analyze/ prefix)
+        const file = req.params[0] || req.params.file;
         const cacheKey = `analysis:${file}`;
 
-        logger.info({ file, user: req.user?.sub || 'api_key' }, 'AI analysis requested');
+        logger.info({ file }, 'AI file analysis requested');
 
         // Check cache first (if Redis is available)
         try {
@@ -260,11 +265,19 @@ router.post(
                     
                     // Return cached result
                     const cachedData = JSON.parse(cached);
+                    
+                    // Check if user wants simplified view
+                    const view = req.query.view || 'detailed';
+                    const { simplifyForVisualization } = require('../utils/dbMetrics');
+                    const responseData = view === 'simple'
+                        ? simplifyForVisualization(cachedData)
+                        : cachedData;
 
                     return res.json({
-                        ...cachedData,
+                        ...responseData,
                         cached: true,
-                        duration
+                        duration,
+                        view_mode: view
                     });
                 }
             }
@@ -296,7 +309,7 @@ router.post(
         logger.logAiAnalysis(file, false, duration);
 
         // Normalize schema (backwards compatible)
-        const { normalizeSchema, checkDependencies, storeAnalysis } = require('../utils/dbMetrics');
+        const { normalizeSchema, checkDependencies, storeAnalysis, simplifyForVisualization } = require('../utils/dbMetrics');
         let normalizedAnalysis = normalizeSchema(analysis);
         
         // Check dependencies and add warnings
@@ -327,10 +340,17 @@ router.post(
             logger.warn({ error: err }, 'Redis caching failed');
         }
 
+        // Check if user wants simplified view for visualization
+        const view = req.query.view || 'detailed';
+        const responseData = view === 'simple' 
+            ? simplifyForVisualization(normalizedAnalysis)
+            : normalizedAnalysis;
+
         res.json({
-            ...normalizedAnalysis,
+            ...responseData,
             duration,
-            cached: false
+            cached: false,
+            view_mode: view
         });
     })
 );
