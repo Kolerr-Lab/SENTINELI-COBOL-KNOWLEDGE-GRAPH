@@ -9,6 +9,7 @@ const router = express.Router();
 const logger = require('../utils/logger');
 const { publicLimiter } = require('../middleware/rateLimiting');
 const { asyncHandler } = require('../middleware/errorHandler');
+const { isTestFile, findFileByProgramName, getEdgeMetadata } = require('../config/graph.config');
 
 // External dependencies (injected when mounting routes)
 let pool;
@@ -96,7 +97,15 @@ router.get(
                         failCount++;
                         return null; // Return null for failed nodes
                     }
-                }).filter(node => node !== null); // Filter out failed nodes
+                }).filter(node => {
+                    // Filter out null nodes and test programs
+                    if (!node) return false;
+                    if (isTestFile(node.label)) {
+                        logger.debug({ file: node.label }, 'Excluding test file from graph');
+                        return false;
+                    }
+                    return true;
+                });
                 
                 logger.info({ totalNodes: nodes.length, successCount, failCount }, 'Nodes built');
                 
@@ -136,16 +145,36 @@ router.get(
                     // CALL statements -> program dependencies
                     if (deps.called_programs && deps.called_programs.length > 0) {
                         deps.called_programs.forEach(calledProg => {
-                            const toIdx = result.rows.findIndex(r => 
-                                r.file_name.toUpperCase().includes(calledProg.toUpperCase())
-                            );
-                            if (toIdx >= 0 && toIdx !== fromIdx) {
-                                edges.push({
-                                    from: fromIdx,
-                                    to: toIdx,
-                                    type: 'CALLS',
-                                    metadata: { program: calledProg }
-                                });
+                            // Use robust program name resolution
+                            const targetRow = findFileByProgramName(calledProg, result.rows);
+                            
+                            if (targetRow) {
+                                const toIdx = result.rows.indexOf(targetRow);
+                                
+                                if (toIdx >= 0 && toIdx !== fromIdx) {
+                                    const edgeMeta = getEdgeMetadata('CALLS');
+                                    edges.push({
+                                        from: fromIdx,
+                                        to: toIdx,
+                                        type: 'CALLS',
+                                        color: edgeMeta.color,
+                                        strength: edgeMeta.strength,
+                                        metadata: { 
+                                            program: calledProg,
+                                            resolvedFile: targetRow.file_name
+                                        }
+                                    });
+                                    logger.debug({ 
+                                        from: row.file_name, 
+                                        to: targetRow.file_name, 
+                                        calledProgram: calledProg 
+                                    }, 'Created CALL edge with resolved program name');
+                                }
+                            } else {
+                                logger.warn({ 
+                                    from: row.file_name, 
+                                    calledProgram: calledProg 
+                                }, 'Could not resolve called program to file');
                             }
                         });
                     }
@@ -157,10 +186,13 @@ router.get(
                                 r.file_name.toUpperCase().includes(copybook.toUpperCase())
                             );
                             if (toIdx >= 0 && toIdx !== fromIdx) {
+                                const edgeMeta = getEdgeMetadata('INCLUDES');
                                 edges.push({
                                     from: fromIdx,
                                     to: toIdx,
                                     type: 'INCLUDES',
+                                    color: edgeMeta.color,
+                                    strength: edgeMeta.strength,
                                     metadata: { copybook }
                                 });
                             }

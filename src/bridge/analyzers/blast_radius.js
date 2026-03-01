@@ -16,6 +16,7 @@
  */
 
 const logger = require('../utils/logger');
+const { resolveProgramName } = require('../config/graph.config');
 
 /**
  * Calculate blast radius for a given identifier
@@ -167,6 +168,7 @@ function calculateBlastRadius(identifier, knowledgeGraph, options = {}) {
 
 /**
  * Find node by identifier
+ * Enhanced with program name resolution
  */
 function findNode(identifier, knowledgeGraph) {
     if (!knowledgeGraph || !knowledgeGraph.nodes) {
@@ -185,6 +187,17 @@ function findNode(identifier, knowledgeGraph) {
     for (const [nodeId, node] of Object.entries(knowledgeGraph.nodes)) {
         if (node.name.toLowerCase() === lowerIdentifier) {
             return { ...node, id: nodeId };
+        }
+    }
+    
+    // Try program name resolution (ACCMGMT -> account_management.cob)
+    const resolvedFile = resolveProgramName(identifier);
+    if (resolvedFile) {
+        for (const [nodeId, node] of Object.entries(knowledgeGraph.nodes)) {
+            if (node.name === resolvedFile || node.name.endsWith('/' + resolvedFile)) {
+                logger.info({ identifier, resolvedFile, nodeId }, 'Resolved program name in blast radius');
+                return { ...node, id: nodeId };
+            }
         }
     }
     
