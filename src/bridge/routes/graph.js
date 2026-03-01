@@ -9,7 +9,7 @@ const router = express.Router();
 const logger = require('../utils/logger');
 const { publicLimiter } = require('../middleware/rateLimiting');
 const { asyncHandler } = require('../middleware/errorHandler');
-const { isTestFile, findFileByProgramName, getEdgeMetadata } = require('../config/graph.config');
+const { isTestFile, findFileByProgramName, getEdgeMetadata, resolveProgramName } = require('../config/graph.config');
 
 // External dependencies (injected when mounting routes)
 let pool;
@@ -19,6 +19,86 @@ let pool;
  */
 function initGraphRoutes(dependencies) {
     pool = dependencies.pool;
+}
+
+/**
+ * Get visual styling for node based on file type
+ * Matches the color scheme from the original visual graph
+ */
+function getNodeStyling(fileType, fileName) {
+    const styleMap = {
+        'COBOL': { 
+            color: '#4ade80',      // Green
+            icon: '🔧',
+            group: 'cobol'
+        },
+        'JCL': { 
+            color: '#22d3ee',      // Cyan/Turquoise
+            icon: '📊',
+            group: 'jcl'
+        },
+        'CICS': { 
+            color: '#fb923c',      // Orange
+            icon: '⚡',
+            group: 'cics'
+        },
+        'DB2': { 
+            color: '#fbbf24',      // Yellow/Gold
+            icon: '🗄️',
+            group: 'database'
+        },
+        'VSAM': { 
+            color: '#e879f9',      // Pink/Magenta
+            icon: '💾',
+            group: 'vsam'
+        },
+        'COPYBOOK': { 
+            color: '#a3e635',      // Lime/Light Green
+            icon: '📄',
+            group: 'copybook'
+        },
+        'ASSEMBLER': { 
+            color: '#60a5fa',      // Blue
+            icon: '⚙️',
+            group: 'assembler'
+        },
+        'RPG': { 
+            color: '#c084fc',      // Purple
+            icon: '📋',
+            group: 'rpg'
+        },
+        'REXX': { 
+            color: '#f472b6',      // Pink
+            icon: '📝',
+            group: 'rexx'
+        },
+        'PL/I': { 
+            color: '#38bdf8',      // Sky Blue
+            icon: '📑',
+            group: 'pli'
+        }
+    };
+
+    // Detect file type from name if not already classified
+    let detectedType = fileType;
+    
+    if (fileType === 'UNKNOWN' || !fileType) {
+        if (fileName.includes('.cpy') || fileName.includes('COPYBOOK')) {
+            detectedType = 'COPYBOOK';
+        } else if (fileName.includes('.db2') || fileName.includes('CUSTOMER')) {
+            detectedType = 'DB2';
+        } else if (fileName.includes('CICS') || fileName.includes('.c3')) {
+            detectedType = 'CICS';
+        } else if (fileName.includes('VSAM') || fileName.includes('.dat')) {
+            detectedType = 'VSAM';
+        }
+    }
+
+    return styleMap[detectedType] || { 
+        color: '#9ca3af',      // Gray (default)
+        icon: '📦',
+        group: 'unknown'
+    };
 }
 
 /**
@@ -34,6 +114,9 @@ router.get(
     publicLimiter,
     asyncHandler(async (req, res) => {
         const startTime = Date.now();
+        
+        // Query parameters
+        const includeInternal = req.query.includeInternal === 'true'; // Default: false
 
         // Query knowledge graph from database
         let graphData = { nodes: [], edges: [] };
@@ -76,15 +159,33 @@ router.get(
                                         row.file_name.endsWith('.asm') ? 'ASSEMBLER' :
                                         row.file_name.endsWith('.rpg') || row.file_name.endsWith('.rpgle') ? 'RPG' :
                                         row.file_name.endsWith('.rexx') ? 'REXX' :
-                                        row.file_name.endsWith('.pli') ? 'PL/I' : 'UNKNOWN';
+                                        row.file_name.endsWith('.pli') ? 'PL/I' :
+                                        // Fallback: if program registry resolves to a .cob file, it's COBOL
+                                        (resolveProgramName(row.file_name) || '').endsWith('.cob') ? 'COBOL' :
+                                        'UNKNOWN';
+                        
+                        // Get visual styling (color, icon, group)
+                        const styling = getNodeStyling(fileType, row.file_name);
+                        
+                        // Compute a short display label (basename without extension)
+                        const shortLabel = row.file_name
+                            .replace(/^bank\//, '')
+                            .replace(/\.cob$/, '')
+                            .replace(/\.cbl$/, '')
+                            .replace(/\.jcl$/, '')
+                            .replace(/\.(asm|rpg|rpgle|rexx|pli)$/i, '');
                         
                         successCount++;
                         return {
                             id: idx,
-                            label: row.file_name,
+                            label: shortLabel,
+                            fullPath: row.file_name,
                             type: 'PROGRAM',
                             fileType: fileType,
                             complexity: analysis.complexity_metrics?.cyclomatic_complexity || 0,
+                            color: styling.color,
+                            icon: styling.icon,
+                            group: styling.group,
                             metadata: {
                                 analyzed_at: row.created_at,
                                 logic_depth: analysis.complexity_metrics?.logic_depth || 0,
@@ -98,10 +199,10 @@ router.get(
                         return null; // Return null for failed nodes
                     }
                 }).filter(node => {
-                    // Filter out null nodes and test programs
+                    // Filter out null nodes and test programs — check both short label and full path
                     if (!node) return false;
-                    if (isTestFile(node.label)) {
-                        logger.debug({ file: node.label }, 'Excluding test file from graph');
+                    if (isTestFile(node.fullPath) || isTestFile(node.label)) {
+                        logger.debug({ file: node.fullPath }, 'Excluding test file from graph');
                         return false;
                     }
                     return true;
@@ -130,6 +231,7 @@ router.get(
                                 from: fromIdx,
                                 to: fromIdx, // Internal dataflow within same module
                                 type: operation,
+                                label: operation.toUpperCase(),
                                 metadata: {
                                     internal: true,
                                     source,
@@ -157,6 +259,7 @@ router.get(
                                         from: fromIdx,
                                         to: toIdx,
                                         type: 'CALLS',
+                                        label: 'CALLS',
                                         color: edgeMeta.color,
                                         strength: edgeMeta.strength,
                                         metadata: { 
@@ -191,6 +294,7 @@ router.get(
                                     from: fromIdx,
                                     to: toIdx,
                                     type: 'INCLUDES',
+                                    label: 'INCLUDES',
                                     color: edgeMeta.color,
                                     strength: edgeMeta.strength,
                                     metadata: { copybook }
@@ -215,8 +319,26 @@ router.get(
             graphData = generateDemoGraph();
         }
 
+        // Filter edges based on includeInternal parameter
+        const originalEdgeCount = graphData.edges.length;
+        if (!includeInternal) {
+            // Exclude self-referential (internal dataflow) edges
+            graphData.edges = graphData.edges.filter(edge => edge.from !== edge.to);
+            logger.debug({ 
+                originalEdges: originalEdgeCount, 
+                filteredEdges: graphData.edges.length,
+                removed: originalEdgeCount - graphData.edges.length 
+            }, 'Filtered internal edges');
+        }
+
         const duration = Date.now() - startTime;
-        logger.info({ nodeCount: graphData.nodes.length, edgeCount: graphData.edges.length, demoData: usedDemoData, duration }, 'Graph query completed');
+        logger.info({ 
+            nodeCount: graphData.nodes.length, 
+            edgeCount: graphData.edges.length, 
+            internalEdgesIncluded: includeInternal,
+            demoData: usedDemoData, 
+            duration 
+        }, 'Graph query completed');
 
         res.json({
             success: true,
@@ -224,6 +346,7 @@ router.get(
             metadata: {
                 nodeCount: graphData.nodes.length,
                 edgeCount: graphData.edges.length,
+                includeInternal: includeInternal,
                 demoData: usedDemoData,
                 timestamp: new Date().toISOString()
             },

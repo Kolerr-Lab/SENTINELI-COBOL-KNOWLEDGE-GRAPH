@@ -193,8 +193,8 @@ PROCESS-WITHDRAWAL.
         GO TO END-WITHDRAWAL
     END-IF
     
-    *> Business Rule 5: Fraud detection
-    PERFORM CHECK-FRAUD-RISK
+    *> Business Rule 5: Fraud detection (call external fraud system)
+    CALL 'FRAUD-DETECTION' USING TXN-STREAM-RECORD FRAUD-SCORE
     
     IF FRAUD-SCORE > FRAUD-THRESHOLD
         MOVE 4008 TO TXN-RESULT-CODE
@@ -267,7 +267,9 @@ END-TRANSFER.
     EXIT.
 
 PROCESS-PAYMENT.
-    *> Business Rule 9: Payment processing
+    *> Business Rule 9: Payment processing (delegates to payment system)
+    CALL 'PAYMENT-PROCESSING' USING TRANSACTION-INPUT TRANSACTION-OUTPUT
+    
     IF TXN-AMOUNT < MIN-TXN-AMOUNT
         MOVE 4013 TO TXN-RESULT-CODE
         MOVE "PAYMENT AMOUNT TOO SMALL" TO TXN-MESSAGE
@@ -411,6 +413,9 @@ END-WIRE.
     EXIT.
 
 LOAD-ACCOUNT-INFO.
+    *> Call account management system to load account details
+    CALL 'ACCOUNT-MANAGEMENT' USING TXN-ACCOUNT ACCOUNT-INFO
+    
     *> Simulate account lookup (in real system, read from database)
     MOVE TXN-ACCOUNT TO ACC-NUMBER
     MOVE "CHECKING" TO ACC-TYPE

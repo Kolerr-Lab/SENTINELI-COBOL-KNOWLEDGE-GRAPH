@@ -974,30 +974,76 @@ curl -X POST http://localhost:8766/api/impact \
 ```
 
 **3. Knowledge Graph (System Dependencies)**
+
+Query cross-program dependencies from CALL statements:
+
 ```bash
+# Default: Show only cross-program edges (clean architecture view)
 curl http://localhost:8766/api/graph
+
+# Include internal dataflow edges for detailed analysis
+curl http://localhost:8766/api/graph?includeInternal=true
 ```
 
-**Response:**
+**Response (Cross-Program Only):**
 ```json
 {
   "success": true,
   "graph": {
     "nodes": [
-      {"id": 0, "label": "credit_scoring.cob", "complexity": 15},
-      {"id": 1, "label": "account_management.cob", "complexity": 45}
+      {"id": 0, "label": "loan_approval.cob", "complexity": 15},
+      {"id": 1, "label": "bank/interest_calculator.cob", "complexity": 8},
+      {"id": 2, "label": "TRANSACTION-PROCESSOR", "complexity": 45},
+      {"id": 3, "label": "bank/fraud_detection.cob", "complexity": 32}
     ],
     "edges": [
-      {"from": 1, "to": 0, "type": "CALLS"}
+      {
+        "from": 0,
+        "to": 1,
+        "type": "CALLS",
+        "metadata": {
+          "program": "INTEREST-CALCULATOR",
+          "resolvedFile": "bank/interest_calculator.cob"
+        }
+      },
+      {
+        "from": 2,
+        "to": 3,
+        "type": "CALLS",
+        "metadata": {
+          "program": "FRAUD-DETECTION",
+          "resolvedFile": "bank/fraud_detection.cob"
+        }
+      }
     ]
   },
   "metadata": {
-    "nodeCount": 8,
-    "edgeCount": 8,
-    "timestamp": "2026-02-25T10:30:00Z"
+    "nodeCount": 9,
+    "edgeCount": 2,
+    "includeInternal": false,
+    "demoData": false,
+    "timestamp": "2026-03-02T00:00:00Z"
   }
 }
 ```
+
+**Real Banking System CALL Graph:**
+```
+TRANSACTION-PROCESSOR
+  ├─→ FRAUD-DETECTION (line 197)
+  ├─→ PAYMENT-PROCESSING (line 271)
+  └─→ ACCOUNT-MANAGEMENT (line 417)
+
+LOAN-APPROVAL
+  ├─→ CREDIT-SCORING (line 93)
+  ├─→ RISK-ASSESSMENT (line 233)
+  └─→ INTEREST-CALCULATOR (line 81)
+
+FRAUD-DETECTION
+  └─→ RISK-ASSESSMENT (line 348)
+```
+
+> **Note:** With `?includeInternal=true`, you'll also see 88 intra-program dataflow edges (MOVE, COMPUTE operations) for detailed variable tracking.
 
 **4. LLM Usage Metrics**
 ```bash

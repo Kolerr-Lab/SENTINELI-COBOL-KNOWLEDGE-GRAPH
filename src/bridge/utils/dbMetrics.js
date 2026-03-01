@@ -19,7 +19,7 @@ async function getMetricsFromDB(pool) {
                 (SELECT COUNT(*) FROM analysis_history) as total_calls,
                 COALESCE(SUM((latest_analysis->'metadata'->>'duration_ms')::int), 0) as total_processing_time_ms,
                 COALESCE(AVG((latest_analysis->'metadata'->>'duration_ms')::int), 0) as average_processing_time_ms,
-                COALESCE(SUM(latest_tokens_used), 0) as total_tokens,
+                COALESCE(SUM((latest_analysis->'metadata'->>'tokens_used')::int), 0) as total_tokens,
                 COALESCE(SUM(total_cost_usd), 0) as total_cost_usd,
                 COALESCE(AVG(total_cost_usd / NULLIF(analysis_count, 0)), 0) as average_cost_per_call,
                 COALESCE(SUM(cyclomatic_complexity), 0) as total_cyclomatic_complexity,

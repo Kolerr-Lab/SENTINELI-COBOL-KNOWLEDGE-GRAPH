@@ -77,7 +77,10 @@ WORKING-STORAGE SECTION.
                MOVE 999.99 TO DTI-RATIO
            END-IF.
            
-       *> Calculate Loan-to-Value Ratio
+       *> Calculate Loan-to-Value Ratio and interest using calculator
+           CALL 'INTEREST-CALCULATOR' USING LOAN-AMOUNT COLLATERAL-VALUE 
+               INTEREST-RATE LTV-RATIO MONTHLY-PAYMENT
+           
            IF COLLATERAL-VALUE > 0
                COMPUTE LTV-RATIO = 
                    (LOAN-AMOUNT / COLLATERAL-VALUE) * 100
@@ -86,6 +89,10 @@ WORKING-STORAGE SECTION.
            END-IF.
        
        DETERMINE-CREDIT-TIER.
+       *> Call credit scoring engine for tier determination
+           CALL 'CREDIT-SCORING' USING CREDIT-SCORE CREDIT-TIER 
+               INTEREST-RATE
+           
            IF CREDIT-SCORE >= EXCELLENT-MIN
                MOVE "EXCELLENT" TO CREDIT-TIER
                MOVE 3.50 TO INTEREST-RATE
@@ -222,7 +229,10 @@ WORKING-STORAGE SECTION.
                MOVE "YES" TO MANUAL-REVIEW-FLAG
            END-IF.
            
-       *> Rule 8: Risk score calculation
+       *> Rule 8: Risk score calculation (delegate to risk assessment system)
+           CALL 'RISK-ASSESSMENT' USING APPLICANT-DATA CALCULATED-VALUES 
+               RISK-SCORE
+           
            COMPUTE RISK-SCORE = 
                (800 - CREDIT-SCORE) + 
                (DTI-RATIO * 2) + 

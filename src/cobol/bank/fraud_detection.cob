@@ -344,6 +344,10 @@
                (WS-DEVICE-SCORE * 1.1) +
                (WS-BEHAVIORAL-SCORE * 1.0).
            
+      * Call risk assessment for advanced scoring
+           CALL 'RISK-ASSESSMENT' USING TXN-STREAM-RECORD 
+               CUSTOMER-PROFILE-REC WS-TOTAL-FRAUD-SCORE
+           
       * Fraud history multiplier
            IF FRAUD-HISTORY-COUNT > 0
                COMPUTE WS-RISK-MULTIPLIER = 

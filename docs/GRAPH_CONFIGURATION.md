@@ -79,6 +79,69 @@ const meta = getEdgeMetadata('CALLS');
 // }
 ```
 
+### 4. Cross-Program Edges vs Internal Edges
+
+The graph API distinguishes between two types of edges:
+
+**Cross-Program Edges (Inter-Module)**
+- Represent dependencies between different programs
+- Created from `CALL`, `INVOKE`, `EXEC`, `INCLUDE` statements
+- Connect different nodes in the graph: `from !== to`
+- Example: `loan_approval.cob` CALLS `interest_calculator.cob`
+
+**Internal Edges (Intra-Module)**
+- Represent dataflow within a single program
+- Created from variable propagation analysis (MOVE, COMPUTE, etc.)
+- Self-referential edges: `from === to`
+- Example: Variable flow from `WS-AMOUNT` to `WS-TOTAL` within same program
+
+**Query Parameter: `?includeInternal`**
+
+Control edge visibility via query parameter:
+
+```bash
+# Default: Show only cross-program edges (clean dependency graph)
+GET /api/graph
+GET /api/graph?includeInternal=false
+
+# Include internal dataflow edges (detailed analysis view)
+GET /api/graph?includeInternal=true
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "graph": {
+    "nodes": [...],
+    "edges": [...]
+  },
+  "metadata": {
+    "nodeCount": 9,
+    "edgeCount": 2,           // Only cross-program (default)
+    "includeInternal": false,
+    "demoData": false
+  }
+}
+```
+
+**With `includeInternal=true`:**
+```json
+{
+  "metadata": {
+    "nodeCount": 9,
+    "edgeCount": 90,          // 2 cross-program + 88 internal
+    "includeInternal": true
+  }
+}
+```
+
+**Use Cases:**
+- **Architecture diagrams**: Use default (cross-program only)
+- **Impact analysis**: Use default to see program dependencies
+- **Detailed code flow**: Use `?includeInternal=true` for variable tracking
+- **Performance**: Default is faster (fewer edges to process/render)
+
 ## API Reference
 
 ### `resolveProgramName(programName)`
@@ -315,6 +378,13 @@ The configuration system:
 - ✅ Safe for multi-tenant environments
 
 ## Version History
+
+**v1.1.0 (March 2026)**
+- Added `?includeInternal` query parameter for edge filtering
+- Documented cross-program vs internal edge types
+- Added realistic CALL relationship examples
+- 7 CALL statements across 3 production programs
+- 2 verified cross-program edges in live system
 
 **v1.0.0 (March 2026)**
 - Initial release
