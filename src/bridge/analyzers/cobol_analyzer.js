@@ -63,6 +63,30 @@ function extractSQLDependencies(code) {
 }
 
 /**
+ * Extract CICS LINK/XCTL program calls (static detection)
+ * Pattern: EXEC CICS LINK PROGRAM('programName') END-EXEC
+ * Pattern: EXEC CICS XCTL PROGRAM('programName') END-EXEC
+ * @param {string} code - COBOL source code
+ * @returns {array} - Array of called program names
+ */
+function extractCICSPrograms(code) {
+  const programs = new Set();
+  
+  // Pattern: EXEC CICS LINK|XCTL PROGRAM('name') or PROGRAM("name")
+  const cicsPattern = /EXEC\s+CICS\s+(LINK|XCTL)\s+PROGRAM\s*\(\s*['"]([^'"]+)['"]\s*\)/gi;
+  
+  let match;
+  while ((match = cicsPattern.exec(code)) !== null) {
+    const programName = match[2].trim();
+    if (programName) {
+      programs.add(programName);
+    }
+  }
+  
+  return Array.from(programs);
+}
+
+/**
  * Analyze COBOL source code
  * @param {string} code - COBOL source code
  * @param {string} program - Program name
@@ -152,6 +176,9 @@ Return JSON with this exact schema:
     // Perform static SQL dependency detection (fallback if GPT-4o misses it)
     const staticSQLDeps = extractSQLDependencies(code);
     
+    // Perform static CICS LINK/XCTL program call detection
+    const staticCICSPrograms = extractCICSPrograms(code);
+    
     // Merge static SQL detection with GPT-4o results
     if (!analysis.dependencies) {
       analysis.dependencies = {};
@@ -159,10 +186,17 @@ Return JSON with this exact schema:
     if (!analysis.dependencies.databases) {
       analysis.dependencies.databases = [];
     }
+    if (!analysis.dependencies.called_programs) {
+      analysis.dependencies.called_programs = [];
+    }
     
-    // Merge and deduplicate
+    // Merge and deduplicate databases
     const allDatabases = [...new Set([...analysis.dependencies.databases, ...staticSQLDeps])];
     analysis.dependencies.databases = allDatabases;
+    
+    // Merge and deduplicate called programs (CALL + EXEC CICS LINK/XCTL)
+    const allCalledPrograms = [...new Set([...analysis.dependencies.called_programs, ...staticCICSPrograms])];
+    analysis.dependencies.called_programs = allCalledPrograms;
     
     if (logger) {
       logger.info({
@@ -170,8 +204,10 @@ Return JSON with this exact schema:
         mips_score: mipsEstimation.mips_score,
         estimated_mips: mipsEstimation.estimated_mips,
         monthly_cost: mipsEstimation.estimated_cost.monthly_usd,
-        sql_tables_detected: allDatabases.length
-      }, 'MIPS estimation and SQL detection completed');
+        sql_tables_detected: allDatabases.length,
+        called_programs_detected: allCalledPrograms.length,
+        cics_calls_detected: staticCICSPrograms.length
+      }, 'MIPS estimation, SQL detection, and CICS program calls completed');
     }
 
     return {
