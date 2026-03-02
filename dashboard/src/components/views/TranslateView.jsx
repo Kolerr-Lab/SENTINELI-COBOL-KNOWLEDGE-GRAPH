@@ -12,28 +12,37 @@ const SUPPORTED_LANGUAGES = [
 ];
 
 const TranslateView = ({ translateState, setTranslateState }) => {
-  // Use persistent state from props
-  const code = translateState?.cobolCode || '';
-  const targetLang = translateState?.targetLanguage || 'python';
-  const verify = translateState?.useVerification ?? true;
-  const includeAnalysis = translateState?.includeAnalysis ?? true;
-  const loading = translateState?.loading || false;
-  const result = translateState?.result || null;
-
+  // Use local state for immediate UI updates
+  const [code, setCode] = useState(translateState?.cobolCode || '');
+  const [targetLang, setTargetLang] = useState(translateState?.targetLanguage || 'python');
+  const [verify, setVerify] = useState(translateState?.useVerification ?? true);
+  const [includeAnalysis, setIncludeAnalysis] = useState(translateState?.includeAnalysis ?? true);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(translateState?.result || null);
   const [error, setError] = useState(null);
   const [availableLanguages, setAvailableLanguages] = useState([]);
 
-  // Update persistent state helper
-  const updateState = (updates) => {
-    setTranslateState(prev => ({ ...prev, ...updates }));
-  };
+  // Sync local state back to persistent state on change (debounced by parent)
+  useEffect(() => {
+    setTranslateState(prev => ({
+      ...prev,
+      cobolCode: code,
+      targetLanguage: targetLang,
+      useVerification: verify,
+      includeAnalysis,
+      result,
+      loading
+    }));
+  }, [code, targetLang, verify, includeAnalysis, result, loading, setTranslateState]);
 
-  const setCode = (value) => updateState({ cobolCode: value });
-  const setTargetLang = (value) => updateState({ targetLanguage: value });
-  const setVerify = (value) => updateState({ useVerification: value });
-  const setIncludeAnalysis = (value) => updateState({ includeAnalysis: value });
-  const setLoading = (value) => updateState({ loading: value });
-  const setResult = (value) => updateState({ result: value });
+  // Load persistent state on mount
+  useEffect(() => {
+    if (translateState?.cobolCode) setCode(translateState.cobolCode);
+    if (translateState?.targetLanguage) setTargetLang(translateState.targetLanguage);
+    if (translateState?.useVerification !== undefined) setVerify(translateState.useVerification);
+    if (translateState?.includeAnalysis !== undefined) setIncludeAnalysis(translateState.includeAnalysis);
+    if (translateState?.result) setResult(translateState.result);
+  }, []); // Only on mount
 
   // Fetch available languages on mount
   useEffect(() => {

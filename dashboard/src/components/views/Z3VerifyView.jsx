@@ -27,25 +27,33 @@ const VERIFICATION_TYPES = [
 ];
 
 const Z3VerifyView = ({ z3VerifyState, setZ3VerifyState }) => {
-  // Use persistent state from props
-  const code = z3VerifyState?.cobolCode || '';
-  const verificationType = z3VerifyState?.verificationType || 'program';
-  const loading = z3VerifyState?.loading || false;
-  const result = z3VerifyState?.result || null;
-  const z3Info = z3VerifyState?.z3Info || null;
-
+  // Use local state for immediate UI updates
+  const [code, setCode] = useState(z3VerifyState?.cobolCode || '');
+  const [verificationType, setVerificationType] = useState(z3VerifyState?.verificationType || 'program');
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(z3VerifyState?.result || null);
+  const [z3Info, setZ3Info] = useState(z3VerifyState?.z3Info || null);
   const [error, setError] = useState(null);
 
-  // Update persistent state helper
-  const updateState = (updates) => {
-    setZ3VerifyState(prev => ({ ...prev, ...updates }));
-  };
+  // Sync local state back to persistent state
+  useEffect(() => {
+    setZ3VerifyState(prev => ({
+      ...prev,
+      cobolCode: code,
+      verificationType,
+      result,
+      z3Info,
+      loading
+    }));
+  }, [code, verificationType, result, z3Info, loading, setZ3VerifyState]);
 
-  const setCode = (value) => updateState({ cobolCode: value });
-  const setVerificationType = (value) => updateState({ verificationType: value });
-  const setLoading = (value) => updateState({ loading: value });
-  const setResult = (value) => updateState({ result: value });
-  const setZ3Info = (value) => updateState({ z3Info: value });
+  // Load persistent state on mount
+  useEffect(() => {
+    if (z3VerifyState?.cobolCode) setCode(z3VerifyState.cobolCode);
+    if (z3VerifyState?.verificationType) setVerificationType(z3VerifyState.verificationType);
+    if (z3VerifyState?.result) setResult(z3VerifyState.result);
+    if (z3VerifyState?.z3Info) setZ3Info(z3VerifyState.z3Info);
+  }, []); // Only on mount
 
   // Fetch Z3 info on mount
   useEffect(() => {

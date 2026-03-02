@@ -3,28 +3,37 @@ import { secureFetch, validateCode, rateLimiter } from '../../utils/security';
 import CodeDisplay, { VerificationBadge, LoadingSpinner } from '../CodeDisplay';
 
 const ComplianceView = ({ complianceState, setComplianceState }) => {
-  // Use persistent state from props
-  const code = complianceState?.cobolCode || '';
-  const reportType = complianceState?.reportType || 'sox';
-  const includeVerification = complianceState?.useVerification ?? true;
-  const format = complianceState?.format || 'html';
-  const loading = complianceState?.loading || false;
-  const result = complianceState?.result || null;
-
+  // Use local state for immediate UI updates
+  const [code, setCode] = useState(complianceState?.cobolCode || '');
+  const [reportType, setReportType] = useState(complianceState?.reportType || 'sox');
+  const [includeVerification, setIncludeVerification] = useState(complianceState?.useVerification ?? true);
+  const [format, setFormat] = useState(complianceState?.format || 'html');
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(complianceState?.result || null);
   const [error, setError] = useState(null);
   const [reportTypes, setReportTypes] = useState([]);
 
-  // Update persistent state helper
-  const updateState = (updates) => {
-    setComplianceState(prev => ({ ...prev, ...updates }));
-  };
+  // Sync local state back to persistent state
+  useEffect(() => {
+    setComplianceState(prev => ({
+      ...prev,
+      cobolCode: code,
+      reportType,
+      useVerification: includeVerification,
+      format,
+      result,
+      loading
+    }));
+  }, [code, reportType, includeVerification, format, result, loading, setComplianceState]);
 
-  const setCode = (value) => updateState({ cobolCode: value });
-  const setReportType = (value) => updateState({ reportType: value });
-  const setIncludeVerification = (value) => updateState({ useVerification: value });
-  const setFormat = (value) => updateState({ format: value });
-  const setLoading = (value) => updateState({ loading: value });
-  const setResult = (value) => updateState({ result: value });
+  // Load persistent state on mount
+  useEffect(() => {
+    if (complianceState?.cobolCode) setCode(complianceState.cobolCode);
+    if (complianceState?.reportType) setReportType(complianceState.reportType);
+    if (complianceState?.useVerification !== undefined) setIncludeVerification(complianceState.useVerification);
+    if (complianceState?.format) setFormat(complianceState.format);
+    if (complianceState?.result) setResult(complianceState.result);
+  }, []); // Only on mount
 
   // Fetch available report types on mount
   useEffect(() => {
