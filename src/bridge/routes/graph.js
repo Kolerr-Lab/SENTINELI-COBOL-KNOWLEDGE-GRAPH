@@ -84,8 +84,8 @@ function getNodeStyling(fileType, fileName, analysis = null) {
     
     if (fileType === 'UNKNOWN' || !fileType || fileType === 'COBOL') {
         // Content-based CICS detection from analysis data (check for EXEC CICS operations)
-        if (analysis && analysis.mips_estimation && analysis.mips_estimation.statements) {
-            const statements = analysis.mips_estimation.statements;
+        if (analysis && analysis.mips_estimation && analysis.mips_estimation.statement_counts) {
+            const statements = analysis.mips_estimation.statement_counts;
             const hasCICSOperations = Object.keys(statements).some(key => 
                 key.includes('EXEC CICS') || key.includes('CICS READ') || key.includes('CICS WRITE')
             );
