@@ -25,7 +25,7 @@ function initGraphRoutes(dependencies) {
  * Get visual styling for node based on file type
  * Matches the color scheme from the original visual graph
  */
-function getNodeStyling(fileType, fileName) {
+function getNodeStyling(fileType, fileName, analysis = null) {
     const styleMap = {
         'COBOL': { 
             color: '#4ade80',      // Green
@@ -82,15 +82,19 @@ function getNodeStyling(fileType, fileName) {
     // Detect file type from name or content if not already classified
     let detectedType = fileType;
     
-    if (fileType === 'UNKNOWN' || !fileType) {
-        // Content-based CICS detection (check for EXEC CICS, DFHCOMMAREA, or CICS in LINKAGE SECTION)
-        if (code && (
-            code.includes('EXEC CICS') || 
-            code.includes('DFHCOMMAREA') ||
-            (code.includes('LINKAGE SECTION') && code.includes('CICS'))
-        )) {
-            detectedType = 'CICS';
-        } else if (fileName.includes('.cpy') || fileName.includes('COPYBOOK')) {
+    if (fileType === 'UNKNOWN' || !fileType || fileType === 'COBOL') {
+        // Content-based CICS detection from analysis data (check for EXEC CICS operations)
+        if (analysis && analysis.mips_estimation && analysis.mips_estimation.statements) {
+            const statements = analysis.mips_estimation.statements;
+            const hasCICSOperations = Object.keys(statements).some(key => 
+                key.includes('EXEC CICS') || key.includes('CICS READ') || key.includes('CICS WRITE')
+            );
+            if (hasCICSOperations) {
+                detectedType = 'CICS';
+            }
+        }
+        
+        if (detectedType === fileType && (fileName.includes('.cpy') || fileName.includes('COPYBOOK'))) {
             detectedType = 'COPYBOOK';
         } else if (fileName.includes('.db2') || fileName.includes('CUSTOMER')) {
             detectedType = 'DB2';
@@ -172,7 +176,7 @@ router.get(
                                         'UNKNOWN';
                         
                         // Get visual styling (color, icon, group)
-                        const styling = getNodeStyling(fileType, row.file_name);
+                        const styling = getNodeStyling(fileType, row.file_name, analysis);
                         
                         // Compute a short display label (basename without extension)
                         const shortLabel = row.file_name
