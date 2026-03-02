@@ -44,9 +44,9 @@ const { getProviderInfo, openai } = require('./ai_agent');
 const { router: cobolRouter, initCobolRoutes } = require('./routes/cobol');
 const impactRouter = require('./routes/impact');
 const { router: graphRouter, initGraphRoutes } = require('./routes/graph');
-const translateRouter = require('./routes/translate');
-const { initTranslateRoutes } = require('./routes/translate');
-const reportsRouter = require('./routes/reports');
+const { router: translateRouter, initTranslateRoutes } = require('./routes/translate');
+const { router: reportsRouter, initReportsRoutes } = require('./routes/reports');
+const { router: z3Router, initZ3Routes } = require('./routes/z3');
 
 // Initialize Express app
 const app = express();
@@ -299,7 +299,9 @@ app.get('/', publicLimiter, (req, res) => {
 // Initialize route dependencies
 initCobolRoutes({ pool, redisClient, redisConnected, openai });
 initGraphRoutes({ pool });
-initTranslateRoutes({ redisClient, redisConnected });
+initTranslateRoutes({ redisClient, redisConnected, openai });
+initReportsRoutes({ openai });
+initZ3Routes({ openai });
 
 // Mount route modules
 app.use('/api', cobolRouter);  // /api/run/:program, /api/analyze, /api/analyze/:file
@@ -307,6 +309,7 @@ app.use('/api', impactRouter);  // /api/impact, /api/impact/blast-radius/:identi
 app.use('/api', graphRouter);   // /api/graph
 app.use('/api/translate', translateRouter);  // /api/translate, /api/translate/batch, /api/translate/languages
 app.use('/api/reports', reportsRouter);  // /api/reports/compliance/:type, /api/reports/types
+app.use('/api/z3', z3Router);  // /api/z3/verify, /api/z3/info, /api/z3/health
 
 // ============================================================================
 // PROTECTED API ROUTES (Authentication required)

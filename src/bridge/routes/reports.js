@@ -15,6 +15,16 @@ const { generateComplianceReport } = require('../analyzers/compliance_report');
 const { analyzeByType } = require('../analyzers');
 const { verifyLoanDecision } = require('../verifier/z3_verifier');
 
+// External dependencies
+let openai;
+
+/**
+ * Initialize route dependencies
+ */
+function initReportsRoutes(dependencies) {
+    openai = dependencies.openai;
+}
+
 /**
  * Generate Compliance Report
  * POST /api/reports/compliance/:type
@@ -69,10 +79,12 @@ router.post(
         try {
             // Step 1: Analyze COBOL code
             logger.info('Analyzing COBOL code...');
-            const analysisResults = await analyzeByType(code, 'cobol', {
+            const analysisResults = await analyzeByType(code, 'COBOL', 'UNKNOWN', {
                 extractBusinessRules: true,
                 calculateMIPS: true,
-                calculateComplexity: true
+                calculateComplexity: true,
+                openai,
+                logger
             });
             
             // Step 2: Run Z3 verification (if requested)
@@ -195,4 +207,4 @@ router.get(
     })
 );
 
-module.exports = router;
+module.exports = { router, initReportsRoutes };

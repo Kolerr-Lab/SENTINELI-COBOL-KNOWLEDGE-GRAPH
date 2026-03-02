@@ -16,7 +16,7 @@ const { analyzeByType } = require('../analyzers');
 const { verifyEquivalence } = require('../verifier/z3_verifier');
 
 // External dependencies
-let redisClient, redisConnected;
+let redisClient, redisConnected, openai;
 
 /**
  * Initialize route dependencies
@@ -24,6 +24,7 @@ let redisClient, redisConnected;
 function initTranslateRoutes(dependencies) {
     redisClient = dependencies.redisClient;
     redisConnected = dependencies.redisConnected;
+    openai = dependencies.openai;
 }
 
 /**
@@ -103,9 +104,11 @@ router.post(
             // Step 1: Analyze COBOL code (extract business rules)
             if (includeAnalysis) {
                 logger.info('Analyzing COBOL code...');
-                cobolAnalysis = await analyzeByType(code, 'cobol', {
+                cobolAnalysis = await analyzeByType(code, 'COBOL', 'UNKNOWN', {
                     extractBusinessRules: true,
-                    calculateMIPS: true
+                    calculateMIPS: true,
+                    openai,
+                    logger
                 });
                 businessRules = cobolAnalysis.business_rules;
             }
@@ -255,5 +258,4 @@ function generateSideBySide(originalCode, translatedCode) {
     return sideBySide;
 }
 
-module.exports = router;
-module.exports.initTranslateRoutes = initTranslateRoutes;
+module.exports = { router, initTranslateRoutes };
