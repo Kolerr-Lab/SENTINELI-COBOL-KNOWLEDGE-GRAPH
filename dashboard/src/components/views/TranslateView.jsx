@@ -154,13 +154,17 @@ const TranslateView = ({ translateState, setTranslateState }) => {
           <select
             className="form-select"
             value={targetLang}
-            onChange={(e) => setTargetLang(e.target.value)}
+            onChange={(e) => {
+              console.log('Dropdown changed to:', e.target.value);
+              setTargetLang(e.target.value);
+            }}
+            onClick={(e) => console.log('Dropdown clicked')}
+            style={{ position: 'relative', zIndex: 10 }}
           >
             {SUPPORTED_LANGUAGES.map(lang => (
               <option
                 key={lang.value}
                 value={lang.value}
-                disabled={availableLanguages.length > 0 && !availableLanguages.includes(lang.value)}
               >
                 {lang.icon} {lang.label}
               </option>
