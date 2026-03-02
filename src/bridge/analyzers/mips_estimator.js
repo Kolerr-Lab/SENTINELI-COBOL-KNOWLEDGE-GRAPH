@@ -55,6 +55,8 @@ const MIPS_WEIGHTS = {
   'EXEC SQL INSERT': 300,
   'EXEC SQL UPDATE': 350,
   'EXEC SQL DELETE': 280,
+  'EXEC SQL MERGE': 320,    // MERGE operation (upsert)
+  'EXEC SQL CALL': 280,     // Stored procedure call
   'EXEC SQL COMMIT': 150,
   'EXEC SQL ROLLBACK': 140,
   'EXEC SQL OPEN': 100,
@@ -155,6 +157,8 @@ function extractSQLType(line) {
   if (line.includes('INSERT')) return 'EXEC SQL INSERT';
   if (line.includes('UPDATE')) return 'EXEC SQL UPDATE';
   if (line.includes('DELETE')) return 'EXEC SQL DELETE';
+  if (line.includes('MERGE')) return 'EXEC SQL MERGE';
+  if (line.includes('CALL')) return 'EXEC SQL CALL';   // Stored procedure
   if (line.includes('COMMIT')) return 'EXEC SQL COMMIT';
   if (line.includes('ROLLBACK')) return 'EXEC SQL ROLLBACK';
   if (line.includes('OPEN')) return 'EXEC SQL OPEN';
