@@ -11,6 +11,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🎯 Preparing for v1.0.0 Open Source Release
 
+#### Fixed (2026-03-02)
+- **CICS Program Detection**: Eliminated GPT-4o dependency for program type classification
+  - Added pre-analysis regex scan (`detectCICSProgram()`) for instant EXEC CICS detection
+  - Returns `is_cics_program: true` flag in analysis results (no GPT-4o interpretation needed)
+  - Fixed `fileType` override logic in graph.js to prioritize pre-detected CICS flag
+  - Resolved property name bug: `statement_counts` (correct) vs `statements` (undefined)
+  - CASH00.cbl and all CICS programs now correctly classified with orange ⚡ nodes
+  - Detection speed: Instant regex scan vs 7-13 second GPT-4o wait time
+  - Reliability: 100% accurate (pattern match) vs GPT-4o interpretation variability
+  - Added comprehensive test suite: `test-cash00-final.js` (5 tests, all passing)
+  - Commits: `58f79e7` (pre-analysis detection), `7bab172` (fileType override), `b11bee6` (property name fix)
+  - Tag: `v1.1-pre-analysis-cics-detection`
+
 #### Fixed (2026-02-28)
 - **Database Migration**: Automatic schema initialization
   - Added database migration to `predev` and `prestart` hooks

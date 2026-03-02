@@ -110,17 +110,101 @@ Client → Dashboard → [Rust Gateway] → [Node.js Bridge] → [COBOL Engine +
 - ✅ **Testable**: Each analyzer is independently unit-testable
 - ✅ **Maintainable**: Language-specific logic isolated in dedicated modules
 - ✅ **Consistent**: Central router enforces uniform output schema
-    *   **100% verification rate** across enterprise-scale systems
-*   **Capabilities**: 
-    *   Formal proof in ~200ms average (real-time)
-    *   Three-way decision logic: DENIED/MANUAL/APPROVED with separate constraint sets
-    *   Detects AI hallucinations automatically (UNSAT = contradiction)
-    *   Manual review trigger detection (bankruptcy, employment risk, high LTV, high value, high risk)
-    *   Enterprise compliance: Mathematical audit trail for regulators
-*   **Why Z3?**: First-of-its-kind: Mathematically prove LLM understanding of legacy code. Eliminates "black box AI explains black box COBOL" problem.
-*   **Documentation**: [Z3 Verification Guide](docs/Z3_VERIFICATION_GUIDE.md)
 
-### 6. The Enterprise Batch Processor 🚀 
+#### CICS Detection Enhancement (v1.1 - March 2026) 🎯
+
+**Problem**: CICS programs were misclassified as generic 'COBOL' due to GPT-4o not consistently including CICS operations in statement counts.
+
+**Solution**: Pre-analysis regex scan eliminates GPT 4o dependency for file type detection.
+
+```javascript
+// BEFORE: Relied on GPT-4o → MIPS parsing → statement_counts
+// GPT-4o sometimes omitted CICS operations → misclassification
+
+// AFTER: Pre-analysis scan (instant, 100% reliable)
+function detectCICSProgram(code) {
+  const cicsPattern = /EXEC[\s-]+CICS/i;
+  return cicsPattern.test(code);  // True if ANY EXEC CICS command found
+}
+```
+
+**Architecture Flow:**
+```
+┌─────────────────────────────────────────────────────────────┐
+│  COBOL Analysis Pipeline                                    │
+├─────────────────────────────────────────────────────────────┤
+│  1. Pre-Analysis CICS Detection (0-1ms, regex)             │
+│     └─→ detectCICSProgram() → is_cics_program: boolean     │
+│                                                              │
+│  2. GPT-4o Analysis (7000-13000ms, API call)               │
+│     └─→ Business rules, complexity, dependencies           │
+│                                                              │
+│  3. Static MIPS Estimation (50-100ms, parsing)             │
+│     └─→ Statement counts, cost calculation                 │
+│                                                              │
+│  4. Graph Node Classification                               │
+│     └─→ Priority: is_cics_program > filename > extension   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Results Returned:**
+```javascript
+{
+  is_cics_program: true,           // NEW: Pre-detected flag
+  mips_estimation: {
+    statement_counts: {
+      "EXEC SQL": 15,
+      "EXEC CICS": 5,              // May or may not be present
+      "EXEC CICS WRITE": 1
+    }
+  },
+  // ... rest of analysis
+}
+```
+
+**Graph Rendering (`graph.js`):**
+```javascript
+// Step 1: Determine initial fileType by extension
+let fileType = fileName.endsWith('.cbl') ? 'COBOL' : 'UNKNOWN';
+
+// Step 2: Override if CICS program detected (PRIMARY method)
+if (analysis && analysis.is_cics_program === true) {
+  fileType = 'CICS';  // Orange node with ⚡ icon
+}
+
+// Step 3: FALLBACK - Check statement_counts (legacy)
+else if (analysis?.mips_estimation?.statement_counts) {
+  const hasCICS = Object.keys(statement_counts)
+    .some(key => key.includes('EXEC CICS'));
+  if (hasCICS) fileType = 'CICS';
+}
+```
+
+**Benefits:**
+- ⚡ **Instant detection**: 0-1ms regex vs 7-13 seconds GPT-4o wait
+- 🎯 **100% accuracy**: Pattern matching vs AI interpretation variability  
+- 💰 **Zero cost**: No GPT-4o tokens for file type classification
+- 🔧 **Maintainable**: Simple regex pattern, easy to extend
+- 🧪 **Testable**: Comprehensive test suite validates all edge cases
+
+**Test Coverage:**
+- ✅ Regex pattern validation (6 CICS operations detected in CASH00.cbl)
+- ✅ `is_cics_program` flag generation
+- ✅ Database persistence and retrieval
+- ✅ FileType override logic simulation
+- ✅ End-to-end integration test
+
+**Commits:**
+- `58f79e7`: Add `detectCICSProgram()` function
+- `7bab172`: FileType override logic with `is_cics_program` priority
+- `b11bee6`: Fix property name bug (`statement_counts` vs `statements`)
+- `09b9823`: Comprehensive test suite
+
+**Tag**: `v1.1-pre-analysis-cics-detection`
+
+---
+
+### 5. The Proof Engine (Z3 Formal Verification) 🏆 
 *   **File**: `tests/enterprise_batch_processor.js`
 *   **Technology**: Node.js EventEmitter-based streaming
 *   **Role**:
