@@ -4,10 +4,14 @@ const NavigationPanel = ({ activeView, setActiveView }) => {
   const navItems = [
     { id: 'dashboard', label: '📊 SYSTEM DASHBOARD', icon: '█' },
     { id: 'analyze', label: '🔍 COBOL ANALYSIS', icon: '█' },
+    { id: 'translate', label: '🔄 CODE TRANSLATION', icon: '█' },
+    { id: 'z3verify', label: '🔬 Z3 VERIFICATION', icon: '█' },
+    { id: 'compliance', label: '📋 COMPLIANCE REPORTS', icon: '█' },
     { id: 'impact', label: '⚡ IMPACT ANALYSIS', icon: '█' },
     { id: 'graph', label: '🕸️ KNOWLEDGE GRAPH', icon: '█' },
     { id: 'logs', label: '📜 SYSTEM LOGS', icon: '█' },
-    { id: 'metrics', label: '📈 PERFORMANCE', icon: '█' }
+    { id: 'metrics', label: '📈 PERFORMANCE', icon: '█' },
+    { id: 'settings', label: '⚙️ SETTINGS', icon: '█' }
   ];
 
   return (

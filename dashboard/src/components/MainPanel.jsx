@@ -5,6 +5,10 @@ import ImpactView from './views/ImpactView';
 import GraphView from './views/GraphView';
 import LogsView from './views/LogsView';
 import MetricsView from './views/MetricsView';
+import TranslateView from './views/TranslateView';
+import ComplianceView from './views/ComplianceView';
+import Z3VerifyView from './views/Z3VerifyView';
+import SettingsView from './views/SettingsView';
 
 const MainPanel = ({ 
   activeView,
@@ -15,7 +19,13 @@ const MainPanel = ({
   analyzeState,
   setAnalyzeState,
   impactState,
-  setImpactState
+  setImpactState,
+  translateState,
+  setTranslateState,
+  complianceState,
+  setComplianceState,
+  z3VerifyState,
+  setZ3VerifyState
 }) => {
   const renderView = () => {
     switch (activeView) {
@@ -26,6 +36,27 @@ const MainPanel = ({
           <AnalyzeView 
             analyzeState={analyzeState}
             setAnalyzeState={setAnalyzeState}
+          />
+        );
+      case 'translate':
+        return (
+          <TranslateView 
+            translateState={translateState}
+            setTranslateState={setTranslateState}
+          />
+        );
+      case 'compliance':
+        return (
+          <ComplianceView 
+            complianceState={complianceState}
+            setComplianceState={setComplianceState}
+          />
+        );
+      case 'z3verify':
+        return (
+          <Z3VerifyView 
+            z3VerifyState={z3VerifyState}
+            setZ3VerifyState={setZ3VerifyState}
           />
         );
       case 'impact':
@@ -50,6 +81,8 @@ const MainPanel = ({
         return <LogsView />;
       case 'metrics':
         return <MetricsView />;
+      case 'settings':
+        return <SettingsView />;
       default:
         return <DashboardView />;
     }

@@ -3,35 +3,97 @@ import Header from './components/Header';
 import NavigationPanel from './components/NavigationPanel';
 import MainPanel from './components/MainPanel';
 import ActivityPanel from './components/ActivityPanel';
+import ErrorBoundary from './components/ErrorBoundary';
+import { usePersistedState, useSessionState } from './utils/hooks';
 
 function App() {
-  const [activeView, setActiveView] = useState('dashboard');
-  const [systemStatus, setSystemStatus] = useState({
+  // ===== PERSISTENT STATE (survives page refresh) =====
+  
+  // Active view - remember which tab user was on
+  const [activeView, setActiveView] = usePersistedState('active_view', 'dashboard');
+  
+  // System status - session only (don't persist health checks)
+  const [systemStatus, setSystemStatus] = useSessionState('system_status', {
     bridge: 'UNKNOWN',
     gateway: 'UNKNOWN',
     connections: 0
   });
   
-  // Lift state to App level to persist across tab switches
-  const [loadedModules, setLoadedModules] = useState([]);
-  const [graphData, setGraphData] = useState({ nodes: [], edges: [] });
+  // Loaded modules - persist to avoid re-loading
+  const [loadedModules, setLoadedModules] = usePersistedState('loaded_modules', [], {
+    ttl: 24 * 60 * 60 * 1000, // 24 hours
+    validate: (state) => Array.isArray(state)
+  });
   
-  // Analyze view state
-  const [analyzeState, setAnalyzeState] = useState({
+  // Graph data - persist to avoid re-generating
+  const [graphData, setGraphData] = usePersistedState('graph_data', { nodes: [], edges: [] }, {
+    ttl: 24 * 60 * 60 * 1000, // 24 hours
+    validate: (state) => state && Array.isArray(state.nodes) && Array.isArray(state.edges)
+  });
+  
+  // Analyze view state - persist form inputs
+  const [analyzeState, setAnalyzeState] = usePersistedState('analyze_state', {
     program: '',
     code: '',
     fileType: 'COBOL',
     result: null,
     loading: false
+  }, {
+    debounce: 500, // Debounce saves for better performance
+    validate: (state) => state && typeof state === 'object'
   });
   
-  // Impact view state (uses shared loadedModules)
-  const [impactState, setImpactState] = useState({
+  // Impact view state - persist form inputs
+  const [impactState, setImpactState] = usePersistedState('impact_state', {
     field: '',
     newType: '',
     result: null,
     loading: false,
     showUploader: false
+  }, {
+    debounce: 500,
+    validate: (state) => state && typeof state === 'object'
+  });
+
+  // Translate view state - persist form inputs and results
+  const [translateState, setTranslateState] = usePersistedState('translate_state', {
+    cobolCode: '',
+    targetLanguage: 'python',
+    useVerification: true,
+    includeAnalysis: true,
+    result: null,
+    loading: false
+  }, {
+    debounce: 500,
+    ttl: 60 * 60 * 1000, // 1 hour for results
+    validate: (state) => state && typeof state === 'object'
+  });
+
+  // Compliance view state - persist form inputs and results
+  const [complianceState, setComplianceState] = usePersistedState('compliance_state', {
+    reportType: '',
+    cobolCode: '',
+    useVerification: true,
+    format: 'html',
+    result: null,
+    loading: false
+  }, {
+    debounce: 500,
+    ttl: 60 * 60 * 1000, // 1 hour for results
+    validate: (state) => state && typeof state === 'object'
+  });
+
+  // Z3 Verify view state - persist form inputs and results
+  const [z3VerifyState, setZ3VerifyState] = usePersistedState('z3_verify_state', {
+    verificationType: 'program',
+    cobolCode: '',
+    result: null,
+    z3Info: null,
+    loading: false
+  }, {
+    debounce: 500,
+    ttl: 60 * 60 * 1000, // 1 hour for results
+    validate: (state) => state && typeof state === 'object'
   });
 
   useEffect(() => {
@@ -75,35 +137,57 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
+  // Log state persistence status on mount
+  useEffect(() => {
+    console.log('[App] Persistent state management enabled');
+    console.log('[App] All state will persist across page refreshes');
+    
+    // Import StateManager for debugging
+    import('./utils/StateManager').then(({ default: stateManager }) => {
+      const stats = stateManager.getStorageStats();
+      if (stats) {
+        console.log(`[App] Storage usage: ${stats.totalSizeKB}KB across ${stats.count} entries`);
+      }
+    });
+  }, []);
+
   return (
-    <div className="mainframe-screen">
-      <Header 
-        connected={true}
-        bridgeStatus={systemStatus.bridge}
-        gatewayStatus={systemStatus.gateway}
-      />
-      
-      <div className="dashboard-container">
-        <NavigationPanel 
-          activeView={activeView}
-          setActiveView={setActiveView}
+    <ErrorBoundary>
+      <div className="mainframe-screen">
+        <Header 
+          connected={true}
+          bridgeStatus={systemStatus.bridge}
+          gatewayStatus={systemStatus.gateway}
         />
         
-        <MainPanel 
-          activeView={activeView}
-          loadedModules={loadedModules}
-          setLoadedModules={setLoadedModules}
-          graphData={graphData}
-          setGraphData={setGraphData}
-          analyzeState={analyzeState}
-          setAnalyzeState={setAnalyzeState}
-          impactState={impactState}
-          setImpactState={setImpactState}
-        />
-        
-        <ActivityPanel />
+        <div className="dashboard-container">
+          <NavigationPanel 
+            activeView={activeView}
+            setActiveView={setActiveView}
+          />
+          
+          <MainPanel 
+            activeView={activeView}
+            loadedModules={loadedModules}
+            setLoadedModules={setLoadedModules}
+            graphData={graphData}
+            setGraphData={setGraphData}
+            analyzeState={analyzeState}
+            setAnalyzeState={setAnalyzeState}
+            impactState={impactState}
+            setImpactState={setImpactState}
+            translateState={translateState}
+            setTranslateState={setTranslateState}
+            complianceState={complianceState}
+            setComplianceState={setComplianceState}
+            z3VerifyState={z3VerifyState}
+            setZ3VerifyState={setZ3VerifyState}
+          />
+          
+          <ActivityPanel />
+        </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 }
 
