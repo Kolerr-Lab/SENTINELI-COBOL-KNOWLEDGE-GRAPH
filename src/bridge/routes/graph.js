@@ -83,8 +83,12 @@ function getNodeStyling(fileType, fileName, analysis = null) {
     let detectedType = fileType;
     
     if (fileType === 'UNKNOWN' || !fileType || fileType === 'COBOL') {
-        // Content-based CICS detection from analysis data (check for EXEC CICS operations)
-        if (analysis && analysis.mips_estimation && analysis.mips_estimation.statement_counts) {
+        // PRIMARY: Check pre-detected CICS flag from raw source scan (fastest, most reliable)
+        if (analysis && analysis.is_cics_program === true) {
+            detectedType = 'CICS';
+        }
+        // FALLBACK: Content-based CICS detection from MIPS statement counts (legacy)
+        else if (analysis && analysis.mips_estimation && analysis.mips_estimation.statement_counts) {
             const statements = analysis.mips_estimation.statement_counts;
             const hasCICSOperations = Object.keys(statements).some(key => 
                 key.includes('EXEC CICS') || key.includes('CICS READ') || key.includes('CICS WRITE')

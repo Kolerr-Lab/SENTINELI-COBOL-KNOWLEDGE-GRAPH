@@ -87,6 +87,19 @@ function extractCICSPrograms(code) {
 }
 
 /**
+ * Detect if COBOL program is a CICS program by scanning for EXEC CICS statements
+ * This is a fast pre-analysis check that doesn't rely on GPT-4o
+ * @param {string} code - COBOL source code
+ * @returns {boolean} - True if EXEC CICS found in source
+ */
+function detectCICSProgram(code) {
+  // Check for EXEC CICS statements (any CICS command)
+  // Pattern matches: EXEC CICS, EXEC-CICS, with optional whitespace
+  const cicsPattern = /EXEC[\s-]+CICS/i;
+  return cicsPattern.test(code);
+}
+
+/**
  * Analyze COBOL source code
  * @param {string} code - COBOL source code
  * @param {string} program - Program name
@@ -170,6 +183,10 @@ Return JSON with this exact schema:
       }, 'COBOL analysis completed');
     }
 
+    // PRE-ANALYSIS: Detect CICS program type from raw source code
+    // This is faster and more reliable than relying on GPT-4o or MIPS parsing
+    const isCICSProgram = detectCICSProgram(code);
+
     // Perform static MIPS estimation
     const mipsEstimation = mipsEstimator.estimateMIPS(code);
     
@@ -206,13 +223,15 @@ Return JSON with this exact schema:
         monthly_cost: mipsEstimation.estimated_cost.monthly_usd,
         sql_tables_detected: allDatabases.length,
         called_programs_detected: allCalledPrograms.length,
-        cics_calls_detected: staticCICSPrograms.length
+        cics_calls_detected: staticCICSPrograms.length,
+        is_cics_program: isCICSProgram
       }, 'MIPS estimation, SQL detection, and CICS program calls completed');
     }
 
     return {
       ...analysis,
       mips_estimation: mipsEstimation,
+      is_cics_program: isCICSProgram,
       metadata: {
         model: 'gpt-4o',
         input_tokens: tokens.prompt_tokens,
