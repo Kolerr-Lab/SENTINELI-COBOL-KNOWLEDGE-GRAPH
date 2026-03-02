@@ -169,7 +169,7 @@ router.get(
                             return null;
                         }
                         
-                        const fileType = row.file_name.endsWith('.cob') || row.file_name.endsWith('.cbl') ? 'COBOL' :
+                        let fileType = row.file_name.endsWith('.cob') || row.file_name.endsWith('.cbl') ? 'COBOL' :
                                         row.file_name.endsWith('.jcl') ? 'JCL' :
                                         row.file_name.endsWith('.asm') ? 'ASSEMBLER' :
                                         row.file_name.endsWith('.rpg') || row.file_name.endsWith('.rpgle') ? 'RPG' :
@@ -178,6 +178,11 @@ router.get(
                                         // Fallback: if program registry resolves to a .cob file, it's COBOL
                                         (resolveProgramName(row.file_name) || '').endsWith('.cob') ? 'COBOL' :
                                         'UNKNOWN';
+                        
+                        // Override fileType if CICS program detected
+                        if (analysis && analysis.is_cics_program === true) {
+                            fileType = 'CICS';
+                        }
                         
                         // Get visual styling (color, icon, group)
                         const styling = getNodeStyling(fileType, row.file_name, analysis);
