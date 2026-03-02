@@ -79,11 +79,18 @@ function getNodeStyling(fileType, fileName) {
         }
     };
 
-    // Detect file type from name if not already classified
+    // Detect file type from name or content if not already classified
     let detectedType = fileType;
     
     if (fileType === 'UNKNOWN' || !fileType) {
-        if (fileName.includes('.cpy') || fileName.includes('COPYBOOK')) {
+        // Content-based CICS detection (check for EXEC CICS, DFHCOMMAREA, or CICS in LINKAGE SECTION)
+        if (code && (
+            code.includes('EXEC CICS') || 
+            code.includes('DFHCOMMAREA') ||
+            (code.includes('LINKAGE SECTION') && code.includes('CICS'))
+        )) {
+            detectedType = 'CICS';
+        } else if (fileName.includes('.cpy') || fileName.includes('COPYBOOK')) {
             detectedType = 'COPYBOOK';
         } else if (fileName.includes('.db2') || fileName.includes('CUSTOMER')) {
             detectedType = 'DB2';
