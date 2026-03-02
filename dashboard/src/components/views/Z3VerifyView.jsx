@@ -26,13 +26,26 @@ const VERIFICATION_TYPES = [
   }
 ];
 
-const Z3VerifyView = () => {
-  const [code, setCode] = useState('');
-  const [verificationType, setVerificationType] = useState('program');
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
+const Z3VerifyView = ({ z3VerifyState, setZ3VerifyState }) => {
+  // Use persistent state from props
+  const code = z3VerifyState?.cobolCode || '';
+  const verificationType = z3VerifyState?.verificationType || 'program';
+  const loading = z3VerifyState?.loading || false;
+  const result = z3VerifyState?.result || null;
+  const z3Info = z3VerifyState?.z3Info || null;
+
   const [error, setError] = useState(null);
-  const [z3Info, setZ3Info] = useState(null);
+
+  // Update persistent state helper
+  const updateState = (updates) => {
+    setZ3VerifyState(prev => ({ ...prev, ...updates }));
+  };
+
+  const setCode = (value) => updateState({ cobolCode: value });
+  const setVerificationType = (value) => updateState({ verificationType: value });
+  const setLoading = (value) => updateState({ loading: value });
+  const setResult = (value) => updateState({ result: value });
+  const setZ3Info = (value) => updateState({ z3Info: value });
 
   // Fetch Z3 info on mount
   useEffect(() => {

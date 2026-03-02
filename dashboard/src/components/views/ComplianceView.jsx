@@ -2,15 +2,29 @@ import React, { useState, useEffect } from 'react';
 import { secureFetch, validateCode, rateLimiter } from '../../utils/security';
 import CodeDisplay, { VerificationBadge, LoadingSpinner } from '../CodeDisplay';
 
-const ComplianceView = () => {
-  const [code, setCode] = useState('');
-  const [reportType, setReportType] = useState('sox');
-  const [includeVerification, setIncludeVerification] = useState(true);
-  const [format, setFormat] = useState('html');
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
+const ComplianceView = ({ complianceState, setComplianceState }) => {
+  // Use persistent state from props
+  const code = complianceState?.cobolCode || '';
+  const reportType = complianceState?.reportType || 'sox';
+  const includeVerification = complianceState?.useVerification ?? true;
+  const format = complianceState?.format || 'html';
+  const loading = complianceState?.loading || false;
+  const result = complianceState?.result || null;
+
   const [error, setError] = useState(null);
   const [reportTypes, setReportTypes] = useState([]);
+
+  // Update persistent state helper
+  const updateState = (updates) => {
+    setComplianceState(prev => ({ ...prev, ...updates }));
+  };
+
+  const setCode = (value) => updateState({ cobolCode: value });
+  const setReportType = (value) => updateState({ reportType: value });
+  const setIncludeVerification = (value) => updateState({ useVerification: value });
+  const setFormat = (value) => updateState({ format: value });
+  const setLoading = (value) => updateState({ loading: value });
+  const setResult = (value) => updateState({ result: value });
 
   // Fetch available report types on mount
   useEffect(() => {

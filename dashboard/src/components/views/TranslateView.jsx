@@ -11,15 +11,29 @@ const SUPPORTED_LANGUAGES = [
   { value: 'go', label: 'Go', icon: '🔷', color: '#00add8' }
 ];
 
-const TranslateView = () => {
-  const [code, setCode] = useState('');
-  const [targetLang, setTargetLang] = useState('python');
-  const [verify, setVerify] = useState(true);
-  const [includeAnalysis, setIncludeAnalysis] = useState(true);
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
+const TranslateView = ({ translateState, setTranslateState }) => {
+  // Use persistent state from props
+  const code = translateState?.cobolCode || '';
+  const targetLang = translateState?.targetLanguage || 'python';
+  const verify = translateState?.useVerification ?? true;
+  const includeAnalysis = translateState?.includeAnalysis ?? true;
+  const loading = translateState?.loading || false;
+  const result = translateState?.result || null;
+
   const [error, setError] = useState(null);
   const [availableLanguages, setAvailableLanguages] = useState([]);
+
+  // Update persistent state helper
+  const updateState = (updates) => {
+    setTranslateState(prev => ({ ...prev, ...updates }));
+  };
+
+  const setCode = (value) => updateState({ cobolCode: value });
+  const setTargetLang = (value) => updateState({ targetLanguage: value });
+  const setVerify = (value) => updateState({ useVerification: value });
+  const setIncludeAnalysis = (value) => updateState({ includeAnalysis: value });
+  const setLoading = (value) => updateState({ loading: value });
+  const setResult = (value) => updateState({ result: value });
 
   // Fetch available languages on mount
   useEffect(() => {
@@ -129,28 +143,30 @@ const TranslateView = () => {
         <div className="form-group">
           <label className="form-label">TARGET LANGUAGE:</label>
           <select
-            className="form-input"
+            className="form-select"
             value={targetLang}
             onChange={(e) => setTargetLang(e.target.value)}
-            style={{ 
-              color: selectedLang?.color || 'var(--primary-green)',
-              fontWeight: 'bold'
-            }}
           >
             {SUPPORTED_LANGUAGES.map(lang => (
               <option
                 key={lang.value}
                 value={lang.value}
                 disabled={availableLanguages.length > 0 && !availableLanguages.includes(lang.value)}
-                style={{ 
-                  backgroundColor: '#000',
-                  color: lang.color
-                }}
               >
                 {lang.icon} {lang.label}
               </option>
             ))}
           </select>
+          {selectedLang && (
+            <div style={{ 
+              fontSize: '0.75rem', 
+              marginTop: '0.25rem',
+              color: selectedLang.color,
+              fontWeight: 'bold'
+            }}>
+              Selected: {selectedLang.icon} {selectedLang.label}
+            </div>
+          )}
         </div>
 
         {/* Options */}
