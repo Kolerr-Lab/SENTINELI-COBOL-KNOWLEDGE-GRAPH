@@ -290,6 +290,116 @@ const TranslateView = ({ translateState, setTranslateState }) => {
                   {result.verification.message}
                 </div>
               )}
+              
+              {/* SMT Formal Proof Details */}
+              {result.verification.smtGenerated && result.verification.method === 'smt_formal_proof' && (
+                <div style={{ 
+                  marginTop: '1rem',
+                  padding: '1rem',
+                  backgroundColor: 'rgba(0, 255, 0, 0.05)',
+                  border: '1px solid var(--primary-green)',
+                  borderRadius: '4px'
+                }}>
+                  <div style={{ 
+                    fontWeight: 'bold', 
+                    color: 'var(--primary-green)',
+                    marginBottom: '0.75rem',
+                    fontSize: '1.1rem'
+                  }}>
+                    🔬 FORMAL MATHEMATICAL PROOF
+                  </div>
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', fontSize: '0.9rem' }}>
+                    <div>
+                      <span style={{ color: 'var(--scanline-color)' }}>Proof Method:</span>
+                      <strong style={{ color: 'var(--modern-blue)', marginLeft: '0.5rem' }}>
+                        SMT-LIB2 + Z3 Theorem Prover
+                      </strong>
+                    </div>
+                    <div>
+                      <span style={{ color: 'var(--scanline-color)' }}>Confidence:</span>
+                      <strong style={{ color: 'var(--primary-green)', marginLeft: '0.5rem' }}>
+                        {result.verification.confidence === 1.0 ? '100%' : `${(result.verification.confidence * 100).toFixed(0)}%`}
+                      </strong>
+                    </div>
+                    <div>
+                      <span style={{ color: 'var(--scanline-color)' }}>Rules Verified:</span>
+                      <strong style={{ marginLeft: '0.5rem' }}>
+                        {result.verification.cobolSMTSuccess || 0}/{result.verification.cobolRulesCount || 0}
+                      </strong>
+                    </div>
+                    <div>
+                      <span style={{ color: 'var(--scanline-color)' }}>Variables Tracked:</span>
+                      <strong style={{ marginLeft: '0.5rem' }}>
+                        {result.verification.variablesTracked || 0}
+                      </strong>
+                    </div>
+                  </div>
+                  
+                  {/* SMT Formulas */}
+                  {result.verification.cobolFormulas && result.verification.cobolFormulas.length > 0 && (
+                    <div style={{ marginTop: '1rem' }}>
+                      <div style={{ 
+                        fontWeight: 'bold', 
+                        color: 'var(--primary-green)',
+                        marginBottom: '0.5rem'
+                      }}>
+                        📐 Generated SMT Formulas:
+                      </div>
+                      <div style={{ 
+                        maxHeight: '150px',
+                        overflow: 'auto',
+                        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                        border: '1px solid var(--mainframe-border)',
+                        padding: '0.75rem',
+                        fontFamily: 'monospace',
+                        fontSize: '0.85rem'
+                      }}>
+                        {result.verification.cobolFormulas.slice(0, 5).map((formula, idx) => (
+                          <div key={idx} style={{ marginBottom: '0.5rem', color: 'var(--modern-blue)' }}>
+                            {formula}
+                          </div>
+                        ))}
+                        {result.verification.cobolFormulas.length > 5 && (
+                          <div style={{ color: 'var(--scanline-color)', fontStyle: 'italic' }}>
+                            ... and {result.verification.cobolFormulas.length - 5} more
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Proof Certificate */}
+                  {result.verification.certificate && (
+                    <div style={{ marginTop: '1rem' }}>
+                      <div style={{ 
+                        fontWeight: 'bold', 
+                        color: 'var(--primary-green)',
+                        marginBottom: '0.5rem'
+                      }}>
+                        📜 Proof Certificate:
+                      </div>
+                      <div style={{ 
+                        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                        border: '1px solid var(--primary-green)',
+                        padding: '0.75rem',
+                        fontSize: '0.85rem'
+                      }}>
+                        <div>ID: <strong>{result.verification.certificate.certificateId}</strong></div>
+                        <div>Signature: <strong>{result.verification.certificate.signature}</strong></div>
+                        <div>Valid Until: <strong>{new Date(result.verification.certificate.validUntil).toLocaleDateString()}</strong></div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Token Usage */}
+                  {result.verification.tokensUsed && result.verification.tokensUsed.total > 0 && (
+                    <div style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: 'var(--scanline-color)' }}>
+                      🔢 AI Tokens: {result.verification.tokensUsed.total} (COBOL: {result.verification.tokensUsed.cobol}, Translated: {result.verification.tokensUsed.translated})
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 

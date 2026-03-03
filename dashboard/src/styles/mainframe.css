@@ -683,6 +683,15 @@ body {
   font-size: 1rem;
   border-radius: 4px;
   cursor: pointer;
+  appearance: auto;
+  -webkit-appearance: menulist;
+  -moz-appearance: menulist;
+}
+
+.form-select option {
+  background: var(--mainframe-dark);
+  color: var(--mainframe-green);
+  padding: 0.5rem;
 }
 
 .form-select:focus {
