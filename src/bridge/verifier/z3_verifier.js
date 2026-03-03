@@ -546,7 +546,10 @@ async function verifyProgramAnalysis(analysis, options = {}) {
             const conditions = [];
             
             for (const rule of businessRules) {
-                const ruleText = rule.rule || rule.condition || rule.description || '';
+                // Handle both string and object formats
+                const ruleText = typeof rule === 'string' 
+                    ? rule 
+                    : (rule.rule || rule.condition || rule.description || rule.text || JSON.stringify(rule));
                 
                 // Extract variables
                 const varPattern = /\b([A-Z][A-Z0-9_-]+)\b/g;
@@ -556,6 +559,7 @@ async function verifyProgramAnalysis(analysis, options = {}) {
                 // Extract conditions
                 if (ruleText.match(/[<>=]/)) {
                     conditions.push(ruleText);
+                }
                 }
             }
             
@@ -567,10 +571,25 @@ async function verifyProgramAnalysis(analysis, options = {}) {
                 conditionsFound: conditions.length,
                 details: {
                     variables: Array.from(variables).slice(0, 10),  // Top 10
-                    sampleRules: businessRules.slice(0, 5).map(r => ({
-                        type: r.type,
-                        rule: r.rule || r.condition || r.description
-                    }))
+                    sampleRules: businessRules.slice(0, 5).map(r => {
+                        // Handle both string and object formats
+                        if (typeof r === 'string') {
+                            return {
+                                type: 'unknown',
+                                rule: r
+                            };
+                        } else if (typeof r === 'object' && r !== null) {
+                            return {
+                                type: r.type || 'unknown',
+                                rule: r.rule || r.condition || r.description || r.text || JSON.stringify(r)
+                            };
+                        } else {
+                            return {
+                                type: 'unknown',
+                                rule: String(r)
+                            };
+                        }
+                    })
                 }
             });
         } else {
