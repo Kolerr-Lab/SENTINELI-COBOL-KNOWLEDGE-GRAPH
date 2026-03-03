@@ -615,6 +615,8 @@ curl http://localhost:3000/api/graph
 
 **Translate COBOL code to modern languages with Z3 verification**
 
+**✨ NEW: Automatic CICS COMMAREA handling for all target languages**
+
 ```http
 POST /api/translate
 Content-Type: application/json
@@ -636,6 +638,18 @@ Content-Type: application/json
 - `targetLanguage` (string, required): Target language (`python`, `java`, `typescript`, `javascript`, `csharp`, `go`)
 - `verify` (boolean, optional): Enable Z3 formal verification (default: true)
 
+**CICS/COMMAREA Support:**
+When translating CICS programs (detected via `DFHCOMMAREA`, `EIBCALEN`, `EXEC CICS` keywords), the translator automatically generates:
+1. **Gap #1 - Input Parsing**: `parse_commarea()` function that extracts fixed-offset fields from COMMAREA buffer
+   - WS-REQ (offset 0, length 1) - Operation code
+   - WS-NAME (offset 1, length 15) - Customer name
+   - WS-BALANCE (offset 16, length 9) - Balance with implied 2 decimals (PIC 9(7)V99)
+   - WS-CURRENCY (offset 25, length 8) - Currency code
+   - WS-RETCODE (offset 33, length 10) - Return code
+2. **Gap #2 - Result Write-Back**: `write_commarea()` function that serializes results back to COMMAREA buffer before return
+   - Maintains binary compatibility with original COBOL COMMAREA layout (43 bytes)
+   - Handles implied decimal conversion (multiply by 100 for PIC 9(7)V99 fields)
+
 **Response (200 OK):**
 ```json
 {
@@ -643,7 +657,8 @@ Content-Type: application/json
   "translation": {
     "language": "python",
     "code": "def main():\n    print('HELLO WORLD')\n\nif __name__ == '__main__':\n    main()",
-    "verified": true
+    "verified": true,
+    "cicsProgram": false
   },
   "verification": {
     "status": "VERIFIED",
@@ -659,7 +674,7 @@ Content-Type: application/json
 }
 ```
 
-**Example:**
+**Example (Standard COBOL):**
 ```bash
 curl -X POST http://localhost:3000/api/translate \
   -H "X-API-Key: your-api-key" \
@@ -670,6 +685,19 @@ curl -X POST http://localhost:3000/api/translate \
     "verify": true
   }'
 ```
+
+**Example (CICS Program with COMMAREA):**
+```bash
+curl -X POST http://localhost:3000/api/translate \
+  -H "X-API-Key: your-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "code": "PROCEDURE DIVISION.\n    MOVE DFHCOMMAREA(1:EIBCALEN) TO WS-COMMAREA\n    EVALUATE WS-REQ\n        WHEN '\''A'\'' PERFORM ADD-ACCOUNT\n    END-EVALUATE\n    MOVE WS-COMMAREA TO DFHCOMMAREA(1:EIBCALEN).",
+    "targetLanguage": "python",
+    "verify": true
+  }'
+```
+- **Note**: Translated code will include `parse_commarea()` and `write_commarea()` functions with correct offset handling
 
 ---
 
