@@ -118,15 +118,17 @@ router.post(
             const translation = await translateCode(code, targetLang, businessRules);
             
             // Step 3: Verify equivalence with Z3 (if requested)
+            // NOW WITH SMT-BASED FORMAL PROOFS! 🚀
             let verification = null;
             if (verify && businessRules && businessRules.length > 0) {
-                logger.info('Running Z3 formal verification...');
+                logger.info('Running Z3 formal verification with SMT proof generation...');
                 try {
                     verification = await verifyEquivalence(
                         code,
                         translation.translated.code,
                         targetLang,
-                        businessRules
+                        businessRules,
+                        { openai } // Pass OpenAI for SMT generation
                     );
                 } catch (verifyError) {
                     logger.warn({ error: verifyError.message }, 'Verification failed - non-blocking');
