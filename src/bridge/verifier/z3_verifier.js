@@ -352,6 +352,11 @@ async function verifyEquivalence(cobolCode, translatedCode, targetLang, business
                 verified: false,
                 message: 'No business rules to verify - skipping formal verification',
                 reason: 'insufficient_rules',
+                variables: [],
+                sampleRules: [],
+                variablesTracked: 0,
+                rulesVerified: 0,
+                totalRules: 0,
                 duration: Date.now() - startTime
             };
         }
@@ -378,6 +383,10 @@ async function verifyEquivalence(cobolCode, translatedCode, targetLang, business
                 message: 'No mathematically verifiable rules found in business logic',
                 reason: 'no_verifiable_constraints',
                 totalRules: businessRules.length,
+                variables: [],
+                sampleRules: [],
+                variablesTracked: 0,
+                rulesVerified: 0,
                 duration: Date.now() - startTime
             };
         }
@@ -424,6 +433,19 @@ async function verifyEquivalence(cobolCode, translatedCode, targetLang, business
         const result = await solver.check();
         const duration = Date.now() - startTime;
         
+        // Extract variable details for response
+        const variableList = Object.keys(variables).map(name => ({
+            name,
+            type: variables[name].sort?.name?.() || 'unknown'
+        }));
+        
+        // Extract sample rules for response
+        const sampleRules = verifiableRules.slice(0, 5).map(rule => ({
+            type: rule.type || 'unknown',
+            rule: rule.rule || rule.condition || rule.description || '',
+            location: rule.line || rule.location
+        }));
+        
         if (result === 'sat') {
             return {
                 success: true,
@@ -434,7 +456,9 @@ async function verifyEquivalence(cobolCode, translatedCode, targetLang, business
                 targetLanguage: targetLang,
                 rulesVerified: verifiableRules.length,
                 totalRules: businessRules.length,
-                variablesTracked: Object.keys(variables).length,
+                variablesTracked: variableList.length,
+                variables: variableList,
+                sampleRules: sampleRules,
                 constraints: constraintCount,
                 duration
             };
@@ -447,6 +471,12 @@ async function verifyEquivalence(cobolCode, translatedCode, targetLang, business
                 warning: 'Manual review recommended',
                 sourceLanguage: 'COBOL',
                 targetLanguage: targetLang,
+                rulesVerified: verifiableRules.length,
+                totalRules: businessRules.length,
+                variablesTracked: variableList.length,
+                variables: variableList,
+                sampleRules: sampleRules,
+                constraints: constraintCount,
                 duration
             };
         } else {
@@ -457,6 +487,12 @@ async function verifyEquivalence(cobolCode, translatedCode, targetLang, business
                 message: 'Could not determine equivalence - complex constraints',
                 sourceLanguage: 'COBOL',
                 targetLanguage: targetLang,
+                rulesVerified: verifiableRules.length,
+                totalRules: businessRules.length,
+                variablesTracked: variableList.length,
+                variables: variableList,
+                sampleRules: sampleRules,
+                constraints: constraintCount,
                 duration
             };
         }
@@ -467,6 +503,10 @@ async function verifyEquivalence(cobolCode, translatedCode, targetLang, business
             verified: false,
             error: error.message,
             message: 'Verification failed due to internal error',
+            variables: [],
+            sampleRules: [],
+            variablesTracked: 0,
+            rulesVerified: 0,
             duration: Date.now() - startTime
         };
     }
