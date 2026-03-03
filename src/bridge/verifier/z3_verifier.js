@@ -613,7 +613,6 @@ async function verifyProgramAnalysis(analysis, options = {}) {
                 if (ruleText.match(/[<>=]/)) {
                     conditions.push(ruleText);
                 }
-                }
             }
             
             report.sections.push({
