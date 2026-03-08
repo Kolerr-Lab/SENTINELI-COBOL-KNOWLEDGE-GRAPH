@@ -3,46 +3,71 @@ import React, { useState, useEffect } from 'react';
 const Header = ({ connected, bridgeStatus, gatewayStatus }) => {
   const [metrics, setMetrics] = useState(null);
   const [providers, setProviders] = useState(null);
+  const [switching, setSwitching] = useState(false);
+  const [switchMsg, setSwitchMsg] = useState(null);
+
+  const fetchProviders = async () => {
+    try {
+      const response = await fetch('/api/config/ai-provider');
+      const data = await response.json();
+      if (data.success) setProviders(data.providers);
+    } catch (error) {
+      console.error('Failed to fetch provider info:', error);
+    }
+  };
+
+  const fetchMetrics = async () => {
+    try {
+      const response = await fetch('/api/metrics');
+      const data = await response.json();
+      if (data.success) {
+        setMetrics(data.metrics);
+      }
+    } catch (error) {
+      console.error('Failed to fetch metrics:', error);
+    }
+  };
 
   useEffect(() => {
-    const fetchMetrics = async () => {
-      try {
-        const response = await fetch('/api/metrics');
-        const data = await response.json();
-        if (data.success) {
-          setMetrics(data.metrics);
-          setProviders(data.metrics.providers);
-        }
-      } catch (error) {
-        console.error('Failed to fetch metrics:', error);
-      }
-    };
-
-    // Fetch metrics immediately and then every 3 seconds
+    fetchProviders();
     fetchMetrics();
-    const interval = setInterval(fetchMetrics, 3000);
-    
+    const interval = setInterval(() => {
+      fetchProviders();
+      fetchMetrics();
+    }, 3000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleToggleProvider = async () => {
+    if (switching || !providers) return;
+    const next = providers.active.provider === 'openai' ? 'ollama' : 'openai';
+    setSwitching(true);
+    setSwitchMsg(null);
+    try {
+      const res = await fetch('/api/config/ai-provider', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider: next })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setProviders(data.providers);
+        setSwitchMsg({ ok: true, text: `Switched to ${next.toUpperCase()}` });
+      } else {
+        setSwitchMsg({ ok: false, text: data.message || 'Switch failed' });
+      }
+    } catch (e) {
+      setSwitchMsg({ ok: false, text: 'Network error' });
+    } finally {
+      setSwitching(false);
+      setTimeout(() => setSwitchMsg(null), 3000);
+    }
+  };
 
   const getStatusClass = (status) => {
     if (status === 'UP') return 'active';
     if (status === 'DOWN') return 'error';
     return 'warning';
-  };
-
-  const getOllamaStatusClass = (status) => {
-    if (status === 'active') return 'active';
-    if (status === 'waiting_config') return 'warning';
-    if (status === 'disconnected') return 'error';
-    return 'inactive'; // not installed
-  };
-
-  const getOllamaStatusText = (status) => {
-    if (status === 'active') return 'Active';
-    if (status === 'waiting_config') return 'Waiting for config';
-    if (status === 'disconnected') return 'Disconnected';
-    return 'Not installed';
   };
 
   const formatTime = (ms) => {
@@ -78,31 +103,24 @@ const Header = ({ connected, bridgeStatus, gatewayStatus }) => {
         </div>
 
         {providers && (
-          <>
-            {/* Active AI Provider */}
-            <div className="status-indicator" style={{ borderLeft: '1px solid var(--primary-green)', paddingLeft: '1rem' }}>
-              <span className="status-dot active"></span>
-              <span>
-                ACTIVE AI: {providers.active.provider === 'openai' 
-                  ? (providers.openai.model === 'gpt-4o' ? 'GPT-4o' : 
-                     providers.openai.model === 'gpt-4o-mini' ? 'GPT-4o-mini' : 
-                     providers.openai.model) 
-                  : (providers.ollama.model?.includes('llama') ? 'Llama 3.3' : providers.ollama.model)}
+          <div className="ai-toggle-wrap">
+            <span className={`ai-toggle-label ${providers.active.provider === 'openai' ? 'ai-toggle-label--on' : ''}`}>OPENAI</span>
+            <button
+              className={`ai-toggle${providers.active.provider === 'ollama' ? ' ai-toggle--ollama' : ''}${switching ? ' ai-toggle--busy' : ''}`}
+              onClick={handleToggleProvider}
+              disabled={switching}
+              aria-label={`Switch to ${providers.active.provider === 'openai' ? 'Ollama' : 'OpenAI'}`}
+              title={`Active: ${providers.active.provider.toUpperCase()} (${providers.active.model}) — click to switch`}
+            >
+              <span className="ai-toggle-knob" />
+            </button>
+            <span className={`ai-toggle-label ${providers.active.provider === 'ollama' ? 'ai-toggle-label--on' : ''}`}>OLLAMA</span>
+            {switchMsg && (
+              <span className={`ai-toggle-msg ${switchMsg.ok ? 'ai-toggle-msg--ok' : 'ai-toggle-msg--err'}`}>
+                {switchMsg.text}
               </span>
-            </div>
-
-            {/* OpenAI Status */}
-            <div className="status-indicator">
-              <span className={`status-dot ${providers.openai.configured ? 'active' : 'warning'}`}></span>
-              <span>OPENAI: {providers.openai.configured ? 'Configured' : 'Not configured'}</span>
-            </div>
-
-            {/* Ollama Status */}
-            <div className="status-indicator">
-              <span className={`status-dot ${getOllamaStatusClass(providers.ollama.status)}`}></span>
-              <span>OLLAMA: {getOllamaStatusText(providers.ollama.status)}</span>
-            </div>
-          </>
+            )}
+          </div>
         )}
 
         {metrics && (

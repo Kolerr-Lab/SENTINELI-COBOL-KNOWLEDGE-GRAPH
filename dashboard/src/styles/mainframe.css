@@ -758,3 +758,71 @@ body {
     overflow-x: auto;
   }
 }
+
+/* ── AI Provider Toggle ───────────────────────────────────── */
+.ai-toggle-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ai-toggle-label {
+  font-family: inherit;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: var(--mainframe-dim, #4a5568);
+  transition: color 0.25s;
+  user-select: none;
+}
+
+.ai-toggle-label--on {
+  color: var(--mainframe-green);
+}
+
+/* Pill */
+.ai-toggle {
+  position: relative;
+  width: 44px;
+  height: 22px;
+  background: var(--success-green);
+  border: none;
+  border-radius: 11px;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.25s;
+  flex-shrink: 0;
+}
+
+.ai-toggle--ollama {
+  background: var(--warning-amber);
+}
+
+.ai-toggle--busy {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+/* Knob */
+.ai-toggle-knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  background: #0d1117;
+  border-radius: 50%;
+  transition: transform 0.25s;
+  pointer-events: none;
+}
+
+.ai-toggle--ollama .ai-toggle-knob {
+  transform: translateX(22px);
+}
+
+.ai-toggle-msg {
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+}
+
+.ai-toggle-msg--ok  { color: var(--success-green); }
+.ai-toggle-msg--err { color: var(--error-red); }

@@ -15,7 +15,8 @@ const logger = require('./utils/logger');
 const axios = require('axios');
 
 // AI Provider Configuration
-const AI_PROVIDER = process.env.AI_PROVIDER || 'openai';
+// currentProvider is mutable so it can be toggled at runtime without restart
+let currentProvider = process.env.AI_PROVIDER || 'openai';
 const apiKey = process.env.OPENAI_API_KEY;
 const model = process.env.OPENAI_MODEL || 'gpt-4o';
 const maxRetries = 3;
@@ -51,35 +52,73 @@ const metrics = {
     lastResetTime: new Date().toISOString()
 };
 
-let openai;
+let openaiClient;
 let aiProviderInfo = {
-    provider: AI_PROVIDER,
-    model: AI_PROVIDER === 'openai' ? model : OLLAMA_MODEL,
-    endpoint: AI_PROVIDER === 'ollama' ? OLLAMA_ENDPOINT : 'https://api.openai.com',
+    provider: currentProvider,
+    model: currentProvider === 'openai' ? model : OLLAMA_MODEL,
+    endpoint: currentProvider === 'ollama' ? OLLAMA_ENDPOINT : 'https://api.openai.com',
     status: 'not_initialized'
 };
 
-// Initialize AI provider based on configuration
-if (AI_PROVIDER === 'openai') {
-    if (apiKey) {
-        openai = new OpenAI({ 
-            apiKey,
-            maxRetries: maxRetries,
-            timeout: 60000 // 60 seconds
-        });
-        aiProviderInfo.status = 'configured';
-        logger.info({ model, provider: 'openai' }, 'OpenAI client initialized');
-    } else {
-        aiProviderInfo.status = 'not_configured';
-        logger.warn('OPENAI_API_KEY is missing. AI features will be disabled.');
+// Initialize OpenAI client (always initialize if API key is present,
+// so toggling to openai at runtime works even if startd on ollama)
+if (apiKey) {
+    openaiClient = new OpenAI({
+        apiKey,
+        maxRetries: maxRetries,
+        timeout: 60000 // 60 seconds
+    });
+    logger.info({ model }, 'OpenAI client initialized (available for toggling)');
+} else {
+    logger.warn('OPENAI_API_KEY is missing. OpenAI provider will be unavailable.');
+}
+
+// Set initial provider status
+if (currentProvider === 'openai') {
+    aiProviderInfo.status = openaiClient ? 'configured' : 'not_configured';
+    if (openaiClient) {
+        logger.info({ model, provider: 'openai' }, 'Active provider: OpenAI');
     }
-} else if (AI_PROVIDER === 'ollama') {
-    // Ollama doesn't need a client initialization - uses direct HTTP calls
+} else if (currentProvider === 'ollama') {
     aiProviderInfo.status = 'configured';
-    logger.info({ model: OLLAMA_MODEL, endpoint: OLLAMA_ENDPOINT, provider: 'ollama' }, 'Ollama provider configured');
+    logger.info({ model: OLLAMA_MODEL, endpoint: OLLAMA_ENDPOINT, provider: 'ollama' }, 'Active provider: Ollama');
 } else {
     aiProviderInfo.status = 'invalid_provider';
-    logger.error({ provider: AI_PROVIDER }, 'Invalid AI_PROVIDER. Must be "openai" or "ollama"');
+    logger.error({ provider: currentProvider }, 'Invalid AI_PROVIDER. Must be "openai" or "ollama"');
+}
+
+/**
+ * Switch AI provider at runtime (no restart required)
+ * @param {string} provider - 'openai' or 'ollama'
+ * @returns {{ success: boolean, provider: string, model: string, message: string }}
+ */
+function setAIProvider(provider) {
+    if (provider !== 'openai' && provider !== 'ollama') {
+        return { success: false, message: `Invalid provider "${provider}". Must be "openai" or "ollama"` };
+    }
+    if (provider === 'openai' && !openaiClient) {
+        return { success: false, message: 'Cannot switch to OpenAI: OPENAI_API_KEY is not configured' };
+    }
+    currentProvider = provider;
+    aiProviderInfo.provider = provider;
+    aiProviderInfo.model = provider === 'openai' ? model : OLLAMA_MODEL;
+    aiProviderInfo.endpoint = provider === 'ollama' ? OLLAMA_ENDPOINT : 'https://api.openai.com';
+    aiProviderInfo.status = 'configured';
+    logger.info({ provider, model: aiProviderInfo.model }, 'AI provider switched at runtime');
+    return {
+        success: true,
+        provider,
+        model: aiProviderInfo.model,
+        message: `Switched to ${provider} (${aiProviderInfo.model})`
+    };
+}
+
+/**
+ * Get current provider name
+ * @returns {string} 'openai' or 'ollama'
+ */
+function getCurrentProvider() {
+    return currentProvider;
 }
 
 /**
@@ -98,6 +137,11 @@ async function callOllamaAPI(messages, options = {}) {
         max_tokens: options.max_tokens || 4000,
         stream: false
     };
+
+    // Enable JSON mode for Ollama when callers request json_object format
+    if (options.response_format && options.response_format.type === 'json_object') {
+        requestBody.format = 'json';
+    }
 
     try {
         const response = await axios.post(url, requestBody, {
@@ -125,22 +169,22 @@ async function callOllamaAPI(messages, options = {}) {
  * @returns {Promise<object>} Completion response
  */
 async function createChatCompletion(messages, options = {}) {
-    if (AI_PROVIDER === 'openai') {
-        if (!openai) {
+    if (currentProvider === 'openai') {
+        if (!openaiClient) {
             throw new Error('OpenAI client not configured. Set OPENAI_API_KEY in .env');
         }
         
-        return await openai.chat.completions.create({
+        return await openaiClient.chat.completions.create({
             messages,
             model: model,
             response_format: options.response_format,
             temperature: options.temperature || 0.0,
             max_tokens: options.max_tokens || 4000
         });
-    } else if (AI_PROVIDER === 'ollama') {
+    } else if (currentProvider === 'ollama') {
         return await callOllamaAPI(messages, options);
     } else {
-        throw new Error(`Invalid AI provider: ${AI_PROVIDER}. Must be "openai" or "ollama"`);
+        throw new Error(`Invalid AI provider: ${currentProvider}. Must be "openai" or "ollama"`);
     }
 }
 
@@ -153,7 +197,7 @@ async function createChatCompletion(messages, options = {}) {
  */
 function calculateCost(inputTokens, outputTokens, modelName) {
     // Ollama is free (local inference)
-    if (AI_PROVIDER === 'ollama') {
+    if (currentProvider === 'ollama') {
         return 0.0;
     }
     
@@ -175,11 +219,11 @@ function calculateCost(inputTokens, outputTokens, modelName) {
  * @returns {Promise<object>} Analysis result
  */
 async function extractSymbolicConstraints(sourceCode) {
-    if (!openai) {
-        logger.error('AI analysis requested but OpenAI client not initialized');
+    if (!isAIAvailable()) {
+        logger.error({ provider: currentProvider }, 'AI analysis requested but provider not available');
         return {
             error: 'AI service unavailable',
-            message: 'OpenAI API key not configured',
+            message: currentProvider === 'openai' ? 'OpenAI API key not configured' : `Ollama not reachable at ${OLLAMA_ENDPOINT}`,
             propagator_network: { nodes: [], edges: [] },
             minimal_description: 'Analysis unavailable',
             kolmogorov_score: '0.0'
@@ -405,9 +449,9 @@ async function explainCode(codeSection) {
  * @returns {boolean} True if AI provider is configured
  */
 function isAIAvailable() {
-    if (AI_PROVIDER === 'openai') {
-        return openai !== null && openai !== undefined;
-    } else if (AI_PROVIDER === 'ollama') {
+    if (currentProvider === 'openai') {
+        return openaiClient !== null && openaiClient !== undefined;
+    } else if (currentProvider === 'ollama') {
         return aiProviderInfo.status === 'configured';
     }
     return false;
@@ -442,15 +486,15 @@ async function getProviderInfo() {
     
     return {
         active: {
-            provider: AI_PROVIDER,
+            provider: currentProvider,
             model: aiProviderInfo.model,
             endpoint: aiProviderInfo.endpoint,
             status: aiProviderInfo.status
         },
         openai: {
-            configured: !!apiKey,
+            configured: !!apiKey && !!openaiClient,
             model: model,
-            status: apiKey ? 'configured' : 'not_configured'
+            status: (apiKey && openaiClient) ? 'configured' : 'not_configured'
         },
         ollama: {
             endpoint: process.env.OLLAMA_ENDPOINT || null,
@@ -460,10 +504,29 @@ async function getProviderInfo() {
     };
 }
 
+/**
+ * Adapter proxy — exposes the same openai.chat.completions.create() interface
+ * that all analyzers expect, but routes to the current provider internally.
+ * This object reference stays stable across the app lifetime, so toggling
+ * currentProvider is immediately reflected in all consumers.
+ */
+const aiClientProxy = {
+    chat: {
+        completions: {
+            create: async (params) => {
+                const { messages, ...options } = params;
+                return createChatCompletion(messages, options);
+            }
+        }
+    }
+};
+
 module.exports = {
     extractSymbolicConstraints,
     explainCode,
     isAIAvailable,
     getProviderInfo,
-    openai  // Export OpenAI client for multi-language analyzers
+    setAIProvider,
+    getCurrentProvider,
+    openai: aiClientProxy  // Proxy routes to current provider; all analyzers work unchanged
 };

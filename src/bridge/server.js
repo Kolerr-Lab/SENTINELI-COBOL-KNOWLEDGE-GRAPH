@@ -38,7 +38,7 @@ const {
     handleUnhandledRejection,
     setupGracefulShutdown
 } = require('./middleware/errorHandler');
-const { getProviderInfo, openai } = require('./ai_agent');
+const { getProviderInfo, openai, setAIProvider, getCurrentProvider } = require('./ai_agent');
 
 // Import route modules
 const { router: cobolRouter, initCobolRoutes } = require('./routes/cobol');
@@ -268,6 +268,44 @@ app.get('/api/logs', publicLimiter, asyncHandler(async (req, res) => {
         success: true,
         logs,
         count: logs.length
+    });
+}));
+
+/**
+ * AI provider status
+ * GET /api/config/ai-provider
+ */
+app.get('/api/config/ai-provider', publicLimiter, asyncHandler(async (req, res) => {
+    const providerInfo = await getProviderInfo();
+    res.json({
+        success: true,
+        current: getCurrentProvider(),
+        providers: providerInfo
+    });
+}));
+
+/**
+ * Toggle AI provider at runtime — no restart required
+ * POST /api/config/ai-provider
+ * Body: { "provider": "openai" | "ollama" }
+ */
+app.post('/api/config/ai-provider', publicLimiter, asyncHandler(async (req, res) => {
+    const { provider } = req.body || {};
+    if (!provider) {
+        return res.status(400).json({ success: false, message: 'Missing required field: provider ("openai" | "ollama")' });
+    }
+    const result = setAIProvider(provider);
+    if (!result.success) {
+        return res.status(400).json({ success: false, message: result.message });
+    }
+    const providerInfo = await getProviderInfo();
+    activityLogger.success('AI provider switched', { provider, model: result.model });
+    res.json({
+        success: true,
+        message: result.message,
+        current: provider,
+        model: result.model,
+        providers: providerInfo
     });
 }));
 

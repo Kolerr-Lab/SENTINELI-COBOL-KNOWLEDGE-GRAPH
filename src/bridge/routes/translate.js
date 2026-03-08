@@ -115,7 +115,7 @@ router.post(
             
             // Step 2: Translate to target language
             logger.info({ targetLang }, 'Translating code...');
-            const translation = await translateCode(code, targetLang, businessRules);
+            const translation = await translateCode(code, targetLang, businessRules, { openai });
             
             // Step 3: Verify equivalence with Z3 (if requested)
             // NOW WITH SMT-BASED FORMAL PROOFS! 🚀

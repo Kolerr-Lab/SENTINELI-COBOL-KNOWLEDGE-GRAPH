@@ -15,12 +15,9 @@
  * @author Kolerr Lab
  */
 
-const OpenAI = require('openai');
 const logger = require('../utils/logger');
 
-const apiKey = process.env.OPENAI_API_KEY;
 const model = process.env.OPENAI_MODEL || 'gpt-4o';
-const openai = apiKey ? new OpenAI({ apiKey }) : null;
 
 // COMMAREA field layout (fixed offsets from COBOL CICS programs)
 const COMMAREA_LAYOUT = {
@@ -92,8 +89,11 @@ async function translateCode(cobolCode, targetLang = 'python', businessRules = n
         throw new Error(`Unsupported target language: ${targetLang}. Supported: ${Object.keys(SUPPORTED_LANGUAGES).join(', ')}`);
     }
     
-    if (!openai) {
-        throw new Error('OpenAI API key not configured. Translation requires GPT-4o.');
+    // openai is the aiClientProxy from ai_agent.js — routes to whichever
+    // provider is currently active (OpenAI or Ollama)
+    const aiClient = options.openai;
+    if (!aiClient) {
+        throw new Error('AI client not configured. Ensure AI_PROVIDER is set in .env');
     }
     
     const langConfig = SUPPORTED_LANGUAGES[targetLang.toLowerCase()];
@@ -108,8 +108,8 @@ async function translateCode(cobolCode, targetLang = 'python', businessRules = n
         // Build translation prompt
         const prompt = buildTranslationPrompt(cobolCode, langConfig, businessRules, options);
         
-        // Call GPT-4o for translation
-        const response = await openai.chat.completions.create({
+        // Call AI provider for translation (OpenAI or Ollama via aiClientProxy)
+        const response = await aiClient.chat.completions.create({
             model: model,
             messages: [
                 {
