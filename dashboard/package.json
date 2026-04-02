@@ -17,7 +17,7 @@
     "enterprise"
   ],
   "author": "Ricky Anh Nguyen <ricky@orchesity.com>",
-  "license": "MIT",
+  "license": "BUSL-1.1",
   "dependencies": {
     "axios": "^1.6.7",
     "cors": "^2.8.5",

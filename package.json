@@ -4,7 +4,7 @@
     "description": "Sentineli - Neuro-Symbolic Mainframe Modernization Platform",
     "main": "src/bridge/server.js",
     "author": "Ricky Anh Nguyen <ricky@orchesity.com> (OrchesityAI & Kolerr Lab)",
-    "license": "MIT",
+    "license": "BUSL-1.1",
     "repository": {
         "type": "git",
         "url": "https://github.com/Kolerr-Lab/sentineli.git"

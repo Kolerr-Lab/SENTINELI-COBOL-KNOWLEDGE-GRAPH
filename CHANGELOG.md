@@ -286,7 +286,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✅ Docker production images
 - ✅ Sample COBOL programs
 - ✅ Community guidelines (Code of Conduct, Contributing)
-- ✅ Open source license (MIT/Apache 2.0)
+- ✅ Business Source License 1.1 (BUSL-1.1, converts to Apache 2.0 on 2030-04-03)
 - ✅ Demo video and website
 
 #### Breaking Changes

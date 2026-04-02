@@ -6,7 +6,7 @@
 **Formal Verification Platform for Legacy Banking Systems**
 
 <!-- Core Status -->
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: BUSL-1.1](https://img.shields.io/badge/License-BUSL--1.1-blue.svg)](https://mariadb.com/bsl11/)
 [![Production Ready](https://img.shields.io/badge/Production-Ready-success?style=flat&logo=checkmarx)](https://github.com/Kolerr-Lab/SENTINELI-COBOL-KNOWLEDGE-GRAPH)
 [![Enterprise Grade](https://img.shields.io/badge/Enterprise-Grade-blue?style=flat&logo=enterprise)](https://github.com/Kolerr-Lab/SENTINELI-COBOL-KNOWLEDGE-GRAPH)
 [![Security Policy](https://img.shields.io/badge/Security-Policy-red?style=flat&logo=security)](SECURITY.md)
@@ -1361,27 +1361,25 @@ Contributors get:
 
 ## 📄 License & Legal
 
-**MIT License** - Free for commercial and personal use
+**Business Source License 1.1 (BUSL-1.1)**
 
 ```
-Copyright (c) 2026 Ricky Anh Nguyen, OrchesityAI & Kolerr Lab
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Licensor:       Kolerr Lab
+Licensed Work:  Sentineli - Neuro-Symbolic Mainframe Modernization Platform
+                (c) 2026 Ricky Anh Nguyen, OrchesityAI & Kolerr Lab
+Change Date:    April 3, 2030
+Change License: Apache License, Version 2.0
 
 [Full license text in LICENSE file]
 ```
 
 **What this means:**
-- ✅ Use in commercial products (including SaaS)
-- ✅ Modify and customize for your needs
-- ✅ White-label for client projects
-- ✅ No royalties or revenue sharing required
+- ✅ Copy, modify, and create derivative works
+- ✅ Non-production use (research, evaluation, development)
+- ✅ Automatically converts to Apache 2.0 on April 3, 2030
+- ❌ Production use that competes with Kolerr Lab's paid offerings requires a commercial license
 - ⚠️ No warranty or liability (use at your own risk)
+- 📧 Commercial licensing: ricky@orchesity.com
 
 **Third-party Licenses:**
 - Z3 Theorem Prover: MIT License
