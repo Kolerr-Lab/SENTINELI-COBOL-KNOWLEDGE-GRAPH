@@ -1,0 +1,25 @@
+# Gitleaks ignore file
+# Add files or patterns to ignore for secret scanning
+
+# Test files with fake credentials
+tests/**/*.test.js
+tests/**/*.spec.js
+**/test_*.js
+**/__tests__/**
+
+# Documentation examples
+docs/**/*.md
+README.md
+CONTRIBUTING.md
+
+# Configuration examples (non-sensitive)
+.env.example
+.env.template
+config.example.js
+
+# Build artifacts
+node_modules/
+coverage/
+dist/
+build/
+*.log

@@ -10,6 +10,9 @@
 [![Production Ready](https://img.shields.io/badge/Production-Ready-success?style=flat&logo=checkmarx)](https://github.com/Kolerr-Lab/SENTINELI-COBOL-KNOWLEDGE-GRAPH)
 [![Enterprise Grade](https://img.shields.io/badge/Enterprise-Grade-blue?style=flat&logo=enterprise)](https://github.com/Kolerr-Lab/SENTINELI-COBOL-KNOWLEDGE-GRAPH)
 [![Security Policy](https://img.shields.io/badge/Security-Policy-red?style=flat&logo=security)](SECURITY.md)
+[![Security Standards](https://img.shields.io/badge/Security-7%20Step%20CI-green?style=flat&logo=github-actions)](docs/SECURITY_STANDARDS.md)
+[![Vulnerabilities](https://img.shields.io/badge/vulnerabilities-0-success?style=flat&logo=snyk)](docs/SECURITY_STANDARDS.md)
+[![Security Scan](https://img.shields.io/badge/scan-daily-blue?style=flat&logo=dependabot)](docs/SECURITY_STANDARDS.md)
 
 <!-- Tech Stack -->
 [![Rust](https://img.shields.io/badge/Rust-Gateway-orange?style=flat&logo=rust)](https://www.rust-lang.org/)

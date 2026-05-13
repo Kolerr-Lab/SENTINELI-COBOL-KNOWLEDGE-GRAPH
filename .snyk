@@ -1,0 +1,39 @@
+# Snyk (https://snyk.io) policy file
+
+version: v1.25.0
+
+# Ignore specific vulnerabilities (with justification)
+ignore: {}
+
+# Patch vulnerabilities
+patch: {}
+
+# Language-specific settings
+language-settings:
+  javascript:
+    # Exclude dev dependencies from production scans
+    dev-dependencies: false
+
+# Exclude paths from scanning
+exclude:
+  code:
+    - tests/**
+    - coverage/**
+    - node_modules/**
+    - '**/*.test.js'
+    - '**/*.spec.js'
+  
+  global:
+    - 'tests/**'
+    - 'coverage/**'
+    - '.git/**'
+    - 'node_modules/**'
+    - 'bin/**'
+
+# Severity threshold
+fail-on:
+  - high
+  - critical
+
+# Organization settings (configure in Snyk dashboard)
+org: kolerr-lab
